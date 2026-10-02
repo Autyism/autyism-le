@@ -9,7 +9,12 @@
     "malilib.GuiBaseAccessor",
     "litematica.MaterialListSchematicAccessor",
     "litematica.MaterialListPlacementAccessor",
-    "compat.schematicpreview.GuiBlockSelectMixin"
+    "compat.schematicpreview.GuiBlockSelectMixin",
+    "litematica.SchematicVerifierMixin",
+    "litematica.OverlayRendererMixin",
+    "litematica.MaterialListBaseMixin",
+    "litematica.GuiMaterialListMixin",
+    "litematica.MaterialListSchematicMixin"
   ],
   "injectors": {
     "defaultRequire": 1

@@ -17,5 +17,7 @@ public class AleMod implements ClientModInitializer {
     @Override
     public void onInitializeClient() {
         InitializationHandler.getInstance().registerInitializationHandler(AleConfigs::init);
+        net.fabricmc.fabric.api.client.event.lifecycle.v1.ClientTickEvents.END_CLIENT_TICK.register(
+                client -> com.autyism.ale.verifier.ContainerVerifier.tick());
     }
 }

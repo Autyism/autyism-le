@@ -43,5 +43,9 @@
   "autyism-le.message.save_edits.not_litematic": "%s is not a .litematic file and can't be overwritten - use Save as",
   "autyism-le.message.save_edits.failed": "Failed to save %s (see log)",
   "autyism-le.message.save_edits.empty_name": "File name is empty",
-  "autyism-le.message.sign_replaced": "Replaced %s signs with %s (form, facing, waterlogged and text kept)"
+  "autyism-le.message.sign_replaced": "Replaced %s signs with %s (form, facing, waterlogged and text kept)",
+  "autyism-le.gui.button.container_contents": "Container contents",
+  "autyism-le.gui.button.container_contents.hover": "Total of all items inside the schematic's containers (chests, shulker boxes, barrels, hoppers...), item frames, armor stands and container minecarts.\nShulker box items inside containers are also expanded.",
+  "autyism-le.gui.title.container_contents": "Container contents: %s",
+  "autyism-le.message.verifier.container_mismatch": "%s containers have different contents than the schematic (magenta boxes)"
 }
