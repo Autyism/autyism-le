@@ -26,6 +26,28 @@ import java.util.Set;
 public abstract class OverlayRendererMixin {
     private static final Color4f ALE_CONTAINER_COLOR = Color4f.fromColor(0xFFFF30FF);
 
+    // ---------------- 需求 5a：流体与实体的信息对比 ----------------
+
+    /** 方块信息检测也命中投影里的流体（水源、岩浆源） */
+    @org.spongepowered.asm.mixin.injection.ModifyArg(method = "renderHoverInfo",
+            at = @At(value = "INVOKE", remap = true, target = "Lfi/dy/masa/litematica/util/RayTraceUtils;getGenericTrace(Lnet/minecraft/world/level/Level;Lnet/minecraft/world/entity/Entity;DZZZ)Lfi/dy/masa/litematica/util/RayTraceUtils$RayTraceWrapper;"),
+            index = 4)
+    private boolean ale$targetFluids(boolean targetFluids) {
+        return targetFluids || com.autyism.ale.config.AleConfigs.Generic.INFO_FLUIDS_ENTITIES.getBooleanValue();
+    }
+
+    /** 看向投影实体（比方块更近）时，显示实体的对比框，替代方块信息 */
+    @Inject(method = "renderHoverInfo", at = @At("HEAD"), cancellable = true)
+    private void ale$entityInfo(fi.dy.masa.malilib.render.GuiContext ctx, ProfilerFiller profiler, CallbackInfo ci) {
+        if (!com.autyism.ale.config.AleConfigs.Generic.INFO_FLUIDS_ENTITIES.getBooleanValue()) return;
+        if (!fi.dy.masa.litematica.config.Hotkeys.RENDER_INFO_OVERLAY.getKeybind().isKeybindHeld()) return;
+        if (!fi.dy.masa.litematica.config.Configs.InfoOverlays.BLOCK_INFO_OVERLAY_ENABLED.getBooleanValue()) return;
+        net.minecraft.world.entity.Entity target = com.autyism.ale.render.EntityInfoOverlay.findTargetedSchematicEntity();
+        if (target == null) return;
+        com.autyism.ale.render.EntityInfoOverlay.render(ctx, target);
+        ci.cancel();
+    }
+
     @Inject(method = "renderSchematicVerifierMismatches", at = @At("TAIL"))
     private void ale$renderContainerMismatches(Matrix4f posMatrix, Matrix4f projMatrix, ProfilerFiller profiler, CallbackInfo ci) {
         SchematicPlacement placement = DataManager.getSchematicPlacementManager().getSelectedSchematicPlacement();

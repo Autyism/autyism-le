@@ -12,7 +12,8 @@
       "com.autyism.ale.gametest.BlockPickerGameTest",
       "com.autyism.ale.gametest.RenderGameTest",
       "com.autyism.ale.gametest.GlassGameTest",
-      "com.autyism.ale.gametest.TranslucentEntityGameTest"
+      "com.autyism.ale.gametest.TranslucentEntityGameTest",
+      "com.autyism.ale.gametest.InfoOverlayGameTest"
     ]
   },
   "depends": {
@@ -20,5 +21,8 @@
     "fabric-api": "*",
     "minecraft": "*",
     "autyism-le": "*"
-  }
+  },
+  "mixins": [
+    "autyism-le-gametest.mixins.json"
+  ]
 }
