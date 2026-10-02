@@ -42,5 +42,6 @@
   "autyism-le.message.save_edits.no_file": "This placement has no schematic file (in-memory schematic) - use Save as",
   "autyism-le.message.save_edits.not_litematic": "%s is not a .litematic file and can't be overwritten - use Save as",
   "autyism-le.message.save_edits.failed": "Failed to save %s (see log)",
-  "autyism-le.message.save_edits.empty_name": "File name is empty"
+  "autyism-le.message.save_edits.empty_name": "File name is empty",
+  "autyism-le.message.sign_replaced": "Replaced %s signs with %s (form, facing, waterlogged and text kept)"
 }

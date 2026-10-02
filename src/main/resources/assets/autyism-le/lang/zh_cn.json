@@ -42,5 +42,6 @@
   "autyism-le.message.save_edits.no_file": "这个放置没有对应的投影文件（内存中的投影），请使用“另存为”",
   "autyism-le.message.save_edits.not_litematic": "%s 不是 .litematic 文件，不能直接覆盖，请使用“另存为”",
   "autyism-le.message.save_edits.failed": "保存 %s 失败（详见日志）",
-  "autyism-le.message.save_edits.empty_name": "文件名为空"
+  "autyism-le.message.save_edits.empty_name": "文件名为空",
+  "autyism-le.message.sign_replaced": "已将 %s 个告示牌替换为%s（保留形态、朝向、含水和文字）"
 }
