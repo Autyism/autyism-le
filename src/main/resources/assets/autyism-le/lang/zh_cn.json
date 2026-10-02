@@ -43,5 +43,9 @@
   "autyism-le.message.save_edits.not_litematic": "%s 不是 .litematic 文件，不能直接覆盖，请使用“另存为”",
   "autyism-le.message.save_edits.failed": "保存 %s 失败（详见日志）",
   "autyism-le.message.save_edits.empty_name": "文件名为空",
-  "autyism-le.message.sign_replaced": "已将 %s 个告示牌替换为%s（保留形态、朝向、含水和文字）"
+  "autyism-le.message.sign_replaced": "已将 %s 个告示牌替换为%s（保留形态、朝向、含水和文字）",
+  "autyism-le.gui.button.container_contents": "容器内容物",
+  "autyism-le.gui.button.container_contents.hover": "投影中所有容器（箱子、潜影盒、木桶、漏斗等）、物品展示框、盔甲架、运输矿车里的物品汇总。\n容器里的潜影盒物品也会展开统计其内容。",
+  "autyism-le.gui.title.container_contents": "容器内容物：%s",
+  "autyism-le.message.verifier.container_mismatch": "有 %s 个容器的内容物与投影不一致（洋红色框标出）"
 }
