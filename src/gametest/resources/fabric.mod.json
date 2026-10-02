@@ -1,0 +1,18 @@
+{
+  "schemaVersion": 1,
+  "id": "autyism-le-gametest",
+  "version": "1.0.0",
+  "name": "ALE GameTests",
+  "environment": "client",
+  "entrypoints": {
+    "fabric-client-gametest": [
+      "com.autyism.ale.gametest.SaveEditsGameTest"
+    ]
+  },
+  "depends": {
+    "fabricloader": "*",
+    "fabric-api": "*",
+    "minecraft": "*",
+    "autyism-le": "*"
+  }
+}

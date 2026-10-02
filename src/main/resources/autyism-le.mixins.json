@@ -1,0 +1,14 @@
+{
+  "required": true,
+  "minVersion": "0.8",
+  "package": "com.autyism.ale.mixin",
+  "compatibilityLevel": "JAVA_21",
+  "plugin": "com.autyism.ale.mixin.AleMixinPlugin",
+  "client": [
+    "litematica.GuiPlacementConfigurationMixin",
+    "malilib.GuiBaseAccessor"
+  ],
+  "injectors": {
+    "defaultRequire": 1
+  }
+}
