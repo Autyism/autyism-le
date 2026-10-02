@@ -60,5 +60,15 @@
   "autyism-le.gui.label.all_blocks": "全部方块（%s）—— 点击加入",
   "autyism-le.gui.label.all_items": "全部物品（%s）—— 点击加入",
   "autyism-le.gui.label.search_hint": "搜索名称或 ID…",
-  "autyism-le.gui.label.list_empty": "（空）"
+  "autyism-le.gui.label.list_empty": "（空）",
+  "autyism-le.info.entity.facing": "朝向：%s",
+  "autyism-le.info.entity.item": "物品：%s",
+  "autyism-le.info.entity.rotation": "物品旋转：%s",
+  "autyism-le.info.entity.yaw": "水平角度：%s°",
+  "autyism-le.info.entity.missing": "（世界中没有）",
+  "autyism-le.info.entity.match": "实体与投影一致",
+  "autyism-le.info.entity.mismatch": "实体与投影不一致",
+  "autyism-le.info.entity.missing_title": "世界中缺少这个实体",
+  "autyism-le.info.entity.schematic": "投影：",
+  "autyism-le.info.entity.world": "世界："
 }

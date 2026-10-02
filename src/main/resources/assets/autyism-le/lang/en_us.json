@@ -60,5 +60,15 @@
   "autyism-le.gui.label.all_blocks": "All blocks (%s) - click to add",
   "autyism-le.gui.label.all_items": "All items (%s) - click to add",
   "autyism-le.gui.label.search_hint": "Search name or ID...",
-  "autyism-le.gui.label.list_empty": "(empty)"
+  "autyism-le.gui.label.list_empty": "(empty)",
+  "autyism-le.info.entity.facing": "Facing: %s",
+  "autyism-le.info.entity.item": "Item: %s",
+  "autyism-le.info.entity.rotation": "Item rotation: %s",
+  "autyism-le.info.entity.yaw": "Yaw: %s°",
+  "autyism-le.info.entity.missing": "(not in world)",
+  "autyism-le.info.entity.match": "Entity matches the schematic",
+  "autyism-le.info.entity.mismatch": "Entity differs from the schematic",
+  "autyism-le.info.entity.missing_title": "Entity missing in the world",
+  "autyism-le.info.entity.schematic": "Schematic:",
+  "autyism-le.info.entity.world": "World:"
 }

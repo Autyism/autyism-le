@@ -43,6 +43,19 @@ public final class MaterialExtras {
     private MaterialExtras() {
     }
 
+    /** 投影世界里与 box 相交的实体（投影世界按区块保存实体，通用的 getEntities 查不到） */
+    public static List<Entity> schematicEntities(WorldSchematic ws, AABB box) {
+        List<Entity> out = new ArrayList<>();
+        int cx0 = net.minecraft.util.Mth.floor(box.minX) >> 4, cx1 = net.minecraft.util.Mth.floor(box.maxX) >> 4;
+        int cz0 = net.minecraft.util.Mth.floor(box.minZ) >> 4, cz1 = net.minecraft.util.Mth.floor(box.maxZ) >> 4;
+        for (int cx = cx0; cx <= cx1; cx++) {
+            for (int cz = cz0; cz <= cz1; cz++) {
+                for (Entity e : ws.getEntitiesByChunk(cx, cz, e -> e.getBoundingBox().intersects(box))) out.add(e);
+            }
+        }
+        return out;
+    }
+
     // ------------------------------------------------------------------ 实体 → 物品
 
     /** 实体对应的放置物品（与实体类型 id 同名的物品，例如 item_frame、minecart、oak_boat）；生物等返回 null */
@@ -100,7 +113,7 @@ public final class MaterialExtras {
         for (Box box : placement.getSubRegionBoxes(SubRegionPlacement.RequiredEnabled.PLACEMENT_ENABLED).values()) {
             if (box.getPos1() == null || box.getPos2() == null) continue;
             AABB aabb = new AABB(Vec(box.getPos1()), Vec(box.getPos2())).inflate(1);
-            for (Entity se : ws.getEntities((Entity) null, aabb, e -> true)) {
+            for (Entity se : schematicEntities(ws, aabb)) {
                 Item item = itemForEntity(se);
                 if (item == null) continue;
                 for (Entity ce : client.getEntities(se, se.getBoundingBox().inflate(1.0), c -> c.getType() == se.getType() && !used.contains(c))) {
