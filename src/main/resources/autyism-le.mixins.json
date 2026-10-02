@@ -14,7 +14,8 @@
     "litematica.OverlayRendererMixin",
     "litematica.MaterialListBaseMixin",
     "litematica.GuiMaterialListMixin",
-    "litematica.MaterialListSchematicMixin"
+    "litematica.MaterialListSchematicMixin",
+    "malilib.GuiStringListEditMixin"
   ],
   "injectors": {
     "defaultRequire": 1
