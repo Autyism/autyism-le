@@ -15,7 +15,9 @@
     "litematica.MaterialListBaseMixin",
     "litematica.GuiMaterialListMixin",
     "litematica.MaterialListSchematicMixin",
-    "malilib.GuiStringListEditMixin"
+    "malilib.GuiStringListEditMixin",
+    "litematica.ChunkRendererSchematicVboMixin",
+    "litematica.ChunkRenderDataSchematicInvoker"
   ],
   "injectors": {
     "defaultRequire": 1
