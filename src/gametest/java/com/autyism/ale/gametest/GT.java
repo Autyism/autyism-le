@@ -28,6 +28,8 @@ public final class GT {
 
     public static TestSingleplayerContext newWorld(ClientGameTestContext context) {
         TestSingleplayerContext sp = context.worldBuilder().create();
+        // Litematica 会把上一个同名测试世界的投影放置读回来：每个测试开始时清空，避免互相影响
+        removeAllPlacements(context);
         sp.getServer().runCommand("gamerule doDaylightCycle false");
         sp.getServer().runCommand("gamerule doMobSpawning false");
         sp.getServer().runCommand("gamerule doWeatherCycle false");
