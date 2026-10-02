@@ -1,0 +1,257 @@
+package com.autyism.ale.render;
+
+import com.autyism.ale.config.AleConfigs;
+import com.mojang.blaze3d.vertex.PoseStack;
+import com.mojang.blaze3d.vertex.VertexConsumer;
+import fi.dy.masa.litematica.config.Configs;
+import net.minecraft.client.Minecraft;
+import net.minecraft.client.renderer.OrderedSubmitNodeCollector;
+import net.minecraft.client.renderer.Sheets;
+import net.minecraft.client.renderer.SubmitNodeCollector;
+import net.minecraft.client.renderer.block.ModelBlockRenderer;
+import net.minecraft.client.renderer.block.model.BakedQuad;
+import net.minecraft.client.renderer.block.model.BlockStateModel;
+import net.minecraft.client.renderer.rendertype.RenderType;
+import net.minecraft.world.level.block.state.BlockState;
+
+import java.lang.reflect.InvocationHandler;
+import java.lang.reflect.InvocationTargetException;
+import java.lang.reflect.Method;
+import java.lang.reflect.Proxy;
+import java.util.List;
+
+/**
+ * 需求 5b：投影里的实体渲染成和投影方块一样的半透明效果（透明度 = Litematica 的 ghostBlockAlpha）。
+ * <p>
+ * Litematica 把投影实体提交到原版的 {@link SubmitNodeCollector}。这里给它套一层代理：
+ * <ul>
+ *     <li>模型（实体身体、盔甲架、矿车、船、箱子等）：渲染类型换成 entityTranslucent，颜色乘上透明度；</li>
+ *     <li>方块模型 / 方块 / 物品（物品展示框的框和里面的物品、矿车里的方块）：改成自定义几何体，用半透明渲染类型，
+ *     顶点颜色乘上透明度；</li>
+ *     <li>其余（影子、名字、粒子等）原样提交。</li>
+ * </ul>
+ * 实体渲染器在提交过程中创建的不透明实体渲染类型，会在 {@link #ACTIVE} 期间被替换为半透明版本（见 RenderTypesMixin）。
+ */
+public final class TranslucentEntityRender {
+    private TranslucentEntityRender() {
+    }
+
+    /** 正在提交投影实体（RenderTypesMixin 据此把不透明的实体渲染类型换成半透明） */
+    public static final ThreadLocal<Boolean> ACTIVE = ThreadLocal.withInitial(() -> false);
+
+    public static boolean enabledForEntities() {
+        return AleConfigs.Generic.TRANSLUCENT_ENTITIES.getBooleanValue();
+    }
+
+    /** 方块实体（箱子、告示牌…）只在投影方块本身是半透明模式时才跟着半透明，保持与方块一致 */
+    public static boolean enabledForBlockEntities() {
+        return AleConfigs.Generic.TRANSLUCENT_ENTITIES.getBooleanValue() && Configs.Visuals.RENDER_BLOCKS_AS_TRANSLUCENT.getBooleanValue();
+    }
+
+    public static float alpha() {
+        return (float) Math.max(0.05, Math.min(1.0, Configs.Visuals.GHOST_BLOCK_ALPHA.getDoubleValue()));
+    }
+
+    static int mulAlpha(int argb, float alpha) {
+        int a = (argb >>> 24) & 0xFF;
+        return (Math.round(a * alpha) << 24) | (argb & 0x00FFFFFF);
+    }
+
+    public static SubmitNodeCollector wrap(SubmitNodeCollector queue) {
+        return (SubmitNodeCollector) Proxy.newProxyInstance(SubmitNodeCollector.class.getClassLoader(),
+                new Class<?>[]{SubmitNodeCollector.class}, new Handler(queue));
+    }
+
+    private static OrderedSubmitNodeCollector wrapOrdered(OrderedSubmitNodeCollector queue) {
+        return (OrderedSubmitNodeCollector) Proxy.newProxyInstance(OrderedSubmitNodeCollector.class.getClassLoader(),
+                new Class<?>[]{OrderedSubmitNodeCollector.class}, new Handler(queue));
+    }
+
+    private record Handler(OrderedSubmitNodeCollector target) implements InvocationHandler {
+        @Override
+        public Object invoke(Object proxy, Method method, Object[] args) throws Throwable {
+            float alpha = alpha();
+            String name = method.getName();
+            try {
+                switch (name) {
+                    case "order" -> {
+                        return wrapOrdered((OrderedSubmitNodeCollector) method.invoke(target, args));
+                    }
+                    case "submitModel" -> {
+                        // 10 参数：(model, state, pose, rt, light, overlay, tint, sprite, outline, crumbling)
+                        // 8 参数默认方法：(model, state, pose, rt, light, overlay, outline, crumbling)，tint 固定为 -1
+                        RenderType rt = TranslucentRenderTypes.translucent((RenderType) args[3]);
+                        int light = (Integer) args[4], overlay = (Integer) args[5];
+                        int tint, outline;
+                        net.minecraft.client.renderer.texture.TextureAtlasSprite sprite;
+                        net.minecraft.client.renderer.feature.ModelFeatureRenderer.CrumblingOverlay crumbling;
+                        if (args.length == 10) {
+                            tint = (Integer) args[6];
+                            sprite = (net.minecraft.client.renderer.texture.TextureAtlasSprite) args[7];
+                            outline = (Integer) args[8];
+                            crumbling = (net.minecraft.client.renderer.feature.ModelFeatureRenderer.CrumblingOverlay) args[9];
+                        } else {
+                            tint = -1;
+                            sprite = null;
+                            outline = (Integer) args[6];
+                            crumbling = (net.minecraft.client.renderer.feature.ModelFeatureRenderer.CrumblingOverlay) args[7];
+                        }
+                        submitModelRaw(target, args[0], args[1], (PoseStack) args[2], rt, light, overlay, mulAlpha(tint, alpha), sprite, outline, crumbling);
+                        return null;
+                    }
+                    case "submitModelPart" -> {
+                        // 统一转成参数最全的版本：(part, pose, rt, light, overlay, sprite, sheeted, hasFoil, color, crumbling, outline)
+                        Object part = args[0];
+                        PoseStack pose = (PoseStack) args[1];
+                        RenderType rt = TranslucentRenderTypes.translucent((RenderType) args[2]);
+                        int light = (Integer) args[3], overlay = (Integer) args[4];
+                        var sprite = (net.minecraft.client.renderer.texture.TextureAtlasSprite) args[5];
+                        boolean sheeted = false, foil = false;
+                        int color = -1, outline = 0;
+                        net.minecraft.client.renderer.feature.ModelFeatureRenderer.CrumblingOverlay crumbling = null;
+                        if (args.length == 8 && args[6] instanceof Boolean b1) {
+                            sheeted = b1;
+                            foil = (Boolean) args[7];
+                        } else if (args.length == 8) {
+                            color = (Integer) args[6];
+                            crumbling = (net.minecraft.client.renderer.feature.ModelFeatureRenderer.CrumblingOverlay) args[7];
+                        } else if (args.length == 11) {
+                            sheeted = (Boolean) args[6];
+                            foil = (Boolean) args[7];
+                            color = (Integer) args[8];
+                            crumbling = (net.minecraft.client.renderer.feature.ModelFeatureRenderer.CrumblingOverlay) args[9];
+                            outline = (Integer) args[10];
+                        }
+                        target.submitModelPart((net.minecraft.client.model.geom.ModelPart) part, pose, rt, light, overlay, sprite,
+                                sheeted, foil, mulAlpha(color, alpha), crumbling, outline);
+                        return null;
+                    }
+                    case "submitBlockModel" -> {
+                        // (pose, rt, model, r, g, b, light, overlay, outline)
+                        PoseStack pose = (PoseStack) args[0];
+                        BlockStateModel model = (BlockStateModel) args[2];
+                        float r = (Float) args[3], g = (Float) args[4], b = (Float) args[5];
+                        int light = (Integer) args[6], overlay = (Integer) args[7];
+                        target.submitCustomGeometry(pose, Sheets.translucentItemSheet(),
+                                (p, consumer) -> ModelBlockRenderer.renderModel(p, new AlphaConsumer(consumer, alpha), model, r, g, b, light, overlay));
+                        return null;
+                    }
+                    case "submitBlockStateModel" -> {
+                        // Fabric 渲染 API：(pose, layerFunction, model, r, g, b, light, overlay, outline, blockView, pos, state)
+                        PoseStack pose = (PoseStack) args[0];
+                        BlockStateModel model = (BlockStateModel) args[2];
+                        float r = (Float) args[3], g = (Float) args[4], b = (Float) args[5];
+                        int light = (Integer) args[6], overlay = (Integer) args[7];
+                        target.submitCustomGeometry(pose, Sheets.translucentItemSheet(),
+                                (p, consumer) -> ModelBlockRenderer.renderModel(p, new AlphaConsumer(consumer, alpha), model, r, g, b, light, overlay));
+                        return null;
+                    }
+                    case "submitBlock" -> {
+                        // (pose, state, light, overlay, outline)
+                        PoseStack pose = (PoseStack) args[0];
+                        BlockState state = (BlockState) args[1];
+                        int light = (Integer) args[2], overlay = (Integer) args[3];
+                        BlockStateModel model = Minecraft.getInstance().getBlockRenderer().getBlockModel(state);
+                        target.submitCustomGeometry(pose, Sheets.translucentItemSheet(),
+                                (p, consumer) -> ModelBlockRenderer.renderModel(p, new AlphaConsumer(consumer, alpha), model, 1f, 1f, 1f, light, overlay));
+                        return null;
+                    }
+                    case "submitItem" -> {
+                        // (pose, ctx, light, overlay, outline, tints, quads, rt, foil)
+                        PoseStack pose = (PoseStack) args[0];
+                        int light = (Integer) args[2], overlay = (Integer) args[3];
+                        int[] tints = (int[]) args[5];
+                        @SuppressWarnings("unchecked")
+                        List<BakedQuad> quads = (List<BakedQuad>) args[6];
+                        target.submitCustomGeometry(pose, Sheets.translucentItemSheet(), (p, consumer) -> {
+                            for (BakedQuad quad : quads) {
+                                int tint = quad.tintIndex() >= 0 && tints != null && quad.tintIndex() < tints.length ? tints[quad.tintIndex()] : -1;
+                                float r = ((tint >> 16) & 0xFF) / 255f, g = ((tint >> 8) & 0xFF) / 255f, b = (tint & 0xFF) / 255f;
+                                consumer.putBulkData(p, quad, r, g, b, alpha, light, overlay);
+                            }
+                        });
+                        return null;
+                    }
+                    case "submitCustomGeometry" -> {
+                        PoseStack pose = (PoseStack) args[0];
+                        RenderType rt = (RenderType) args[1];
+                        SubmitNodeCollector.CustomGeometryRenderer renderer = (SubmitNodeCollector.CustomGeometryRenderer) args[2];
+                        target.submitCustomGeometry(pose, rt, (p, consumer) -> renderer.render(p, new AlphaConsumer(consumer, alpha)));
+                        return null;
+                    }
+                    default -> {
+                        if (method.isDefault() && method.getDeclaringClass().isInterface() && !Proxy.isProxyClass(target.getClass())) {
+                            return method.invoke(target, args);
+                        }
+                        return method.invoke(target, args);
+                    }
+                }
+            } catch (InvocationTargetException e) {
+                throw e.getCause();
+            }
+        }
+    }
+
+    @SuppressWarnings({"unchecked", "rawtypes"})
+    private static void submitModelRaw(OrderedSubmitNodeCollector target, Object model, Object state, PoseStack pose, RenderType rt,
+                                       int light, int overlay, int tint, net.minecraft.client.renderer.texture.TextureAtlasSprite sprite,
+                                       int outline, net.minecraft.client.renderer.feature.ModelFeatureRenderer.CrumblingOverlay crumbling) {
+        target.submitModel((net.minecraft.client.model.Model) model, state, pose, rt, light, overlay, tint, sprite, outline, crumbling);
+    }
+
+    /** 顶点颜色乘上透明度 */
+    public record AlphaConsumer(VertexConsumer delegate, float alpha) implements VertexConsumer {
+        @Override
+        public VertexConsumer addVertex(float x, float y, float z) {
+            delegate.addVertex(x, y, z);
+            return this;
+        }
+
+        @Override
+        public VertexConsumer setColor(int r, int g, int b, int a) {
+            delegate.setColor(r, g, b, Math.round(a * alpha));
+            return this;
+        }
+
+        @Override
+        public VertexConsumer setColor(int argb) {
+            delegate.setColor(mulAlpha(argb, alpha));
+            return this;
+        }
+
+        @Override
+        public VertexConsumer setUv(float u, float v) {
+            delegate.setUv(u, v);
+            return this;
+        }
+
+        @Override
+        public VertexConsumer setUv1(int u, int v) {
+            delegate.setUv1(u, v);
+            return this;
+        }
+
+        @Override
+        public VertexConsumer setUv2(int u, int v) {
+            delegate.setUv2(u, v);
+            return this;
+        }
+
+        @Override
+        public VertexConsumer setNormal(float x, float y, float z) {
+            delegate.setNormal(x, y, z);
+            return this;
+        }
+
+        @Override
+        public VertexConsumer setLineWidth(float width) {
+            delegate.setLineWidth(width);
+            return this;
+        }
+
+        @Override
+        public void addVertex(float x, float y, float z, int color, float u, float v, int overlay, int light, float nx, float ny, float nz) {
+            delegate.addVertex(x, y, z, mulAlpha(color, alpha), u, v, overlay, light, nx, ny, nz);
+        }
+    }
+}

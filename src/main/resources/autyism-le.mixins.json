@@ -19,7 +19,9 @@
     "litematica.ChunkRendererSchematicVboMixin",
     "litematica.ChunkRenderDataSchematicInvoker",
     "render.LevelRendererMixin",
-    "litematica.LitematicaRendererMixin"
+    "litematica.LitematicaRendererMixin",
+    "render.RenderTypesMixin",
+    "litematica.WorldRendererSchematicMixin"
   ],
   "injectors": {
     "defaultRequire": 1
