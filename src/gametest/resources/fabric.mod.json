@@ -6,7 +6,8 @@
   "environment": "client",
   "entrypoints": {
     "fabric-client-gametest": [
-      "com.autyism.ale.gametest.SaveEditsGameTest"
+      "com.autyism.ale.gametest.SaveEditsGameTest",
+      "com.autyism.ale.gametest.SignReplaceGameTest"
     ]
   },
   "depends": {

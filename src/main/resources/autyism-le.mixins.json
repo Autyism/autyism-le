@@ -6,7 +6,10 @@
   "plugin": "com.autyism.ale.mixin.AleMixinPlugin",
   "client": [
     "litematica.GuiPlacementConfigurationMixin",
-    "malilib.GuiBaseAccessor"
+    "malilib.GuiBaseAccessor",
+    "litematica.MaterialListSchematicAccessor",
+    "litematica.MaterialListPlacementAccessor",
+    "compat.schematicpreview.GuiBlockSelectMixin"
   ],
   "injectors": {
     "defaultRequire": 1
