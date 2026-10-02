@@ -47,5 +47,18 @@
   "autyism-le.gui.button.container_contents": "Container contents",
   "autyism-le.gui.button.container_contents.hover": "Total of all items inside the schematic's containers (chests, shulker boxes, barrels, hoppers...), item frames, armor stands and container minecarts.\nShulker box items inside containers are also expanded.",
   "autyism-le.gui.title.container_contents": "Container contents: %s",
-  "autyism-le.message.verifier.container_mismatch": "%s containers have different contents than the schematic (magenta boxes)"
+  "autyism-le.message.verifier.container_mismatch": "%s containers have different contents than the schematic (magenta boxes)",
+  "autyism-le.gui.title.block_picker": "Pick blocks: %s",
+  "autyism-le.gui.title.item_picker": "Pick items: %s",
+  "autyism-le.gui.button.pick_blocks": "Pick blocks...",
+  "autyism-le.gui.button.pick_items": "Pick items...",
+  "autyism-le.gui.button.pick_blocks.hover": "Open a searchable picker with icons and names: click + to add, - to remove.",
+  "autyism-le.gui.button.done": "Done",
+  "autyism-le.gui.button.clear_list": "Clear list",
+  "autyism-le.gui.button.clear_list.hover": "Hold Shift and click to remove every entry.",
+  "autyism-le.gui.label.current_list": "Current list (%s)",
+  "autyism-le.gui.label.all_blocks": "All blocks (%s) - click to add",
+  "autyism-le.gui.label.all_items": "All items (%s) - click to add",
+  "autyism-le.gui.label.search_hint": "Search name or ID...",
+  "autyism-le.gui.label.list_empty": "(empty)"
 }
