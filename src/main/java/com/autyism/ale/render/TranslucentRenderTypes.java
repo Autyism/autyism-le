@@ -30,6 +30,23 @@ public final class TranslucentRenderTypes {
         if (t == Sheets.shulkerBoxSheet()) return RenderTypes.entityTranslucent(Sheets.SHULKER_SHEET);
         if (t == Sheets.shieldSheet()) return RenderTypes.entityTranslucent(Sheets.SHIELD_SHEET);
         if (t == Sheets.bannerSheet()) return RenderTypes.entityTranslucent(Sheets.BANNER_SHEET);
+        // 兜底：别的模组可能提前缓存了实体的渲染类型（绕过了 RenderTypesMixin），按名字识别不透明的实体类型，取出贴图换成半透明
+        String name = nameOf(t);
+        if (name != null && !t.state.textures.isEmpty()) {
+            net.minecraft.resources.Identifier texture = t.state.textures.values().iterator().next().location();
+            if (name.startsWith("armor_cutout")) return RenderTypes.armorTranslucent(texture);
+            if (name.equals("entity_solid") || name.startsWith("entity_cutout") || name.equals("entity_smooth_cutout")) {
+                return RenderTypes.entityTranslucent(texture);
+            }
+        }
         return t;
+    }
+
+    /** RenderType 的名字（toString 形如 "RenderType[entity_cutout_no_cull:...]"，名字是运行时字符串，不受混淆影响） */
+    @org.jetbrains.annotations.Nullable
+    private static String nameOf(RenderType t) {
+        String s = t.toString();
+        int a = s.indexOf('['), b = s.indexOf(':');
+        return a >= 0 && b > a ? s.substring(a + 1, b) : null;
     }
 }

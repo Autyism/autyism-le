@@ -71,7 +71,8 @@ public final class TranslucentEntityRender {
         @Override
         public Object invoke(Object proxy, Method method, Object[] args) throws Throwable {
             float alpha = alpha();
-            String name = method.getName();
+            // 不能按方法名分派：正式环境里方法名是混淆后的 method_xxxxx。按参数类型识别
+            String name = KINDS.computeIfAbsent(method, TranslucentEntityRender::kindOf);
             try {
                 switch (name) {
                     case "order" -> {
@@ -190,6 +191,26 @@ public final class TranslucentEntityRender {
                 throw e.getCause();
             }
         }
+    }
+
+    private static final java.util.Map<Method, String> KINDS = new java.util.concurrent.ConcurrentHashMap<>();
+
+    /** 按参数类型识别 SubmitNodeCollector 的方法（开发环境和正式环境都适用） */
+    private static String kindOf(Method m) {
+        Class<?>[] p = m.getParameterTypes();
+        if (p.length == 1 && p[0] == int.class && OrderedSubmitNodeCollector.class.isAssignableFrom(m.getReturnType())) return "order";
+        if (p.length == 0) return "other";
+        if (net.minecraft.client.model.Model.class.isAssignableFrom(p[0]) && (p.length == 8 || p.length == 10)) return "submitModel";
+        if (p[0] == net.minecraft.client.model.geom.ModelPart.class && p.length >= 6) return "submitModelPart";
+        if (p[0] == PoseStack.class && p.length >= 3) {
+            if (p.length == 3 && p[1] == RenderType.class && SubmitNodeCollector.CustomGeometryRenderer.class.isAssignableFrom(p[2])) return "submitCustomGeometry";
+            if (p.length >= 8 && BlockStateModel.class.isAssignableFrom(p[2]) && p[3] == float.class) {
+                return p[1] == RenderType.class ? "submitBlockModel" : "submitBlockStateModel";
+            }
+            if (p.length == 5 && p[1] == BlockState.class) return "submitBlock";
+            if (p.length == 9 && p[1] == net.minecraft.world.item.ItemDisplayContext.class && p[5] == int[].class && List.class.isAssignableFrom(p[6])) return "submitItem";
+        }
+        return "other";
     }
 
     @SuppressWarnings({"unchecked", "rawtypes"})
