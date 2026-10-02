@@ -35,6 +35,11 @@ dependencies {
     // gametest 运行时：加载 Schematic Preview 与本作者的打印机，测试联动
     if (providers.gradleProperty("aleGameTest").isPresent) {
         modLocalRuntime(files("libs/schematicpreview-0.0.17+1.21.11.jar"))
+        // 与用户实例一致的渲染环境：Sodium（可选再加 Iris）
+        if (providers.gradleProperty("withSodium").isPresent) {
+            modLocalRuntime(files("libs/sodium-fabric-0.8.7+mc1.21.11.jar"))
+            if (providers.gradleProperty("withIris").isPresent) modLocalRuntime(files("libs/iris-fabric-1.10.7+mc1.21.11.jar"))
+        }
         if (file("libs/litematica-printer-autyism-1.0.0.jar").exists() && providers.gradleProperty("withPrinter").isPresent) {
             modLocalRuntime(files("libs/litematica-printer-autyism-1.0.0.jar"))
         }

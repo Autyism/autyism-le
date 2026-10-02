@@ -10,7 +10,8 @@
       "com.autyism.ale.gametest.SignReplaceGameTest",
       "com.autyism.ale.gametest.MaterialsGameTest",
       "com.autyism.ale.gametest.BlockPickerGameTest",
-      "com.autyism.ale.gametest.RenderGameTest"
+      "com.autyism.ale.gametest.RenderGameTest",
+      "com.autyism.ale.gametest.GlassGameTest"
     ]
   },
   "depends": {
