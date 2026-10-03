@@ -30,9 +30,18 @@ public final class GT {
         TestSingleplayerContext sp = context.worldBuilder().create();
         // Litematica 会把上一个同名测试世界的投影放置读回来：每个测试开始时清空，避免互相影响
         removeAllPlacements(context);
-        sp.getServer().runCommand("gamerule doDaylightCycle false");
-        sp.getServer().runCommand("gamerule doMobSpawning false");
-        sp.getServer().runCommand("gamerule doWeatherCycle false");
+        sp.getServer().runCommand("gamerule advance_time false");
+        sp.getServer().runCommand("gamerule spawn_mobs false");
+        sp.getServer().runCommand("gamerule advance_weather false");
+        // 1.21.11 改了游戏规则的名字（doDaylightCycle → advance_time……），旧名字的指令会静默失败：读回来确认
+        sp.getServer().runOnServer(server -> {
+            var rules = server.overworld().getGameRules();
+            if (rules.get(net.minecraft.world.level.gamerules.GameRules.ADVANCE_TIME)
+                    || rules.get(net.minecraft.world.level.gamerules.GameRules.SPAWN_MOBS)
+                    || rules.get(net.minecraft.world.level.gamerules.GameRules.ADVANCE_WEATHER)) {
+                throw new AssertionError("[GT] gamerule commands did not apply");
+            }
+        });
         sp.getServer().runCommand("gamemode survival @a");
         // 相当于“允许作弊”的单人世界
         sp.getServer().runOnServer(server -> {
