@@ -27,40 +27,6 @@ public abstract class GuiPlacementConfigurationMixin {
     @Shadow
     public fi.dy.masa.malilib.gui.GuiTextFieldGeneric textFieldRename;
 
-    /**
-     * 找一个不和现有按钮重叠的位置：优先“子区域”标签右侧那一行；放不下就把重命名输入框缩短，放在重命名按钮右边；
-     * 再不行放在左下角。
-     */
-    private int[] ale$findSpot(GuiBase gui, int needed) {
-        java.util.List<fi.dy.masa.malilib.gui.button.ButtonBase> buttons = ((com.autyism.ale.mixin.malilib.GuiBaseAccessor) gui).ale$getButtons();
-        String label = StringUtils.translate("litematica.gui.label.schematic_placement.sub_regions", this.placement.getSubRegionCount());
-        int x = 14 + gui.getStringWidth(label) + 10;
-        int y = 44;
-        if (ale$isFree(buttons, x, y, needed, 20)) return new int[]{x, y};
-        // 顶部一行：缩短重命名输入框，把“重命名”按钮左移
-        int fieldX = 12, fieldWidth = this.textFieldRename.getWidth();
-        if (fieldWidth - needed - 2 >= 100) {
-            fi.dy.masa.malilib.gui.button.ButtonBase rename = null;
-            for (var b : buttons) {
-                if (b.getY() == 22 && b.getX() == fieldX + fieldWidth + 4) rename = b;
-            }
-            if (rename != null) {
-                int shift = needed + 2;
-                this.textFieldRename.setWidth(fieldWidth - shift);
-                rename.setPosition(rename.getX() - shift, 22);
-                return new int[]{rename.getX() + rename.getWidth() + 2, 22};
-            }
-        }
-        return new int[]{10, gui.getScreenHeight() - 44};
-    }
-
-    private static boolean ale$isFree(java.util.List<fi.dy.masa.malilib.gui.button.ButtonBase> buttons, int x, int y, int w, int h) {
-        for (var b : buttons) {
-            if (x < b.getX() + b.getWidth() && x + w > b.getX() && y < b.getY() + b.getHeight() && y + h > b.getY()) return false;
-        }
-        return true;
-    }
-
     @Inject(method = "initGui", at = @At("TAIL"))
     private void ale$addSaveButtons(CallbackInfo ci) {
         if (!AleConfigs.Generic.SAVE_EDIT_BUTTONS.getBooleanValue()) return;
@@ -69,8 +35,8 @@ public abstract class GuiPlacementConfigurationMixin {
         ButtonGeneric save = new ButtonGeneric(0, 0, -1, false,
                 modified ? "autyism-le.gui.button.save_edits_modified" : "autyism-le.gui.button.save_edits");
         ButtonGeneric saveAs = new ButtonGeneric(0, 0, -1, false, "autyism-le.gui.button.save_as");
-        int needed = save.getWidth() + 2 + saveAs.getWidth();
-        int[] pos = ale$findSpot(gui, needed);
+        // 放在最下面那一排按钮的末尾；放不下时那一排会变成可左右滑动的按钮栏（ButtonRail）
+        int[] pos = com.autyism.ale.gui.ButtonRail.endOfBottomRow(gui);
         int x = pos[0];
         int y = pos[1];
         save.setPosition(x, y);

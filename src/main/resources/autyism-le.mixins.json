@@ -7,6 +7,9 @@
   "client": [
     "litematica.GuiPlacementConfigurationMixin",
     "malilib.GuiBaseAccessor",
+    "malilib.GuiBaseRailMixin",
+    "malilib.WidgetLabelAccessor",
+    "malilib.ButtonBaseAccessor",
     "litematica.MaterialListSchematicAccessor",
     "litematica.MaterialListPlacementAccessor",
     "compat.schematicpreview.GuiBlockSelectMixin",

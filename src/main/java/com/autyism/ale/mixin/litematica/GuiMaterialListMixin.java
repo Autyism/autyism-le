@@ -1,7 +1,6 @@
 package com.autyism.ale.mixin.litematica;
 
 import com.autyism.ale.config.AleConfigs;
-import com.autyism.ale.gui.GuiLayout;
 import com.autyism.ale.materials.MaterialExtras;
 import fi.dy.masa.litematica.gui.GuiMaterialList;
 import fi.dy.masa.litematica.materials.MaterialListBase;
@@ -42,9 +41,9 @@ public abstract class GuiMaterialListMixin {
         }
         ButtonGeneric button = new ButtonGeneric(0, 0, -1, false, "autyism-le.gui.button.container_contents");
         button.setHoverStrings(StringUtils.translate("autyism-le.gui.button.container_contents.hover"));
-        int[] pos = GuiLayout.findFreeSpot(gui, button.getWidth(), 20,
-                new int[][]{{-1, 26}, {-1, 6}, {10, gui.getScreenHeight() - 44}});
-        button.setPosition(pos[0], pos[1]);
+        // 放在最下面那一排按钮的末尾；放不下时那一排会变成可左右滑动的按钮栏（ButtonRail）
+        int[] spot = com.autyism.ale.gui.ButtonRail.endOfBottomRow(gui);
+        button.setPosition(spot[0], spot[1]);
         gui.addButton(button, (b, mouseButton) -> {
             var items = MaterialExtras.containerContents(schematic, regions);
             String name = StringUtils.translate("autyism-le.gui.title.container_contents", list.getName());
