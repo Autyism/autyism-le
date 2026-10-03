@@ -52,9 +52,21 @@ public final class TranslucentEntityRender {
         return (float) Math.max(0.05, Math.min(1.0, Configs.Visuals.GHOST_BLOCK_ALPHA.getDoubleValue()));
     }
 
+    /** 与投影方块一样的“幽灵”色调：把 Litematica“缺失方块”覆盖色（默认蓝色）和白色按 45% 混合后乘到颜色上 */
+    private static final float GHOST_MIX = 0.45f;
+
+    static float[] tint() {
+        int c = Configs.Colors.SCHEMATIC_OVERLAY_COLOR_MISSING.getIntegerValue();
+        float r = ((c >> 16) & 0xFF) / 255f, g = ((c >> 8) & 0xFF) / 255f, b = (c & 0xFF) / 255f;
+        return new float[]{1 - GHOST_MIX + GHOST_MIX * r, 1 - GHOST_MIX + GHOST_MIX * g, 1 - GHOST_MIX + GHOST_MIX * b};
+    }
+
+    /** 颜色乘上幽灵色调并降低透明度 */
     static int mulAlpha(int argb, float alpha) {
+        float[] t = tint();
         int a = (argb >>> 24) & 0xFF;
-        return (Math.round(a * alpha) << 24) | (argb & 0x00FFFFFF);
+        int r = Math.round(((argb >> 16) & 0xFF) * t[0]), g = Math.round(((argb >> 8) & 0xFF) * t[1]), b = Math.round((argb & 0xFF) * t[2]);
+        return (Math.round(a * alpha) << 24) | (r << 16) | (g << 8) | b;
     }
 
     public static SubmitNodeCollector wrap(SubmitNodeCollector queue) {
@@ -133,7 +145,8 @@ public final class TranslucentEntityRender {
                         BlockStateModel model = (BlockStateModel) args[2];
                         float r = (Float) args[3], g = (Float) args[4], b = (Float) args[5];
                         int light = (Integer) args[6], overlay = (Integer) args[7];
-                        target.submitCustomGeometry(pose, Sheets.translucentItemSheet(),
+                        // 方块模型用的是方块图集：必须用方块图集的半透明类型，否则贴图错位（展示框变紫）
+                        target.submitCustomGeometry(pose, Sheets.translucentBlockItemSheet(),
                                 (p, consumer) -> ModelBlockRenderer.renderModel(p, new AlphaConsumer(consumer, alpha), model, r, g, b, light, overlay));
                         return null;
                     }
@@ -143,7 +156,8 @@ public final class TranslucentEntityRender {
                         BlockStateModel model = (BlockStateModel) args[2];
                         float r = (Float) args[3], g = (Float) args[4], b = (Float) args[5];
                         int light = (Integer) args[6], overlay = (Integer) args[7];
-                        target.submitCustomGeometry(pose, Sheets.translucentItemSheet(),
+                        // 方块模型用的是方块图集：必须用方块图集的半透明类型，否则贴图错位（展示框变紫）
+                        target.submitCustomGeometry(pose, Sheets.translucentBlockItemSheet(),
                                 (p, consumer) -> ModelBlockRenderer.renderModel(p, new AlphaConsumer(consumer, alpha), model, r, g, b, light, overlay));
                         return null;
                     }
@@ -153,7 +167,7 @@ public final class TranslucentEntityRender {
                         BlockState state = (BlockState) args[1];
                         int light = (Integer) args[2], overlay = (Integer) args[3];
                         BlockStateModel model = Minecraft.getInstance().getBlockRenderer().getBlockModel(state);
-                        target.submitCustomGeometry(pose, Sheets.translucentItemSheet(),
+                        target.submitCustomGeometry(pose, Sheets.translucentBlockItemSheet(),
                                 (p, consumer) -> ModelBlockRenderer.renderModel(p, new AlphaConsumer(consumer, alpha), model, 1f, 1f, 1f, light, overlay));
                         return null;
                     }
@@ -164,10 +178,13 @@ public final class TranslucentEntityRender {
                         int[] tints = (int[]) args[5];
                         @SuppressWarnings("unchecked")
                         List<BakedQuad> quads = (List<BakedQuad>) args[6];
-                        target.submitCustomGeometry(pose, Sheets.translucentItemSheet(), (p, consumer) -> {
+                        // 物品贴图可能在物品图集也可能在方块图集：按原渲染类型的贴图选对应的半透明类型
+                        RenderType itemRt = itemSheetFor((RenderType) args[7]);
+                        float[] gt = tint();
+                        target.submitCustomGeometry(pose, itemRt, (p, consumer) -> {
                             for (BakedQuad quad : quads) {
                                 int tint = quad.tintIndex() >= 0 && tints != null && quad.tintIndex() < tints.length ? tints[quad.tintIndex()] : -1;
-                                float r = ((tint >> 16) & 0xFF) / 255f, g = ((tint >> 8) & 0xFF) / 255f, b = (tint & 0xFF) / 255f;
+                                float r = ((tint >> 16) & 0xFF) / 255f * gt[0], g = ((tint >> 8) & 0xFF) / 255f * gt[1], b = (tint & 0xFF) / 255f * gt[2];
                                 consumer.putBulkData(p, quad, r, g, b, alpha, light, overlay);
                             }
                         });
@@ -191,6 +208,17 @@ public final class TranslucentEntityRender {
                 throw e.getCause();
             }
         }
+    }
+
+    private static RenderType itemSheetFor(RenderType original) {
+        try {
+            if (original != null && !original.state.textures.isEmpty()
+                    && net.minecraft.client.renderer.texture.TextureAtlas.LOCATION_BLOCKS.equals(original.state.textures.values().iterator().next().location())) {
+                return Sheets.translucentBlockItemSheet();
+            }
+        } catch (Throwable ignored) {
+        }
+        return Sheets.translucentItemSheet();
     }
 
     private static final java.util.Map<Method, String> KINDS = new java.util.concurrent.ConcurrentHashMap<>();
@@ -230,7 +258,8 @@ public final class TranslucentEntityRender {
 
         @Override
         public VertexConsumer setColor(int r, int g, int b, int a) {
-            delegate.setColor(r, g, b, Math.round(a * alpha));
+            float[] t = tint();
+            delegate.setColor(Math.round(r * t[0]), Math.round(g * t[1]), Math.round(b * t[2]), Math.round(a * alpha));
             return this;
         }
 
