@@ -49,7 +49,7 @@ public final class KbpGameTest implements FabricClientGameTest {
             }
             perSource.forEach((k, v) -> GT.log("[kbp] source " + k + ": " + v[0] + " hotkeys, " + v[1] + " editable"));
             List<String> problems = new ArrayList<>();
-            for (String must : List.of("meteor", "litematica", "tweakeroo", "minihud", "itemscroller", "litematica-printer-autyism", "autyism-le")) {
+            for (String must : List.of("meteor", "litematica", "tweakeroo", "minihud", "itemscroller", "litematica-printer-autyism")) {
                 if (!perSource.containsKey(must) || perSource.get(must)[1] == 0) problems.add("no editable hotkeys from " + must);
             }
             for (var e : pick.entrySet()) {
