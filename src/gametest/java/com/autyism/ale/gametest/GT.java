@@ -166,6 +166,8 @@ public final class GT {
         double[] pos = context.computeOnClient(client -> {
             var b = findButton(client, text);
             if (b == null) throw new AssertionError("button '" + text + "' not found on " + client.screen);
+            // 按钮可能在可左右滑动的按钮栏里被翻到看不见的地方：先翻过来
+            if (client.screen instanceof fi.dy.masa.malilib.gui.GuiBase g) com.autyism.ale.gui.ButtonRail.reveal(g, b);
             double scale = client.getWindow().getGuiScale();
             return new double[]{(b.getX() + b.getWidth() / 2.0) * scale, (b.getY() + b.getHeight() / 2.0) * scale};
         });
