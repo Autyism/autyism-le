@@ -108,7 +108,7 @@ public final class MaterialsGameTest implements FabricClientGameTest {
             });
             context.waitTicks(5);
             context.takeScreenshot("ale-material-list-entities");
-            GT.clickButton(context, "Container contents");
+            GT.clickButton(context, "Contents");
             context.waitTicks(5);
             context.takeScreenshot("ale-container-contents");
             Map<Item, Integer> contents = context.computeOnClient(c -> {
