@@ -70,5 +70,11 @@
   "autyism-le.info.entity.mismatch": "Entity differs from the schematic",
   "autyism-le.info.entity.missing_title": "Entity missing in the world",
   "autyism-le.info.entity.schematic": "Schematic:",
-  "autyism-le.info.entity.world": "World:"
+  "autyism-le.info.entity.world": "World:",
+  "autyism-le.config.name.orientationMarker": "Wrong Orientation Marker",
+  "autyism-le.config.prettyName.orientationMarker": "Wrong Orientation Marker",
+  "autyism-le.config.comment.orientationMarker": "When a block is the right block but faces the wrong way (facing, axis, rotation, rail direction, wall/floor/ceiling, door hinge, top/bottom half), draw a red 'D' on every face on top of the yellow wrong-state overlay.",
+  "autyism-le.config.name.orientationMarkerColor": "Orientation Marker Color",
+  "autyism-le.config.prettyName.orientationMarkerColor": "Orientation Marker Color",
+  "autyism-le.config.comment.orientationMarkerColor": "Color of the 'D' marker."
 }

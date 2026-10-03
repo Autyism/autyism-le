@@ -22,7 +22,7 @@ public final class WaterloggedMarker {
     }
 
     // “W” 的四条笔画（面内坐标 u 向右、v 向上，0..1）
-    private static final float[][] STROKES = {
+    public static final float[][] STROKES = {
             {0.14f, 0.84f, 0.31f, 0.16f},
             {0.31f, 0.16f, 0.50f, 0.62f},
             {0.50f, 0.62f, 0.69f, 0.16f},
@@ -38,12 +38,17 @@ public final class WaterloggedMarker {
      * @param rel 方块的区块内相对坐标（与 Litematica 覆盖层一致）
      */
     public static void emit(BufferBuilder buffer, BlockPos rel, int argb) {
+        emit(buffer, rel, argb, STROKES);
+    }
+
+    /** 往 POSITION_COLOR 四边形缓冲里写 6 个面的字母（笔画格式同 {@link #STROKES}） */
+    public static void emit(BufferBuilder buffer, BlockPos rel, int argb, float[][] strokes) {
         float a = ((argb >>> 24) & 0xFF) / 255f;
         float r = ((argb >>> 16) & 0xFF) / 255f;
         float g = ((argb >>> 8) & 0xFF) / 255f;
         float b = (argb & 0xFF) / 255f;
         for (Direction face : Direction.values()) {
-            for (float[] s : STROKES) {
+            for (float[] s : strokes) {
                 stroke(buffer, rel, face, s[0], s[1], s[2], s[3], r, g, b, a);
             }
         }

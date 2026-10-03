@@ -1,6 +1,7 @@
 package com.autyism.ale.mixin.litematica;
 
 import com.autyism.ale.config.AleConfigs;
+import com.autyism.ale.render.OrientationMarker;
 import com.autyism.ale.render.WaterloggedMarker;
 import com.mojang.blaze3d.vertex.BufferBuilder;
 import fi.dy.masa.litematica.render.schematic.ChunkCacheSchematic;
@@ -38,14 +39,24 @@ public abstract class ChunkRendererSchematicVboMixin {
     private void ale$waterloggedMarker(OverlayType type, BlockPos pos, BlockState stateSchematic, boolean missing,
                                        ChunkRenderDataSchematic data, ChunkMeshDataSchematic meshData,
                                        ChunkRenderDispatcherBuffers pack, CallbackInfo ci) {
-        if (type != OverlayType.WRONG_STATE || !AleConfigs.Generic.WATERLOGGED_MARKER.getBooleanValue()) return;
+        if (type != OverlayType.WRONG_STATE) return;
         BlockState client = this.clientWorldView.getBlockState(pos);
-        if (!WaterloggedMarker.onlyWaterloggedDiffers(stateSchematic, client)) return;
+        int color;
+        float[][] letter;
+        if (AleConfigs.Generic.ORIENTATION_MARKER.getBooleanValue() && OrientationMarker.orientationDiffers(stateSchematic, client)) {
+            // 朝向不对：红色 D（比只差含水更重要，两者都有时画 D）
+            color = AleConfigs.Generic.ORIENTATION_MARKER_COLOR.getIntegerValue();
+            letter = OrientationMarker.STROKES;
+        } else if (AleConfigs.Generic.WATERLOGGED_MARKER.getBooleanValue() && WaterloggedMarker.onlyWaterloggedDiffers(stateSchematic, client)) {
+            color = AleConfigs.Generic.WATERLOGGED_MARKER_COLOR.getIntegerValue();
+            letter = WaterloggedMarker.STROKES;
+        } else {
+            return;
+        }
         BufferBuilder buffer = this.preRenderOverlay(pack, OverlayRenderType.QUAD);
         if (!data.isOverlayTypeStarted(OverlayRenderType.QUAD)) {
             ((ChunkRenderDataSchematicInvoker) data).ale$setOverlayTypeStarted(OverlayRenderType.QUAD);
         }
-        WaterloggedMarker.emit(buffer, this.getChunkRelativePosition(pos).immutable(),
-                AleConfigs.Generic.WATERLOGGED_MARKER_COLOR.getIntegerValue());
+        WaterloggedMarker.emit(buffer, this.getChunkRelativePosition(pos).immutable(), color, letter);
     }
 }
