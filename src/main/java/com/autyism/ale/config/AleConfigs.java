@@ -32,6 +32,9 @@ public class AleConfigs implements IConfigHandler {
         // 需求 6：只差含水时画蓝色 W
         public static final ConfigBoolean WATERLOGGED_MARKER = new ConfigBoolean("waterloggedMarker", true).apply(PREFIX);
         public static final ConfigColor WATERLOGGED_MARKER_COLOR = new ConfigColor("waterloggedMarkerColor", "#FF1E64FF").apply(PREFIX);
+        // 朝向错误：红色 D
+        public static final ConfigBoolean ORIENTATION_MARKER = new ConfigBoolean("orientationMarker", true).apply(PREFIX);
+        public static final ConfigColor ORIENTATION_MARKER_COLOR = new ConfigColor("orientationMarkerColor", "#FFFF2020").apply(PREFIX);
         // 需求 9：材料列表中的容器内容物、实体；验证器检查容器内容物
         public static final ConfigBoolean MATERIAL_LIST_ENTITIES = new ConfigBoolean("materialListEntities", true).apply(PREFIX);
         public static final ConfigBoolean VERIFIER_CONTAINERS = new ConfigBoolean("verifierContainerContents", true).apply(PREFIX);
@@ -47,6 +50,8 @@ public class AleConfigs implements IConfigHandler {
                 TRANSLUCENT_ENTITIES,
                 WATERLOGGED_MARKER,
                 WATERLOGGED_MARKER_COLOR,
+                ORIENTATION_MARKER,
+                ORIENTATION_MARKER_COLOR,
                 MATERIAL_LIST_ENTITIES,
                 VERIFIER_CONTAINERS,
                 SIGN_REPLACE_FIX,

@@ -18,7 +18,7 @@ import java.nio.file.Path;
 
 /**
  * 渲染相关需求的截图测试。
- * 需求 6：只差含水 → 黄色错误标记 + 蓝色 W；朝向错误 → 只有黄色。用截图中蓝色像素数量判断。
+ * 需求 6：只差含水 → 黄色错误标记 + 蓝色 W；朝向错误 → 黄色 + 红色 D。用截图中蓝色 / 红色像素数量判断。
  */
 @SuppressWarnings("UnstableApiUsage")
 public final class RenderGameTest implements FabricClientGameTest {
@@ -64,9 +64,42 @@ public final class RenderGameTest implements FabricClientGameTest {
             GT.log("[render] blue pixels: marker on=" + blueOn + " off=" + blueOff);
             if (blueOn < 300 || blueOn < blueOff * 3 + 200) throw new AssertionError("[render] W marker not visible (blue on=" + blueOn + " off=" + blueOff + ")");
             GT.log("[render] waterlogged W marker OK");
+
+            // 朝向不对的楼梯：红色 D
+            context.runOnClient(c -> fi.dy.masa.litematica.data.DataManager.getSchematicPlacementManager().markAllPlacementsOfSchematicForRebuild(placement.getSchematic()));
+            context.waitTicks(40);
+            Path dOn = context.takeScreenshot("ale-orientation-d");
+            int redOn = countRed(dOn);
+            context.runOnClient(c -> AleConfigs.Generic.ORIENTATION_MARKER.setBooleanValue(false));
+            context.runOnClient(c -> fi.dy.masa.litematica.data.DataManager.getSchematicPlacementManager().markAllPlacementsOfSchematicForRebuild(placement.getSchematic()));
+            context.waitTicks(40);
+            Path dOff = context.takeScreenshot("ale-orientation-d-off");
+            int redOff = countRed(dOff);
+            context.runOnClient(c -> AleConfigs.Generic.ORIENTATION_MARKER.setBooleanValue(true));
+            GT.log("[render] red pixels: D marker on=" + redOn + " off=" + redOff);
+            if (redOn < 300 || redOn < redOff * 3 + 200) throw new AssertionError("[render] D marker not visible (red on=" + redOn + " off=" + redOff + ")");
+            GT.log("[render] orientation D marker OK");
         } finally {
             GT.removeAllPlacements(context);
             context.runOnClient(c -> c.options.hideGui = false);
+        }
+    }
+
+    /** 统计截图里明显偏红的像素数量 */
+    static int countRed(Path png) {
+        try {
+            BufferedImage img = ImageIO.read(png.toFile());
+            int n = 0;
+            for (int y = 0; y < img.getHeight(); y++) {
+                for (int x = 0; x < img.getWidth(); x++) {
+                    int rgb = img.getRGB(x, y);
+                    int r = (rgb >> 16) & 0xFF, g = (rgb >> 8) & 0xFF, b = rgb & 0xFF;
+                    if (r > 170 && g < 80 && b < 80) n++;
+                }
+            }
+            return n;
+        } catch (Exception e) {
+            throw new AssertionError(e);
         }
     }
 

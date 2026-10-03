@@ -70,5 +70,11 @@
   "autyism-le.info.entity.mismatch": "实体与投影不一致",
   "autyism-le.info.entity.missing_title": "世界中缺少这个实体",
   "autyism-le.info.entity.schematic": "投影：",
-  "autyism-le.info.entity.world": "世界："
+  "autyism-le.info.entity.world": "世界：",
+  "autyism-le.config.name.orientationMarker": "朝向错误标记",
+  "autyism-le.config.prettyName.orientationMarker": "朝向错误标记",
+  "autyism-le.config.comment.orientationMarker": "方块对、但朝向不对（朝向、轴向、旋转角度、铁轨方向、贴墙/地/天花板、门轴、上下半）时，在黄色错误状态标记上再在每个面画一个红色的“D”。",
+  "autyism-le.config.name.orientationMarkerColor": "朝向标记颜色",
+  "autyism-le.config.prettyName.orientationMarkerColor": "朝向标记颜色",
+  "autyism-le.config.comment.orientationMarkerColor": "“D”标记的颜色。"
 }
