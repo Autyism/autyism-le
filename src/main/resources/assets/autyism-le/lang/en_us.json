@@ -30,7 +30,7 @@
   "autyism-le.config.comment.signReplaceFix": "Replacing a sign material (Schematic Preview 'Replace' in the material list) converts all four sign forms to the same form of the target wood and keeps rotation, facing, waterlogged and the text.",
   "autyism-le.config.name.renderThroughGlass": "Render Through Glass",
   "autyism-le.config.prettyName.renderThroughGlass": "Render Through Glass",
-  "autyism-le.config.comment.renderThroughGlass": "Schematic ghost blocks, overlays and entities stay visible behind glass and stained glass.",
+  "autyism-le.config.comment.renderThroughGlass": "Schematic ghost blocks and overlays (error markers) stay visible behind glass and stained glass.",
   "autyism-le.gui.button.save_edits": "Save edits",
   "autyism-le.gui.button.save_edits_modified": "§6Save edits*",
   "autyism-le.gui.button.save_edits.hover": "Overwrite this placement's .litematic file with the current (edited) schematic.\nIncludes Schematic Preview replacements and Edit Schematic changes.",

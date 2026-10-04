@@ -30,7 +30,7 @@
   "autyism-le.config.comment.signReplaceFix": "在材料列表里替换告示牌材质（Schematic Preview 的“替换”）时，立式/挂墙/悬挂/挂墙悬挂四种形态都换成目标木材的同一形态，保留朝向、旋转、含水等状态和正反两面文字。",
   "autyism-le.config.name.renderThroughGlass": "透过玻璃显示投影",
   "autyism-le.config.prettyName.renderThroughGlass": "透过玻璃显示投影",
-  "autyism-le.config.comment.renderThroughGlass": "投影方块、错误标记、实体等透过玻璃和染色玻璃时也能正常显示。",
+  "autyism-le.config.comment.renderThroughGlass": "投影方块和叠加标记（错误标记）透过玻璃和染色玻璃时也能正常显示。",
   "autyism-le.gui.button.save_edits": "保存修改",
   "autyism-le.gui.button.save_edits_modified": "§6保存修改*",
   "autyism-le.gui.button.save_edits.hover": "用当前（已修改的）投影覆盖这个放置对应的 .litematic 文件。\n包括 Schematic Preview 的替换材料和 Litematica 编辑模式的修改。",
@@ -76,5 +76,6 @@
   "autyism-le.config.comment.orientationMarker": "方块对、但朝向不对（朝向、轴向、旋转角度、铁轨方向、贴墙/地/天花板、门轴、上下半）时，在黄色错误状态标记上再在每个面画一个红色的“D”。",
   "autyism-le.config.name.orientationMarkerColor": "朝向标记颜色",
   "autyism-le.config.prettyName.orientationMarkerColor": "朝向标记颜色",
-  "autyism-le.config.comment.orientationMarkerColor": "“D”标记的颜色。"
+  "autyism-le.config.comment.orientationMarkerColor": "“D”标记的颜色。",
+  "modmenu.descriptionTranslation.autyism-le": "Litematica 投影的实用增强：MaLiLib 方块列表可以用可搜索的方块/物品选择界面，投影放置可以“保存修改”或“另存为”，只差含水或朝向错误的方块会显示 W/D 标记。另外还有投影实体与流体的信息显示、半透明的投影实体、材料列表统计实体和容器内容物、验证器检查容器内容物、替换告示牌木材时保留文字，以及透过玻璃也能看到投影。"
 }
