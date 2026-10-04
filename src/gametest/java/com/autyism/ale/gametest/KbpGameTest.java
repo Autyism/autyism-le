@@ -23,7 +23,7 @@ import java.util.TreeMap;
  */
 @SuppressWarnings("UnstableApiUsage")
 public final class KbpGameTest implements FabricClientGameTest {
-    private static final String KEYS = "io.github.autyi6969.keybindprofilesplus.external.ExternalKeys";
+    private static final String KEYS = "io.github.autyism.keybindprofilesplus.external.ExternalKeys";
 
     @Override
     public void runTest(ClientGameTestContext context) {
