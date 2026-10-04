@@ -3,16 +3,29 @@
   "id": "${mod_id}",
   "version": "${mod_version}",
   "name": "${mod_name}",
+  "description": "Quality-of-life additions for Litematica: searchable block and item pickers for MaLiLib block lists, Save edits / Save as buttons for schematic placements, and W/D markers for blocks that are only wrong in waterlogging or orientation. Also adds an info overlay for schematic entities and fluids, translucent schematic entities, entities and container contents in material lists, container checks in the Schematic Verifier, sign wood replacement that keeps the text, and schematic overlays that stay visible through glass.",
+  "authors": [
+    "Autyism"
+  ],
+  "contact": {
+    "homepage": "https://github.com/Autyism/autyism-le",
+    "sources": "https://github.com/Autyism/autyism-le",
+    "issues": "https://github.com/Autyism/autyism-le/issues"
+  },
+  "license": "AGPL-3.0-only",
   "icon": "assets/autyism-le/icon.png",
-  "description": "Autyism's Litematica enhancements: block picker for every block list, saving schematic edits, fluid/entity info overlay, translucent schematic entities, waterlogged-only marker, container contents in material list and verifier, sign wood replace fix, schematic rendering visible through glass.",
-  "authors": ["Autyism"],
-  "license": "AGPL-3.0",
   "environment": "client",
   "entrypoints": {
-    "client": ["com.autyism.ale.AleMod"],
-    "modmenu": ["com.autyism.ale.ModMenuCompat"]
+    "client": [
+      "com.autyism.ale.AleMod"
+    ],
+    "modmenu": [
+      "com.autyism.ale.ModMenuCompat"
+    ]
   },
-  "mixins": ["autyism-le.mixins.json"],
+  "mixins": [
+    "autyism-le.mixins.json"
+  ],
   "depends": {
     "fabricloader": ">=0.17.0",
     "minecraft": "${minecraft_version}",
