@@ -19,6 +19,10 @@ import org.spongepowered.asm.mixin.injection.callback.CallbackInfo;
 @Mixin(value = LitematicaRenderer.class, remap = false)
 public abstract class LitematicaRendererMixin {
     @Inject(method = "piecewiseDrawBlockLayerGroup", at = @At("HEAD"), cancellable = true)
+    // 26.3 起 Litematica 改成 (渲染目标, 方块层组)
+    //? if >=26.3 {
+    /*private void ale$skipLateTranslucent(com.mojang.blaze3d.pipeline.RenderTarget target, ChunkSectionLayerGroup group, CallbackInfo ci) {
+    *///?} else
     private void ale$skipLateTranslucent(ChunkSectionLayerGroup group, @Nullable GpuSampler sampler, CallbackInfo ci) {
         if (group == ChunkSectionLayerGroup.TRANSLUCENT && !GlassRenderState.drawingEarly && GlassRenderState.translucentDrawnEarly
                 && AleConfigs.Generic.RENDER_THROUGH_GLASS.getBooleanValue()) {
