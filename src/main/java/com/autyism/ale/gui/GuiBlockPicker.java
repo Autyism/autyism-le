@@ -1,5 +1,6 @@
 package com.autyism.ale.gui;
 
+import com.mojang.blaze3d.platform.InputConstants;
 import fi.dy.masa.malilib.config.ConfigManager;
 import fi.dy.masa.malilib.config.IConfigStringList;
 import fi.dy.masa.malilib.gui.GuiBase;
@@ -260,7 +261,7 @@ public class GuiBlockPicker extends GuiBase {
 
     @Override
     public boolean onMouseClicked(MouseButtonEvent click, boolean doubleClick) {
-        if (click.button() == 0) {
+        if (click.button() == InputConstants.MOUSE_BUTTON_LEFT) {
             int mx = (int) click.x(), my = (int) click.y();
             int leftX = panelX + 10;
             int rightX = panelX + 10 + colW + 10;
