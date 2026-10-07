@@ -5,8 +5,10 @@ import com.mojang.blaze3d.vertex.PoseStack;
 import com.mojang.blaze3d.vertex.VertexConsumer;
 import fi.dy.masa.litematica.config.Configs;
 import net.minecraft.client.Minecraft;
+//? if >=1.21.9
 import net.minecraft.client.renderer.OrderedSubmitNodeCollector;
 import net.minecraft.client.renderer.Sheets;
+//? if >=1.21.9
 import net.minecraft.client.renderer.SubmitNodeCollector;
 import net.minecraft.client.renderer.block.ModelBlockRenderer;
 import net.minecraft.client.renderer.block.model.BakedQuad;
@@ -31,6 +33,8 @@ import java.util.List;
  *     <li>其余（影子、名字、粒子等）原样提交。</li>
  * </ul>
  * 实体渲染器在提交过程中创建的不透明实体渲染类型，会在 {@link #ACTIVE} 期间被替换为半透明版本（见 RenderTypesMixin）。
+ * <p>
+ * 1.21.8 及更早没有提交队列，Litematica 直接把投影实体画进缓冲，代理的是交给渲染器的缓冲（效果相同）。
  */
 public final class TranslucentEntityRender {
     private TranslucentEntityRender() {
@@ -69,6 +73,7 @@ public final class TranslucentEntityRender {
         return (Math.round(a * alpha) << 24) | (r << 16) | (g << 8) | b;
     }
 
+    //? if >=1.21.9 {
     public static SubmitNodeCollector wrap(SubmitNodeCollector queue) {
         return (SubmitNodeCollector) Proxy.newProxyInstance(SubmitNodeCollector.class.getClassLoader(),
                 new Class<?>[]{SubmitNodeCollector.class}, new Handler(queue));
@@ -90,6 +95,34 @@ public final class TranslucentEntityRender {
                     case "order" -> {
                         return wrapOrdered((OrderedSubmitNodeCollector) method.invoke(target, args));
                     }
+    //?} else {
+    /*// 1.21.8 及更早：交给实体 / 方块实体渲染器的缓冲。渲染类型换成半透明版本，顶点颜色乘上幽灵色调和透明度。
+    // 新版本的提交代理原样提交的东西（影子、名字和文字、碰撞箱线条、拴绳、移动中的方块）这里也原样画
+    public static net.minecraft.client.renderer.MultiBufferSource wrap(net.minecraft.client.renderer.MultiBufferSource buffers) {
+        float alpha = alpha();
+        return type -> {
+            if (keepsLook(type)) return buffers.getBuffer(type);
+            // 物品展示框的框是方块模型（新版本按方块模型提交，换成方块图集的半透明类型）
+            RenderType translucent = type == RenderType.entitySolidZOffsetForward(net.minecraft.client.renderer.texture.TextureAtlas.LOCATION_BLOCKS)
+                    ? Sheets.translucentItemSheet() : TranslucentRenderTypes.translucent(type);
+            return new AlphaConsumer(buffers.getBuffer(translucent), alpha);
+        };
+    }
+
+    private static boolean keepsLook(RenderType type) {
+        String name = type.getName();
+        return switch (name) {
+            case "entity_shadow", "lines", "leash", "solid", "cutout_mipped", "cutout", "translucent_moving_block", "tripwire" -> true;
+            default -> name.startsWith("text_background") || name.startsWith("text") && isFontText(type);
+        };
+    }
+
+    // 名字等文字用字体贴图；地图画面也是 text 类型但贴图是地图，新版本把它当普通几何体提交（跟着半透明）
+    private static boolean isFontText(RenderType type) {
+        net.minecraft.resources.Identifier texture = RenderTypeTextures.first(type);
+        return texture == null || Minecraft.getInstance().getTextureManager().getTexture(texture) instanceof net.minecraft.client.gui.font.FontTexture;
+    }
+    *///?}
                     //? if >=26.3 {
                     /*case "submitModel" -> {
                         // 26.3：(model, state, pose, rt, light, overlay, tint, uvMapping, outline)，没有碎裂覆盖层
@@ -99,7 +132,7 @@ public final class TranslucentEntityRender {
                         submitModelUv(target, args[0], args[1], (PoseStack) args[2], rt, light, overlay, mulAlpha(tint, alpha), args[7], outline);
                         return null;
                     }
-                    *///?} else {
+                    *///?} elif >=1.21.9 {
                     case "submitModel" -> {
                         // 10 参数：(model, state, pose, rt, light, overlay, tint, sprite, outline, crumbling)
                         // 8 参数默认方法：(model, state, pose, rt, light, overlay, outline, crumbling)，tint 固定为 -1
@@ -123,7 +156,7 @@ public final class TranslucentEntityRender {
                         return null;
                     }
                     //?}
-                    //? if <26.2 {
+                    //? if >=1.21.9 <26.2 {
                     case "submitModelPart" -> {
                         // 统一转成参数最全的版本：(part, pose, rt, light, overlay, sprite, sheeted, hasFoil, color, crumbling, outline)
                         Object part = args[0];
@@ -184,7 +217,7 @@ public final class TranslucentEntityRender {
                         }
                         return null;
                     }
-                    *///?} else {
+                    *///?} elif >=1.21.9 {
                     case "submitBlockModel" -> {
                         // (pose, rt, model, r, g, b, light, overlay, outline)
                         PoseStack pose = (PoseStack) args[0];
@@ -237,6 +270,7 @@ public final class TranslucentEntityRender {
                         return null;
                     }
                     //?}
+                    //? if >=1.21.9 {
                     case "submitCustomGeometry" -> {
                         PoseStack pose = (PoseStack) args[0];
                         RenderType rt = (RenderType) args[1];
@@ -245,10 +279,12 @@ public final class TranslucentEntityRender {
                         return null;
                     }
                     default -> {
+                    //?}
                         //? if >=26.1 {
                         /*// 默认方法（26.1 按贴图提交模型、Fabric 带网格的提交等）在代理上执行自己的方法体，里面再调用的抽象方法会回到这里
                         if (method.isDefault()) return InvocationHandler.invokeDefault(proxy, method, args);
                         *///?}
+                    //? if >=1.21.9 {
                         if (method.isDefault() && method.getDeclaringClass().isInterface() && !Proxy.isProxyClass(target.getClass())) {
                             return method.invoke(target, args);
                         }
@@ -260,6 +296,7 @@ public final class TranslucentEntityRender {
             }
         }
     }
+    //?}
 
     //? if >=26.1 {
     /*private static RenderType itemSheetFor(BakedQuad quad) {
@@ -294,13 +331,14 @@ public final class TranslucentEntityRender {
         }
         return Sheets.translucentItemSheet();
     }
-    //?} else {
+    //?} elif >=1.21.9 {
     /*// 1.21.10 及更早物品和方块共用方块图集，半透明的物品类型只有一种
     private static RenderType itemSheetFor(RenderType original) {
         return Sheets.translucentItemSheet();
     }
     *///?}
 
+    //? if >=1.21.9 {
     private static final java.util.Map<Method, String> KINDS = new java.util.concurrent.ConcurrentHashMap<>();
 
     /** 按参数类型识别 SubmitNodeCollector 的方法（开发环境和正式环境都适用） */
@@ -308,18 +346,23 @@ public final class TranslucentEntityRender {
         Class<?>[] p = m.getParameterTypes();
         if (p.length == 1 && p[0] == int.class && OrderedSubmitNodeCollector.class.isAssignableFrom(m.getReturnType())) return "order";
         if (p.length == 0) return "other";
+    //?}
         //? if >=26.3 {
         /*if (net.minecraft.client.model.Model.class.isAssignableFrom(p[0]) && p.length == 9 && p[3] == RenderType.class) return "submitModel";
-        *///?} else
+        *///?} elif >=1.21.9 {
         if (net.minecraft.client.model.Model.class.isAssignableFrom(p[0]) && (p.length == 8 || p.length == 10) && p[3] == RenderType.class) return "submitModel";
+        //?}
         // 26.2 起提交模型部件只剩默认方法（包成模型再提交），交给默认方法处理
-        //? if <26.2
+        //? if >=1.21.9 <26.2
         if (p[0] == net.minecraft.client.model.geom.ModelPart.class && p.length >= 6) return "submitModelPart";
+        //? if >=1.21.9 {
         if (p[0] == PoseStack.class && p.length >= 3) {
+        //?}
             //? if >=26.1 {
             /*if (p.length == 7 && p[1] == RenderType.class && List.class.isAssignableFrom(p[2]) && p[3] == int[].class) return "submitBlockParts";
             if (p.length == 8 && p[1] == net.minecraft.world.item.ItemDisplayContext.class && p[5] == int[].class && List.class.isAssignableFrom(p[6])) return "submitItemQuads";
             *///?}
+    //? if >=1.21.9 {
             if (p.length == 3 && p[1] == RenderType.class && SubmitNodeCollector.CustomGeometryRenderer.class.isAssignableFrom(p[2])) return "submitCustomGeometry";
             if (p.length >= 8 && BlockStateModel.class.isAssignableFrom(p[2]) && p[3] == float.class) {
                 return p[1] == RenderType.class ? "submitBlockModel" : "submitBlockStateModel";
@@ -329,6 +372,7 @@ public final class TranslucentEntityRender {
         }
         return "other";
     }
+    //?}
 
     //? if >=26.3 {
     /*@SuppressWarnings({"unchecked", "rawtypes"})
@@ -337,7 +381,7 @@ public final class TranslucentEntityRender {
         target.submitModel((net.minecraft.client.model.Model) model, state, pose, rt, light, overlay, tint,
                 (net.minecraft.client.renderer.texture.UvMapping) uvMapping, outline);
     }
-    *///?} else {
+    *///?} elif >=1.21.9 {
     @SuppressWarnings({"unchecked", "rawtypes"})
     private static void submitModelRaw(OrderedSubmitNodeCollector target, Object model, Object state, PoseStack pose, RenderType rt,
                                        int light, int overlay, int tint, net.minecraft.client.renderer.texture.TextureAtlasSprite sprite,
