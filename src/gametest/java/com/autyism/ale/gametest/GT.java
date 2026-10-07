@@ -31,8 +31,12 @@ public final class GT {
 
     public static TestSingleplayerContext newWorld(ClientGameTestContext context) {
         TestSingleplayerContext sp = context.worldBuilder().create();
+        //? if <1.21.9 {
+        /*waitClientLoaded(context, sp);
+        *///?}
         // Litematica 会把上一个同名测试世界的投影放置读回来：每个测试开始时清空，避免互相影响
         removeAllPlacements(context);
+        //? if >=1.21.11 {
         sp.getServer().runCommand("gamerule advance_time false");
         sp.getServer().runCommand("gamerule spawn_mobs false");
         sp.getServer().runCommand("gamerule advance_weather false");
@@ -45,14 +49,42 @@ public final class GT {
                 throw new AssertionError("[GT] gamerule commands did not apply");
             }
         });
+        //?} else {
+        /*sp.getServer().runCommand("gamerule doDaylightCycle false");
+        sp.getServer().runCommand("gamerule doMobSpawning false");
+        sp.getServer().runCommand("gamerule doWeatherCycle false");
+        sp.getServer().runOnServer(server -> {
+            var rules = server.overworld().getGameRules();
+            if (rules.getBoolean(net.minecraft.world.level.GameRules.RULE_DAYLIGHT)
+                    || rules.getBoolean(net.minecraft.world.level.GameRules.RULE_DOMOBSPAWNING)
+                    || rules.getBoolean(net.minecraft.world.level.GameRules.RULE_WEATHER_CYCLE)) {
+                throw new AssertionError("[GT] gamerule commands did not apply");
+            }
+        });
+        *///?}
         sp.getServer().runCommand("gamemode survival @a");
         // 相当于“允许作弊”的单人世界
         sp.getServer().runOnServer(server -> {
             var player = server.getPlayerList().getPlayers().getFirst();
+            //? if >=1.21.9 {
             server.getPlayerList().op(player.nameAndId());
+            //?} else
+            //server.getPlayerList().op(player.getGameProfile());
         });
         return sp;
     }
+
+    //? if <1.21.9 {
+    /*// 1.21.9 以前 create() 不等“下载地形”界面关闭就返回；客户端发出“已载入”之前，服务端会忽略玩家的操作。
+    // 1.21.9 起 create() 本来就会等到这一步，这里补上同样的等待，各版本的测试条件才一致
+    public static void waitClientLoaded(ClientGameTestContext context, TestSingleplayerContext sp) {
+        context.waitFor(client -> client.player != null && client.player.hasClientLoaded()
+                && !(client.screen instanceof net.minecraft.client.gui.screens.ReceivingLevelScreen), 1200);
+        waitServer(context, () -> sp.getServer().computeOnServer(server -> !server.getPlayerList().getPlayers().isEmpty()
+                && server.getPlayerList().getPlayers().getFirst().hasClientLoaded()), 200, "[GT] the server never saw the client as loaded");
+    }
+
+    *///?}
 
     /** 每 tick 在测试线程上检查（可访问服务端），返回用掉的 tick 数 */
     public static int waitServer(ClientGameTestContext context, BooleanSupplier done, int maxTicks, String failMessage) {
@@ -243,6 +275,22 @@ public final class GT {
                 throw new AssertionError(e);
             }
         });
+    }
+
+    /**
+     * 改进的透明度（26.3 起是顺序无关透明）。1.21.11 之前对应“极佳！”画质，关掉时用“高品质”；
+     * 和视频设置界面一样，切换画质后重新载入区块。
+     */
+    public static void setImprovedTransparency(net.minecraft.client.Minecraft client, boolean improved) {
+        //? if >=1.21.11 {
+        client.options.improvedTransparency().set(improved);
+        //?} else {
+        /*var mode = improved ? net.minecraft.client.GraphicsStatus.FABULOUS : net.minecraft.client.GraphicsStatus.FANCY;
+        if (client.options.graphicsMode().get() != mode) {
+            client.options.graphicsMode().set(mode);
+            client.levelRenderer.allChanged();
+        }
+        *///?}
     }
 
     /** 隐藏或显示界面（F1）。26.2 起由 Hud 管理，只能切换 */

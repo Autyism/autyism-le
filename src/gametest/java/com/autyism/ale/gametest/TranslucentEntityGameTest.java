@@ -85,6 +85,17 @@ public final class TranslucentEntityGameTest implements FabricClientGameTest {
             if (visible < opaqueVisible / 4) throw new AssertionError("[entities] translucent entities nearly invisible (" + visible + ")");
             if (differsFromOpaque < opaqueVisible / 3) throw new AssertionError("[entities] translucent rendering looks the same as opaque (" + differsFromOpaque + ")");
             GT.log("[entities] OK: schematic entities rendered semi-transparent");
+            //? if <1.21.11 {
+            /*// 1.21.10 及更早：提前缓存好的不透明实体类型（绕过 RenderTypesMixin）经访问器读出贴图，换成半透明
+            String fallback = context.computeOnClient(c -> {
+                var texture = net.minecraft.resources.Identifier.withDefaultNamespace("textures/entity/armorstand/wood.png");
+                var cached = net.minecraft.client.renderer.RenderType.entitySolid(texture);
+                var mapped = com.autyism.ale.render.TranslucentRenderTypes.translucent(cached);
+                return mapped == net.minecraft.client.renderer.RenderType.entityTranslucent(texture) ? null : cached + " -> " + mapped;
+            });
+            if (fallback != null) throw new AssertionError("[entities] cached opaque entity type not made translucent: " + fallback);
+            GT.log("[entities] cached opaque entity types made translucent OK");
+            *///?}
             // 投影方块半透明模式：方块实体（箱子）也跟着半透明，且不报错
             sp.getServer().runOnServer(s -> s.overworld().setBlockAndUpdate(new BlockPos(110, 64, 1), Blocks.AIR.defaultBlockState()));
             context.runOnClient(c -> Configs.Visuals.RENDER_BLOCKS_AS_TRANSLUCENT.setBooleanValue(false));
@@ -107,6 +118,8 @@ public final class TranslucentEntityGameTest implements FabricClientGameTest {
         context.runOnClient(c -> {
             Configs.Visuals.RENDER_SCHEMATIC_ENTITIES.setBooleanValue(entities);
             AleConfigs.Generic.TRANSLUCENT_ENTITIES.setBooleanValue(translucent);
+            // 1.21.11 之前 Litematica 每帧自己读这些设置
+            //? if >=1.21.11
             fi.dy.masa.litematica.render.LitematicaRenderer.getInstance().updateConfigState();
             DataManager.getSchematicPlacementManager().markAllPlacementsOfSchematicForRebuild(placement.getSchematic());
         });

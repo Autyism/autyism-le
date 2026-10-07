@@ -47,9 +47,14 @@ public final class SchematicEditSaver {
         try {
             // 先写临时文件再替换，避免写一半出错把原文件弄坏
             Path tmp = file.resolveSibling(file.getFileName().toString() + ".ale_tmp");
+            //? if >=1.21.11 {
             if (!DataFileUtils.writeCompoundDataToCompressedNbtFile(tmp, schematic.writeToData())) {
                 throw new IllegalStateException("write failed");
             }
+            //?} else {
+            /*// 1.21.10 及更早 Litematica 的投影数据是原版 NBT；写失败会抛出异常
+            net.minecraft.nbt.NbtIo.writeCompressed(schematic.writeToNBT(), tmp);
+            *///?}
             Files.move(tmp, file, StandardCopyOption.REPLACE_EXISTING, StandardCopyOption.ATOMIC_MOVE);
         } catch (Exception e) {
             AleMod.LOGGER.error("Failed to save schematic edits to {}", file, e);

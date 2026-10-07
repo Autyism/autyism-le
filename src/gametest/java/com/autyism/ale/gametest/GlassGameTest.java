@@ -46,9 +46,9 @@ public final class GlassGameTest implements FabricClientGameTest {
                 s.overworld().setBlockAndUpdate(MISSING, Blocks.AIR.defaultBlockState());
             });
 
-            // 经典透明和“改进的透明度”（26.3 起是顺序无关透明）两种模式都要看得到
+            // 经典透明和“改进的透明度”（26.3 起是顺序无关透明，1.21.11 之前是“极佳！”画质）两种模式都要看得到
             for (boolean improved : new boolean[]{false, true}) {
-                context.runOnClient(c -> c.options.improvedTransparency().set(improved));
+                context.runOnClient(c -> GT.setImprovedTransparency(c, improved));
                 context.waitTicks(10);
                 for (Block glass : new Block[]{Blocks.GLASS, Blocks.RED_STAINED_GLASS}) {
                     sp.getServer().runOnServer(s -> {
@@ -74,7 +74,7 @@ public final class GlassGameTest implements FabricClientGameTest {
             context.runOnClient(c -> {
                 GT.setGuiHidden(c, false);
                 AleConfigs.Generic.RENDER_THROUGH_GLASS.setBooleanValue(true);
-                c.options.improvedTransparency().set(false);
+                GT.setImprovedTransparency(c, false);
                 Configs.Visuals.ENABLE_SCHEMATIC_OVERLAY.setBooleanValue(true);
                 Configs.Visuals.ENABLE_SCHEMATIC_BLOCKS.setBooleanValue(true);
                 Configs.Visuals.RENDER_BLOCKS_AS_TRANSLUCENT.setBooleanValue(false);
@@ -99,6 +99,8 @@ public final class GlassGameTest implements FabricClientGameTest {
             Configs.Visuals.ENABLE_SCHEMATIC_BLOCKS.setBooleanValue(ghost);
             Configs.Visuals.RENDER_BLOCKS_AS_TRANSLUCENT.setBooleanValue(ghost);
             DataManager.getSchematicPlacementManager().markAllPlacementsOfSchematicForRebuild(placement.getSchematic());
+            // 1.21.11 之前 Litematica 每帧自己读这些设置
+            //? if >=1.21.11
             fi.dy.masa.litematica.render.LitematicaRenderer.getInstance().updateConfigState();
         });
         context.waitTicks(30);

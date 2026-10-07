@@ -4,6 +4,7 @@ import com.autyism.ale.gui.ButtonRail;
 import fi.dy.masa.malilib.gui.GuiBase;
 import fi.dy.masa.malilib.render.GuiContext;
 import net.minecraft.client.gui.GuiGraphics;
+//? if >=1.21.9
 import net.minecraft.client.input.MouseButtonEvent;
 import org.spongepowered.asm.mixin.Mixin;
 import org.spongepowered.asm.mixin.injection.At;
@@ -28,18 +29,32 @@ public abstract class GuiBaseRailMixin {
     }
 
     @Inject(method = "drawButtons", at = @At("TAIL"))
+    // 1.21.5 的 MaLiLib 把绘图上下文放在最后
+    //? if >=1.21.6 {
     private void ale$railArrows(GuiContext ctx, int mouseX, int mouseY, float partialTicks, CallbackInfo ci) {
+    //?} else
+    //private void ale$railArrows(int mouseX, int mouseY, float partialTicks, GuiContext ctx, CallbackInfo ci) {
         ButtonRail.draw((GuiBase) (Object) this, ctx);
     }
 
     @Inject(method = "onMouseScrolled", at = @At("HEAD"), cancellable = true)
+    // 1.21.9 之前 MaLiLib 的鼠标坐标是 int
+    //? if >=1.21.9 {
     private void ale$railScroll(double mouseX, double mouseY, double horizontalAmount, double verticalAmount, CallbackInfoReturnable<Boolean> cir) {
+    //?} else
+    //private void ale$railScroll(int mouseX, int mouseY, double horizontalAmount, double verticalAmount, CallbackInfoReturnable<Boolean> cir) {
         double amount = verticalAmount != 0 ? verticalAmount : -horizontalAmount;
         if (ButtonRail.onScroll((GuiBase) (Object) this, mouseX, mouseY, amount)) cir.setReturnValue(true);
     }
 
     @Inject(method = "onMouseClicked", at = @At("HEAD"), cancellable = true)
+    //? if >=1.21.9 {
     private void ale$railClick(MouseButtonEvent click, boolean doubleClick, CallbackInfoReturnable<Boolean> cir) {
         if (ButtonRail.onClick((GuiBase) (Object) this, click.x(), click.y())) cir.setReturnValue(true);
     }
+    //?} else {
+    /*private void ale$railClick(int mouseX, int mouseY, int mouseButton, CallbackInfoReturnable<Boolean> cir) {
+        if (ButtonRail.onClick((GuiBase) (Object) this, mouseX, mouseY)) cir.setReturnValue(true);
+    }
+    *///?}
 }

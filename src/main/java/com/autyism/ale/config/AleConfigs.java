@@ -10,7 +10,11 @@ import fi.dy.masa.malilib.config.IConfigBase;
 import fi.dy.masa.malilib.config.IConfigHandler;
 import fi.dy.masa.malilib.config.options.ConfigBoolean;
 import fi.dy.masa.malilib.config.options.ConfigColor;
+//? if >=1.21.11 {
 import fi.dy.masa.malilib.util.data.json.JsonUtils;
+//?} else {
+/*import fi.dy.masa.malilib.util.JsonUtils;
+*///?}
 
 import java.nio.file.Files;
 import java.nio.file.Path;
@@ -69,7 +73,11 @@ public class AleConfigs implements IConfigHandler {
     @Override
     public void load() {
         if (!Files.isRegularFile(FILE)) return;
+        // 1.21.10 及更早 MaLiLib 按 Path 读写的方法名带 AsPath
+        //? if >=1.21.11 {
         JsonElement element = JsonUtils.parseJsonFile(FILE);
+        //?} else
+        //JsonElement element = JsonUtils.parseJsonFileAsPath(FILE);
         if (element != null && element.isJsonObject()) {
             ConfigUtils.readConfigBase(element.getAsJsonObject(), "Generic", Generic.OPTIONS);
         }
@@ -83,6 +91,9 @@ public class AleConfigs implements IConfigHandler {
             Files.createDirectories(FILE.getParent());
         } catch (Exception ignored) {
         }
+        //? if >=1.21.11 {
         JsonUtils.writeJsonToFile(root, FILE);
+        //?} else
+        //JsonUtils.writeJsonToFileAsPath(root, FILE);
     }
 }

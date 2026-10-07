@@ -29,4 +29,30 @@ final class RenderTypeTextures {
         }
     }
 }
+*///?} elif <1.21.11 {
+/*package com.autyism.ale.render;
+
+import com.autyism.ale.mixin.render.CompositeRenderTypeAccessor;
+import com.autyism.ale.mixin.render.CompositeStateAccessor;
+import com.autyism.ale.mixin.render.EmptyTextureStateShardInvoker;
+import net.minecraft.client.renderer.RenderType;
+import net.minecraft.resources.Identifier;
+import org.jetbrains.annotations.Nullable;
+
+// 1.21.10 及更早：渲染类型绑定的第一张贴图。状态是私有的，正式环境里名字是混淆过的，所以用访问器读而不是反射
+final class RenderTypeTextures {
+    private RenderTypeTextures() {
+    }
+
+    @Nullable
+    static Identifier first(RenderType type) {
+        try {
+            if (!(type instanceof CompositeRenderTypeAccessor composite)) return null;
+            var textureState = ((CompositeStateAccessor) (Object) composite.ale$state()).ale$textureState();
+            return ((EmptyTextureStateShardInvoker) textureState).ale$cutoutTexture().orElse(null);
+        } catch (Throwable e) {
+            return null;
+        }
+    }
+}
 *///?}

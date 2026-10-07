@@ -87,9 +87,17 @@ public final class InfoOverlayGameTest implements FabricClientGameTest {
             GT.log("[info] dbg " + context.computeOnClient(c -> {
                 var ws = fi.dy.masa.litematica.world.SchematicWorldHandler.getSchematicWorld();
                 var all = com.autyism.ale.materials.MaterialExtras.schematicEntities(ws, new AABB(126, 60, -6, 142, 72, 8));
+                //? if >=1.21.11 {
                 StringBuilder sb = new StringBuilder("schematic entities=" + all.size() + " count=" + ws.getRegularEntityCount() + " debug=" + ws.getEntityDebug()
                         + " chunk8,-1=" + ws.getEntitiesByChunk(8, -1, e -> true).size() + " chunk8,0=" + ws.getEntitiesByChunk(8, 0, e -> true).size()
                         + " clientFrames=" + c.level.getEntities((Entity) null, new AABB(126, 60, -6, 142, 72, 8), e -> e instanceof ItemFrame).size());
+                //?} else {
+                /*// 1.21.11 之前投影世界没有按区块取实体的方法，用区块范围的盒子查
+                StringBuilder sb = new StringBuilder("schematic entities=" + all.size() + " count=" + ws.getRegularEntityCount() + " debug=" + ws.getEntityDebug()
+                        + " chunk8,-1=" + ws.getEntities((Entity) null, new AABB(128, -64, -16, 144, 320, 0), e -> true).size()
+                        + " chunk8,0=" + ws.getEntities((Entity) null, new AABB(128, -64, 0, 144, 320, 16), e -> true).size()
+                        + " clientFrames=" + c.level.getEntities((Entity) null, new AABB(126, 60, -6, 142, 72, 8), e -> e instanceof ItemFrame).size());
+                *///?}
                 for (Entity e : all) sb.append(" ").append(e.getType().toShortString()).append("@").append(e.position()).append(" bb=").append(e.getBoundingBox());
                 sb.append(" eye=").append(c.player.getEyePosition()).append(" look=").append(c.player.getViewVector(1f));
                 return sb.toString();
