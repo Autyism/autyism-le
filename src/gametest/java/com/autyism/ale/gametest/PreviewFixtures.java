@@ -36,6 +36,8 @@ import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
 
+import static java.nio.file.StandardCopyOption.REPLACE_EXISTING;
+
 /**
  * 浏览器 / 预览测试用的投影文件，全部写进 Litematica 的 schematics 目录：
  * <ul>
@@ -66,12 +68,15 @@ public final class PreviewFixtures {
     /** 建好所有测试文件；many = 放进 many/ 文件夹的房子副本数量 */
     public static void createAll(ClientGameTestContext context, TestSingleplayerContext sp, int many) {
         Path dir = dir(context);
-        GT.clearArena(sp, HOUSE_MIN.getX() - 2, HOUSE_MIN.getZ() - 2, TOWER_MAX.getX() + 2, HOUSE_MAX.getZ() + 2, 100);
+        GT.clearArena(sp, HOUSE_MIN.getX() - 2, HOUSE_MIN.getZ() - 2, BE_MAX.getX() + 2, HOUSE_MAX.getZ() + 2, 100);
         buildHouse(sp);
         buildTower(sp);
         context.waitTicks(5);
         capture(sp, dir, HOUSE_MIN, HOUSE_MAX, "ale_house");
         capture(sp, dir, TOWER_MIN, TOWER_MAX, "ale_tower");
+        buildBlockEntities(sp);
+        context.waitTicks(3);
+        capture(sp, dir, BE_MIN, BE_MAX, "ale_block_entities");
         saveStructure(sp, dir.resolve("ale_house_struct.nbt"), HOUSE_MIN, HOUSE_MAX);
         try {
             writeSponge(dir.resolve("ale_terrain.schem"), 160, 24, 160, PreviewFixtures::terrain);
@@ -79,12 +84,12 @@ public final class PreviewFixtures {
             Files.write(dir.resolve("broken.litematic"), "this is not a schematic".getBytes());
             Path a = Files.createDirectories(dir.resolve("folder_a").resolve("inner"));
             Files.createDirectories(dir.resolve("folder_b"));
-            Files.copy(dir.resolve("ale_tower.litematic"), a.resolve("tower_copy.litematic"));
-            Files.copy(dir.resolve("ale_house.litematic"), dir.resolve("folder_a").resolve("house_copy.litematic"));
+            Files.copy(dir.resolve("ale_tower.litematic"), a.resolve("tower_copy.litematic"), REPLACE_EXISTING);
+            Files.copy(dir.resolve("ale_house.litematic"), dir.resolve("folder_a").resolve("house_copy.litematic"), REPLACE_EXISTING);
             if (many > 0) {
                 Path m = Files.createDirectories(dir.resolve("many"));
                 for (int i = 0; i < many; i++) {
-                    Files.copy(dir.resolve(i % 3 == 0 ? "ale_tower.litematic" : "ale_house.litematic"), m.resolve(String.format("copy_%03d.litematic", i)));
+                    Files.copy(dir.resolve(i % 3 == 0 ? "ale_tower.litematic" : "ale_house.litematic"), m.resolve(String.format("copy_%03d.litematic", i)), REPLACE_EXISTING);
                 }
             }
         } catch (Exception e) {
@@ -158,6 +163,41 @@ public final class PreviewFixtures {
                 if (level.getBlockEntity(pos) instanceof SignBlockEntity sign) {
                     GT.setSignLine(sign, true, 1, Component.literal("ALE"));
                     GT.setSignLine(sign, true, 2, Component.literal("preview"));
+                }
+            }
+        });
+    }
+
+    /** 方块实体一字排开（没有墙挡着）：双箱子、床、告示牌（立式 / 挂墙）、旗帜、头颅、潜影盒、附魔台、钟、讲台、营火、饰纹陶罐 */
+    public static final BlockPos BE_MIN = new BlockPos(232, 64, 0);
+    public static final BlockPos BE_MAX = BE_MIN.offset(10, 2, 2);
+
+    private static void buildBlockEntities(TestSingleplayerContext sp) {
+        Map<BlockPos, BlockState> m = new LinkedHashMap<>();
+        for (int x = 0; x <= 10; x++) for (int z = 0; z <= 2; z++) m.put(new BlockPos(x, 0, z), Blocks.SMOOTH_STONE.defaultBlockState());
+        m.put(new BlockPos(0, 1, 1), Blocks.CHEST.defaultBlockState().setValue(ChestBlock.FACING, Direction.SOUTH).setValue(ChestBlock.TYPE, ChestType.RIGHT));
+        m.put(new BlockPos(1, 1, 1), Blocks.CHEST.defaultBlockState().setValue(ChestBlock.FACING, Direction.SOUTH).setValue(ChestBlock.TYPE, ChestType.LEFT));
+        m.put(new BlockPos(2, 1, 0), Blocks.BLUE_BED.defaultBlockState().setValue(BedBlock.FACING, Direction.NORTH).setValue(BedBlock.PART, BedPart.HEAD));
+        m.put(new BlockPos(2, 1, 1), Blocks.BLUE_BED.defaultBlockState().setValue(BedBlock.FACING, Direction.NORTH).setValue(BedBlock.PART, BedPart.FOOT));
+        m.put(new BlockPos(3, 1, 1), Blocks.OAK_SIGN.defaultBlockState().setValue(StandingSignBlock.ROTATION, 0));
+        m.put(new BlockPos(4, 1, 0), Blocks.STONE_BRICKS.defaultBlockState());
+        m.put(new BlockPos(4, 1, 1), Blocks.BIRCH_WALL_SIGN.defaultBlockState().setValue(WallSignBlock.FACING, Direction.SOUTH));
+        m.put(new BlockPos(5, 1, 1), Blocks.YELLOW_BANNER.defaultBlockState());
+        m.put(new BlockPos(6, 1, 1), Blocks.CREEPER_HEAD.defaultBlockState());
+        m.put(new BlockPos(7, 1, 1), Blocks.PURPLE_SHULKER_BOX.defaultBlockState());
+        m.put(new BlockPos(8, 1, 1), Blocks.ENCHANTING_TABLE.defaultBlockState());
+        m.put(new BlockPos(9, 1, 1), Blocks.BELL.defaultBlockState());
+        m.put(new BlockPos(10, 1, 1), Blocks.DECORATED_POT.defaultBlockState());
+        m.put(new BlockPos(8, 1, 2), Blocks.LECTERN.defaultBlockState());
+        m.put(new BlockPos(9, 1, 2), Blocks.CAMPFIRE.defaultBlockState());
+        sp.getServer().runOnServer(s -> {
+            ServerLevel level = s.overworld();
+            for (var e : m.entrySet()) {
+                BlockPos pos = BE_MIN.offset(e.getKey());
+                level.setBlock(pos, e.getValue(), Block.UPDATE_CLIENTS | Block.UPDATE_KNOWN_SHAPE);
+                if (level.getBlockEntity(pos) instanceof SignBlockEntity sign) {
+                    GT.setSignLine(sign, true, 1, Component.literal("Sign"));
+                    GT.setSignLine(sign, true, 2, Component.literal("text"));
                 }
             }
         });

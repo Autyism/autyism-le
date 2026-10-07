@@ -245,6 +245,77 @@ public final class GT {
         });
     }
 
+    /** 游戏画过的帧数（FrameCounterMixin 计数），用来看界面是否流畅 */
+    public static volatile long frames;
+
+    public static long frameCounter() {
+        return frames;
+    }
+
+    /** 当前 MaLiLib 列表界面（GuiListBase）的列表部件 */
+    public static Object listWidget(net.minecraft.client.Minecraft client) {
+        if (!(client.screen instanceof fi.dy.masa.malilib.gui.GuiListBase<?, ?, ?> gui)) throw new AssertionError("not a list screen: " + client.screen);
+        try {
+            java.lang.reflect.Method getList = fi.dy.masa.malilib.gui.GuiListBase.class.getDeclaredMethod("getListWidget");
+            getList.setAccessible(true);
+            return getList.invoke(gui);
+        } catch (ReflectiveOperationException e) {
+            throw new AssertionError(e);
+        }
+    }
+
+    /** 文件浏览器里名字（含扩展名）为 name 的条目的中心（界面坐标）；不在屏幕上时为 null */
+    @org.jetbrains.annotations.Nullable
+    public static double[] entryCenter(net.minecraft.client.Minecraft client, String name) {
+        Object list = listWidget(client);
+        try {
+            java.lang.reflect.Field f = fi.dy.masa.malilib.gui.widgets.WidgetListBase.class.getDeclaredField("listWidgets");
+            f.setAccessible(true);
+            for (Object o : (List<?>) f.get(list)) {
+                var w = (fi.dy.masa.malilib.gui.widgets.WidgetListEntryBase<?>) o;
+                if (w.getEntry() instanceof fi.dy.masa.malilib.gui.widgets.WidgetFileBrowserBase.DirectoryEntry e && e.getName().equals(name)) {
+                    return new double[]{w.getX() + w.getWidth() / 2.0, w.getY() + w.getHeight() / 2.0, w.getX(), w.getY(), w.getWidth(), w.getHeight()};
+                }
+            }
+        } catch (ReflectiveOperationException e) {
+            throw new AssertionError(e);
+        }
+        return null;
+    }
+
+    /** 文件浏览器里名字（含扩展名）为 name 的条目部件；不在屏幕上时为 null */
+    @org.jetbrains.annotations.Nullable
+    public static Object entryWidget(net.minecraft.client.Minecraft client, String name) {
+        Object list = listWidget(client);
+        try {
+            java.lang.reflect.Field f = fi.dy.masa.malilib.gui.widgets.WidgetListBase.class.getDeclaredField("listWidgets");
+            f.setAccessible(true);
+            for (Object o : (List<?>) f.get(list)) {
+                var w = (fi.dy.masa.malilib.gui.widgets.WidgetListEntryBase<?>) o;
+                if (w.getEntry() instanceof fi.dy.masa.malilib.gui.widgets.WidgetFileBrowserBase.DirectoryEntry e && e.getName().equals(name)) return w;
+            }
+        } catch (ReflectiveOperationException e) {
+            throw new AssertionError(e);
+        }
+        return null;
+    }
+
+    /** 当前 MaLiLib 列表界面的搜索栏是否打开 */
+    public static boolean searchBarOpen(net.minecraft.client.Minecraft client) {
+        if (!(client.screen instanceof fi.dy.masa.malilib.gui.GuiListBase<?, ?, ?> gui)) return false;
+        try {
+            java.lang.reflect.Method getList = fi.dy.masa.malilib.gui.GuiListBase.class.getDeclaredMethod("getListWidget");
+            getList.setAccessible(true);
+            Object list = getList.invoke(gui);
+            java.lang.reflect.Field f = fi.dy.masa.malilib.gui.widgets.WidgetListBase.class.getDeclaredField("widgetSearchBar");
+            f.setAccessible(true);
+            Object bar = f.get(list);
+            return bar instanceof fi.dy.masa.malilib.gui.widgets.WidgetSearchBar sb && sb.isSearchOpen();
+        } catch (ReflectiveOperationException e) {
+            throw new AssertionError(e);
+        }
+    }
+
     /** 隐藏或显示界面（F1）。26.2 起由 Hud 管理，只能切换 */
     public static void setGuiHidden(net.minecraft.client.Minecraft client, boolean hidden) {
         //? if >=26.2 {

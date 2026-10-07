@@ -5,7 +5,8 @@
   "compatibilityLevel": "JAVA_21",
   "client": [
     "BestWorldMixin",
-    "HeldKeysMixin"
+    "HeldKeysMixin",
+    "FrameCounterMixin"
   ],
   "injectors": {
     "defaultRequire": 1

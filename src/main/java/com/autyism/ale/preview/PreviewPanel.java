@@ -1,8 +1,6 @@
 package com.autyism.ale.preview;
 
 import fi.dy.masa.malilib.gui.GuiBase;
-import fi.dy.masa.malilib.render.GuiContext;
-import fi.dy.masa.malilib.render.RenderUtils;
 import fi.dy.masa.malilib.util.StringUtils;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.gui.GuiGraphics;
@@ -10,7 +8,6 @@ import net.minecraft.client.gui.screens.Screen;
 import org.jetbrains.annotations.Nullable;
 
 import java.nio.file.Path;
-import java.util.List;
 
 /**
  * 信息面板里的 3D 预览：投影信息下面一排两个小按钮（全屏、自由视角），再下面是预览本身。
@@ -37,7 +34,7 @@ public final class PreviewPanel {
         this.mouseY = mouseY;
         this.fullX = infoX + 3;
         this.fullY = textBottom + 2;
-        this.camX = this.fullX + BUTTON + 3;
+        this.camX = this.fullX + BUTTON + 1;
         this.camY = this.fullY;
         this.px = infoX + 2;
         this.py = this.fullY + BUTTON + 3;
@@ -113,23 +110,20 @@ public final class PreviewPanel {
     }
 
     /** 悬停提示（在列表画完之后调用，保证在最上层） */
-    public void drawHoverText(GuiContext g, int mouseX, int mouseY) {
+    public void drawHoverText(GuiGraphics g, int mouseX, int mouseY) {
         if (this.file == null) return;
         if (inside(mouseX, mouseY, this.fullX, this.fullY, BUTTON, BUTTON)) {
-            RenderUtils.drawHoverText(g, mouseX, mouseY, List.of(StringUtils.translate("autyism-le.preview.button.fullscreen")));
+            PreviewInput.tooltip(g, mouseX, mouseY, StringUtils.translate("autyism-le.preview.button.fullscreen"));
         } else if (inside(mouseX, mouseY, this.camX, this.camY, BUTTON, BUTTON)) {
             String key = PreviewSession.isFreecam() ? "autyism-le.preview.button.freecam_off" : "autyism-le.preview.button.freecam_on";
-            RenderUtils.drawHoverText(g, mouseX, mouseY, List.of(StringUtils.translate(key).split("\n")));
+            PreviewInput.tooltip(g, mouseX, mouseY, StringUtils.translate(key));
         }
     }
 
     private void followDrag(PreviewSession session) {
+        // 界面打开时原版不更新“左键按着”的状态，拖动靠按下 / 松开事件判断
         if (!this.dragging) return;
         Minecraft mc = Minecraft.getInstance();
-        if (!mc.mouseHandler.isLeftPressed()) {
-            this.dragging = false;
-            return;
-        }
         double x = mc.mouseHandler.getScaledXPos(mc.getWindow()), y = mc.mouseHandler.getScaledYPos(mc.getWindow());
         session.camera().drag(x - this.lastX, y - this.lastY);
         this.lastX = x;
@@ -174,6 +168,11 @@ public final class PreviewPanel {
     }
 
     /** 自由视角打开、鼠标在预览上时，移动键交给预览（不打开浏览器的搜索框） */
+    /** 测试用：全屏按钮、自由视角按钮和预览区的位置 {x, y, w, h} */
+    public int[][] layout() {
+        return new int[][]{{this.fullX, this.fullY, BUTTON, BUTTON}, {this.camX, this.camY, BUTTON, BUTTON}, {this.px, this.py, this.pw, this.ph}};
+    }
+
     public boolean wantsKeys() {
         return PreviewSession.isFreecam() && (isOverPreview(this.mouseX, this.mouseY) || this.dragging);
     }

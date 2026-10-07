@@ -31,14 +31,10 @@ public final class FullscreenPreviewScreen extends Screen implements Previews.Pr
         g.fill(0, 0, this.width, this.height, 0xFF000000);
         if (this.dragging) {
             Minecraft mc = Minecraft.getInstance();
-            if (!mc.mouseHandler.isLeftPressed()) {
-                this.dragging = false;
-            } else {
-                double x = mc.mouseHandler.getScaledXPos(mc.getWindow()), y = mc.mouseHandler.getScaledYPos(mc.getWindow());
-                this.session.camera().drag(x - this.lastX, y - this.lastY);
-                this.lastX = x;
-                this.lastY = y;
-            }
+            double x = mc.mouseHandler.getScaledXPos(mc.getWindow()), y = mc.mouseHandler.getScaledYPos(mc.getWindow());
+            this.session.camera().drag(x - this.lastX, y - this.lastY);
+            this.lastX = x;
+            this.lastY = y;
         }
         this.session.applyMovementKeys();
         this.session.drawFull(g, 0, 0, this.width, this.height);

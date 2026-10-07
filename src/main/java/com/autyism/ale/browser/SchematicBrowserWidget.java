@@ -135,18 +135,21 @@ public class SchematicBrowserWidget extends WidgetSchematicBrowser {
             int first = this.scrollBar.getValue() * this.gridColumns;
             int y = startY;
             int rows = 0;
+            int fullRows = 0;
             for (int index = first; index < count; ) {
-                if (y + this.tileHeight > usableBottom) break;
+                // 最后一行只露出一部分也画出来（裁掉超出的部分），让人看得出下面还有
+                if (y >= usableBottom - 8) break;
+                if (y + this.tileHeight <= usableBottom) fullRows++;
                 for (int c = 0; c < this.gridColumns && index < count; c++, index++) {
                     int x = startX + c * (this.tileWidth + gapX);
                     WidgetFileBrowserBase.DirectoryEntry entry = this.listContents.get(index);
-                    this.listWidgets.add(this.createListEntryWidget(x, y, index, ((index / this.gridColumns + c) & 1) != 0, entry));
+                    this.listWidgets.add(this.createListEntryWidget(x, y, index, (index & 1) != 0, entry));
                     this.maxVisibleBrowserEntries++;
                 }
                 rows++;
                 y += this.tileHeight + gapY;
             }
-            this.visibleRows = Math.max(1, rows);
+            this.visibleRows = Math.max(1, fullRows);
             this.scrollBar.setMaxValue(Math.max(0, this.gridRows - this.visibleRows));
         } else {
             int y = startY;
@@ -205,8 +208,8 @@ public class SchematicBrowserWidget extends WidgetSchematicBrowser {
         boolean overToggle = isOverToggle(mouseX, mouseY);
         drawToggle(ctx, overToggle);
         if (overToggle) {
-            RenderUtils.drawHoverText(ctx, mouseX, mouseY, List.of(StringUtils.translate("autyism-le.gui.hover.browser_layout",
-                    layout().getDisplayName())));
+            com.autyism.ale.preview.PreviewInput.tooltip(ctx, mouseX, mouseY, StringUtils.translate("autyism-le.gui.hover.browser_layout",
+                    layout().getDisplayName()));
         }
         this.panel.drawHoverText(ctx, mouseX, mouseY);
     }
@@ -267,6 +270,21 @@ public class SchematicBrowserWidget extends WidgetSchematicBrowser {
     public boolean onCharTyped(CharacterEvent event) {
         if (this.panel.wantsKeys()) return true;
         return super.onCharTyped(event);
+    }
+
+    /** 列表区域的下沿（网格最后一行超出的部分裁到这里） */
+    int listBottom() {
+        return this.posY + this.browserHeight - this.browserPaddingY;
+    }
+
+    /** 测试用：信息面板里的预览 */
+    public PreviewPanel panel() {
+        return this.panel;
+    }
+
+    /** 测试用：切换按钮的位置 {x, y, size} */
+    public int[] toggleRect() {
+        return new int[]{this.toggleX, this.toggleY, TOGGLE};
     }
 
     /** 测试用：当前的格子大小（宽、高） */

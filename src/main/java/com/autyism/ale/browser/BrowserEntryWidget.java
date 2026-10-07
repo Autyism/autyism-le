@@ -58,6 +58,18 @@ public class BrowserEntryWidget extends WidgetDirectoryEntry {
     @Override
     public void render(GuiContext ctx, int mouseX, int mouseY, boolean selected) {
         int x = this.getX(), y = this.getY(), w = this.getWidth(), h = this.getHeight();
+        // 网格最下面一行可能只露出一部分：超出列表区域的部分裁掉
+        int clipBottom = this.browser.listBottom();
+        boolean clip = y + h > clipBottom;
+        if (clip) ctx.enableScissor(x, y, x + w, Math.max(y, clipBottom));
+        try {
+            renderEntry(ctx, mouseX, mouseY, selected, x, y, w, h);
+        } finally {
+            if (clip) ctx.disableScissor();
+        }
+    }
+
+    private void renderEntry(GuiContext ctx, int mouseX, int mouseY, boolean selected, int x, int y, int w, int h) {
         boolean hovered = this.isMouseOver(mouseX, mouseY);
         RenderUtils.drawRect(ctx, x, y, w, h, selected || hovered ? COLOR_HOVER : this.isOdd ? COLOR_ODD : COLOR_EVEN);
         FolderIcons.Choice choice = FolderIcons.get(path());
@@ -85,7 +97,7 @@ public class BrowserEntryWidget extends WidgetDirectoryEntry {
         int pic = h - 6;
         int picX = x + (column - pic) / 2, picY = y + 3;
         boolean large = choice != null && choice.placement() == FolderIcons.Placement.LARGE;
-        drawPicture(ctx, choice, picX, picY, pic, pic);
+        drawPicture(ctx, choice, picX, picY, pic, pic, x, column + 4);
         int textX = x + column + 4;
         if (!large) {
             int bx = textX, by = y + (h - BADGE) / 2;
@@ -111,7 +123,7 @@ public class BrowserEntryWidget extends WidgetDirectoryEntry {
         int size = Math.min(w - 6, y + h - 3 - top);
         if (size > 4) {
             int px = x + (w - size) / 2, py = top + (y + h - 3 - top - size) / 2;
-            drawPicture(ctx, choice, px, py, size, size);
+            drawPicture(ctx, choice, px, py, size, size, x, w);
             if (large) setIconArea(px, py, size, size);
         }
     }
@@ -133,7 +145,8 @@ public class BrowserEntryWidget extends WidgetDirectoryEntry {
     }
 
     /** 图片区：投影缩略图 / 文件夹里第一个投影的缩略图 / 大图标 */
-    private void drawPicture(GuiContext ctx, @Nullable FolderIcons.Choice choice, int x, int y, int w, int h) {
+    /** textX/textW：提示文字（“太大”等）可以占用的横向范围 */
+    private void drawPicture(GuiContext ctx, @Nullable FolderIcons.Choice choice, int x, int y, int w, int h, int textX, int textW) {
         FolderIcons.Placement placement = choice != null ? choice.placement() : FolderIcons.Placement.SMALL;
         if (placement == FolderIcons.Placement.LARGE) {
             ItemStack item = choice.hasItem() ? choice.stack() : null;
@@ -154,14 +167,19 @@ public class BrowserEntryWidget extends WidgetDirectoryEntry {
         if (schematic == null) return;
         ThumbnailCache.State state = Previews.thumbnails().draw(ctx, schematic, x, y, w, h);
         if (!isDirectory()) {
-            if (state == ThumbnailCache.State.TOO_BIG) centeredText(ctx, StringUtils.translate("autyism-le.preview.too_large"), x, y, w, h, 0xFFA0A0A0);
-            else if (state == ThumbnailCache.State.FAILED) centeredText(ctx, StringUtils.translate("autyism-le.preview.unreadable"), x, y, w, h, 0xFFFF6060);
+            if (state == ThumbnailCache.State.TOO_BIG) centeredText(ctx, StringUtils.translate("autyism-le.preview.too_large"), textX, y, textW, h, 0xFFA0A0A0);
+            else if (state == ThumbnailCache.State.FAILED) centeredText(ctx, StringUtils.translate("autyism-le.preview.unreadable"), textX, y, textW, h, 0xFFFF6060);
         }
     }
 
     private void drawName(GuiContext ctx, int x, int y, int maxWidth) {
         Font font = Minecraft.getInstance().font;
         String name = this.entry.getDisplayName();
+        if (!isDirectory()) {
+            // 和 Litematica 一样不显示扩展名（文件类型看前面的标记）
+            int dot = name.lastIndexOf('.');
+            if (dot > 0) name = name.substring(0, dot);
+        }
         if (font.width(name) > maxWidth) {
             String dots = "...";
             name = font.plainSubstrByWidth(name, Math.max(0, maxWidth - font.width(dots))) + dots;
@@ -201,6 +219,11 @@ public class BrowserEntryWidget extends WidgetDirectoryEntry {
         this.iconH = h;
     }
 
+    /** 测试用：可以右键换图标的区域 {x, y, w, h} */
+    public int[] iconArea() {
+        return new int[]{this.iconX, this.iconY, this.iconW, this.iconH};
+    }
+
     public boolean isOverIcon(double mouseX, double mouseY) {
         return this.iconW > 0 && mouseX >= this.iconX && mouseX < this.iconX + this.iconW && mouseY >= this.iconY && mouseY < this.iconY + this.iconH;
     }
@@ -208,7 +231,7 @@ public class BrowserEntryWidget extends WidgetDirectoryEntry {
     @Override
     public void postRenderHovered(GuiContext ctx, int mouseX, int mouseY, boolean selected) {
         if (isOverIcon(mouseX, mouseY)) {
-            RenderUtils.drawHoverText(ctx, mouseX, mouseY, List.of(StringUtils.translate("autyism-le.gui.hover.change_icon")));
+            com.autyism.ale.preview.PreviewInput.tooltip(ctx, mouseX, mouseY, StringUtils.translate("autyism-le.gui.hover.change_icon"));
         } else {
             super.postRenderHovered(ctx, mouseX, mouseY, selected);
         }

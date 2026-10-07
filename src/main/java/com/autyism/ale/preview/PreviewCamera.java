@@ -39,7 +39,8 @@ public final class PreviewCamera {
     /** 角度、视野回到设置里的默认值，距离回到能看到整个投影 */
     public void resetView() {
         this.fov = (float) AleConfigs.Preview.FOV.getDoubleValue();
-        this.yaw = (float) AleConfigs.Preview.YAW.getDoubleValue();
+        // 设置里的水平角按“转动模型”的方向计：-45 表示从西南角看过去（相机朝东北）
+        this.yaw = wrap(180.0F - (float) AleConfigs.Preview.YAW.getDoubleValue());
         this.pitch = clampPitch((float) AleConfigs.Preview.PITCH.getDoubleValue());
         this.startDistance = fitDistance();
         this.distance = this.startDistance;
