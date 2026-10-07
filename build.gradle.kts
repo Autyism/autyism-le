@@ -68,6 +68,11 @@ tasks.withType<JavaCompile>().configureEach {
     options.release.set(requiredJava.majorVersion.toInt())
 }
 
+// Without a Schematic Preview build (1.21.5) its compat mixin is not compiled either; its line is left out of the mixin config below
+if (schematicPreview.isEmpty()) {
+    sourceSets.named("main") { java.exclude("com/autyism/ale/mixin/compat/schematicpreview/**") }
+}
+
 tasks.processResources {
     val props = mapOf(
         "mod_id" to prop("mod.id"),
