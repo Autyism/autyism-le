@@ -83,9 +83,14 @@ tasks.processResources {
     inputs.properties(props)
     inputs.property("schematic_preview", schematicPreview)
     filesMatching(listOf("fabric.mod.json", "*.mixins.json")) { expand(props) }
-    // No Schematic Preview build for this version: leave its compat mixin out of the config
-    if (schematicPreview.isEmpty()) {
-        filesMatching("autyism-le.mixins.json") { filter { line -> if (line.contains("compat.schematicpreview.")) "" else line } }
+    // Mixins that only exist on some versions (their classes are compiled only there): leave them out of the config elsewhere
+    val absentMixins = buildList {
+        if (schematicPreview.isEmpty()) add("compat.schematicpreview.")
+        if (sc.current.parsed < "26.1") addAll(listOf("render.RenderTypeAccessor", "render.RenderSetupAccessor"))
+    }
+    inputs.property("absent_mixins", absentMixins.joinToString())
+    if (absentMixins.isNotEmpty()) {
+        filesMatching("autyism-le.mixins.json") { filter { line -> if (absentMixins.any { line.contains("\"$it") }) "" else line } }
     }
 }
 

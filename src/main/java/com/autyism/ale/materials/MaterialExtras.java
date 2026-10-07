@@ -203,6 +203,9 @@ public final class MaterialExtras {
         // 容器里的潜影盒等：额外展开它装着的东西
         ItemContainerContents nested = stack.get(DataComponents.CONTAINER);
         if (nested != null) {
+            //? if >=26.1 {
+            /*for (ItemStack inner : (Iterable<ItemStack>) nested.nonEmptyItemCopyStream()::iterator) {
+            *///?} else
             for (ItemStack inner : nested.nonEmptyItemsCopy()) {
                 counts.addTo(new ItemType(inner.copyWithCount(1), true, true), inner.getCount() * stack.getCount());
             }

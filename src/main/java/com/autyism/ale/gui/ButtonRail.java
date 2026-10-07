@@ -298,8 +298,13 @@ public final class ButtonRail {
             int rightColor = rail.first < rail.maxFirst() ? 0xFFFFFFFF : 0xFF555555;
             g.fill(rail.arrowLeft, rail.top, rail.arrowLeft + ARROW, rail.top + 20, 0x80000000);
             g.fill(gui.getScreenWidth() - 10 - ARROW, rail.top, gui.getScreenWidth() - 10, rail.top + 20, 0x80000000);
+            //? if >=26.1 {
+            /*g.text(font, "◀", rail.arrowLeft + 2, y, leftColor, false);
+            g.text(font, "▶", gui.getScreenWidth() - 10 - ARROW + 3, y, rightColor, false);
+            *///?} else {
             g.drawString(font, "◀", rail.arrowLeft + 2, y, leftColor, false);
             g.drawString(font, "▶", gui.getScreenWidth() - 10 - ARROW + 3, y, rightColor, false);
+            //?}
         }
     }
 }

@@ -23,6 +23,11 @@ public final class TranslucentRenderTypes {
     }
 
     private static RenderType map(RenderType t) {
+        //? if >=26.1 {
+        /*// 26.1 起箱子、告示牌、床、潜影盒等不再有提前缓存的图集类型：提交时由 RenderTypesMixin 当场换成半透明。只剩方块和物品图集
+        if (t == Sheets.cutoutBlockSheet() || t == Sheets.cutoutBlockItemSheet()) return Sheets.translucentBlockItemSheet();
+        if (t == Sheets.cutoutItemSheet()) return Sheets.translucentItemSheet();
+        *///?} else {
         if (t == Sheets.solidBlockSheet() || t == Sheets.cutoutBlockSheet()) return Sheets.translucentItemSheet();
         if (t == Sheets.chestSheet()) return RenderTypes.entityTranslucent(Sheets.CHEST_SHEET);
         if (t == Sheets.signSheet() || t == Sheets.hangingSignSheet()) return RenderTypes.entityTranslucent(Sheets.SIGN_SHEET);
@@ -30,10 +35,16 @@ public final class TranslucentRenderTypes {
         if (t == Sheets.shulkerBoxSheet()) return RenderTypes.entityTranslucent(Sheets.SHULKER_SHEET);
         if (t == Sheets.shieldSheet()) return RenderTypes.entityTranslucent(Sheets.SHIELD_SHEET);
         if (t == Sheets.bannerSheet()) return RenderTypes.entityTranslucent(Sheets.BANNER_SHEET);
+        //?}
         // 兜底：别的模组可能提前缓存了实体的渲染类型（绕过了 RenderTypesMixin），按名字识别不透明的实体类型，取出贴图换成半透明
         String name = nameOf(t);
+        //? if >=26.1 {
+        /*net.minecraft.resources.Identifier texture = name != null ? RenderTypeTextures.first(t) : null;
+        if (texture != null) {
+        *///?} else {
         if (name != null && !t.state.textures.isEmpty()) {
             net.minecraft.resources.Identifier texture = t.state.textures.values().iterator().next().location();
+        //?}
             if (name.startsWith("armor_cutout")) return RenderTypes.armorTranslucent(texture);
             if (name.equals("entity_solid") || name.startsWith("entity_cutout") || name.equals("entity_smooth_cutout")) {
                 return RenderTypes.entityTranslucent(texture);
