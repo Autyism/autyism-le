@@ -12,14 +12,21 @@ import org.joml.Vector3f;
 public final class PreviewCamera {
     /** 拖动一个界面像素转多少度 */
     public static final float DEGREES_PER_PIXEL = 1.1F;
+    /** 默认视角四周留的边（1.0 = 刚好贴边） */
+    private static final double MARGIN = 1.06;
 
     private float centerX, centerY, centerZ;
+    /** 绕着转的点：默认是投影中心，按画面对齐时会挪一点，让投影在画面里居中 */
+    private float aimX, aimY, aimZ;
+    private float halfX = 0.5F, halfY = 0.5F, halfZ = 0.5F;
     private float radius = 1.0F;
     private float yaw;
     private float pitch;
     private float distance;
     private float startDistance;
     private float fov;
+    /** 默认距离是按哪个画面宽高比算的（NaN：还没按画面算过） */
+    private float fittedAspect = Float.NaN;
 
     private boolean free;
     private float freeX, freeY, freeZ;
@@ -32,6 +39,9 @@ public final class PreviewCamera {
         this.centerX = sizeX * 0.5F;
         this.centerY = sizeY * 0.5F;
         this.centerZ = sizeZ * 0.5F;
+        this.halfX = Math.max(0.5F, sizeX * 0.5F);
+        this.halfY = Math.max(0.5F, sizeY * 0.5F);
+        this.halfZ = Math.max(0.5F, sizeZ * 0.5F);
         this.radius = Math.max(0.75F, 0.5F * (float) Math.sqrt((double) sizeX * sizeX + (double) sizeY * sizeY + (double) sizeZ * sizeZ));
         resetView();
     }
@@ -44,8 +54,66 @@ public final class PreviewCamera {
         this.pitch = clampPitch((float) AleConfigs.Preview.PITCH.getDoubleValue());
         this.startDistance = fitDistance();
         this.distance = this.startDistance;
+        this.aimX = this.centerX;
+        this.aimY = this.centerY;
+        this.aimZ = this.centerZ;
+        this.fittedAspect = Float.NaN;
         this.free = false;
         this.version++;
+    }
+
+    /**
+     * 画之前调用：还没手动缩放过的话，按这个画面的宽高比重新对准：
+     * 默认角度下整个投影（8 个角）在画面里居中、四周留一点边。之后转动时距离和中心不变。
+     */
+    public void fitTo(float aspect) {
+        if (this.free || !(aspect > 0.0F) || aspect == this.fittedAspect) return;
+        if (!Float.isNaN(this.fittedAspect) && this.distance != this.startDistance) return;
+        this.fittedAspect = aspect;
+        double tanV = Math.tan(Math.toRadians(Math.max(5.0, Math.min(170.0, this.fov)) * 0.5));
+        double tanH = tanV * aspect;
+        Vector3f f = direction(this.yaw, this.pitch);
+        double yawRad = Math.toRadians(this.yaw);
+        Vector3f r = new Vector3f((float) -Math.cos(yawRad), 0.0F, (float) -Math.sin(yawRad));
+        Vector3f u = new Vector3f(r).cross(f);
+        float[][] corners = new float[8][3];
+        double nearest = 0.0;
+        for (int i = 0; i < 8; i++) {
+            float cx = (i & 1) == 0 ? -this.halfX : this.halfX;
+            float cy = (i & 2) == 0 ? -this.halfY : this.halfY;
+            float cz = (i & 4) == 0 ? -this.halfZ : this.halfZ;
+            corners[i][0] = cx * r.x + cy * r.y + cz * r.z;
+            corners[i][1] = cx * u.x + cy * u.y + cz * u.z;
+            corners[i][2] = cx * f.x + cy * f.y + cz * f.z;
+            nearest = Math.max(nearest, -corners[i][2]);
+        }
+        // 反复调整：把画面上的外框移到正中，再按外框大小拉远或拉近
+        double offX = 0.0, offY = 0.0, d = Math.max(fitDistance(), nearest + 0.5);
+        for (int iter = 0; iter < 40; iter++) {
+            double minX = Double.MAX_VALUE, maxX = -Double.MAX_VALUE, minY = Double.MAX_VALUE, maxY = -Double.MAX_VALUE;
+            for (float[] c : corners) {
+                double z = d + c[2];
+                double px = (c[0] - offX) / (z * tanH), py = (c[1] - offY) / (z * tanV);
+                minX = Math.min(minX, px);
+                maxX = Math.max(maxX, px);
+                minY = Math.min(minY, py);
+                maxY = Math.max(maxY, py);
+            }
+            offX += (minX + maxX) * 0.5 * d * tanH;
+            offY += (minY + maxY) * 0.5 * d * tanV;
+            double fill = Math.max(maxX - minX, maxY - minY) * 0.5 * MARGIN;
+            double next = Math.max(nearest + 0.5, d * fill);
+            if (Math.abs(next - d) < 1.0E-4 * d) {
+                d = next;
+                break;
+            }
+            d = next;
+        }
+        this.aimX = this.centerX + (float) (offX * r.x + offY * u.x);
+        this.aimY = this.centerY + (float) (offX * r.y + offY * u.y);
+        this.aimZ = this.centerZ + (float) (offX * r.z + offY * u.z);
+        this.startDistance = (float) d;
+        this.distance = this.startDistance;
     }
 
     private float fitDistance() {
@@ -57,6 +125,13 @@ public final class PreviewCamera {
         this.centerX = other.centerX;
         this.centerY = other.centerY;
         this.centerZ = other.centerZ;
+        this.aimX = other.aimX;
+        this.aimY = other.aimY;
+        this.aimZ = other.aimZ;
+        this.halfX = other.halfX;
+        this.halfY = other.halfY;
+        this.halfZ = other.halfZ;
+        this.fittedAspect = other.fittedAspect;
         this.radius = other.radius;
         this.yaw = other.yaw;
         this.pitch = other.pitch;
@@ -81,18 +156,20 @@ public final class PreviewCamera {
         return this.free;
     }
 
-    /** 打开自由视角时从当前位置和朝向开始飞；关掉时回到绕中心转的视角 */
+    /** 打开自由视角时从当前位置和朝向开始飞；关掉时回到默认视角（默认角度和距离） */
     public void setFree(boolean free) {
         if (free == this.free) return;
-        if (free) {
-            Vector3f eye = orbitEye();
-            this.freeX = eye.x;
-            this.freeY = eye.y;
-            this.freeZ = eye.z;
-            this.freeYaw = this.yaw;
-            this.freePitch = this.pitch;
+        if (!free) {
+            resetView();
+            return;
         }
-        this.free = free;
+        Vector3f eye = orbitEye();
+        this.freeX = eye.x;
+        this.freeY = eye.y;
+        this.freeZ = eye.z;
+        this.freeYaw = this.yaw;
+        this.freePitch = this.pitch;
+        this.free = true;
         this.version++;
     }
 
@@ -165,7 +242,7 @@ public final class PreviewCamera {
 
     private Vector3f orbitEye() {
         Vector3f f = direction(this.yaw, this.pitch);
-        return new Vector3f(this.centerX - f.x * this.distance, this.centerY - f.y * this.distance, this.centerZ - f.z * this.distance);
+        return new Vector3f(this.aimX - f.x * this.distance, this.aimY - f.y * this.distance, this.aimZ - f.z * this.distance);
     }
 
     /** 世界到相机的旋转（与原版相机相同的约定） */

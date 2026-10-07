@@ -187,10 +187,16 @@ public class BrowserEntryWidget extends WidgetDirectoryEntry {
         ctx.drawString(font, name, x, y, 0xFFFFFFFF, true);
     }
 
+    /** 放不下时把字缩小（最多到一半），不截断 */
     private static void centeredText(GuiGraphics g, String text, int x, int y, int w, int h, int color) {
         Font font = Minecraft.getInstance().font;
-        if (font.width(text) > w - 2) text = font.plainSubstrByWidth(text, Math.max(0, w - 2));
-        g.drawString(font, text, x + (w - font.width(text)) / 2, y + (h - font.lineHeight) / 2 + 1, color, true);
+        int width = font.width(text);
+        float scale = width > w - 2 ? Math.max(0.5F, (w - 2) / (float) width) : 1.0F;
+        g.pose().pushMatrix();
+        g.pose().translate(x + (w - width * scale) / 2.0F, y + (h - font.lineHeight * scale) / 2.0F + scale);
+        g.pose().scale(scale, scale);
+        g.drawString(font, text, 0, 0, color, true);
+        g.pose().popMatrix();
     }
 
     /** 物品图标缩放到 size x size */

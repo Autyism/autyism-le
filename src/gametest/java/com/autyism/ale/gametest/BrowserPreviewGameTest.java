@@ -143,8 +143,7 @@ public final class BrowserPreviewGameTest implements FabricClientGameTest {
             ui.shot("back-from-fullscreen");
             if (Math.abs(f2[0] - f1[0]) > 0.01 || f2[2] >= f1[2]) problems.add("camera not kept after full screen");
 
-            // 自由视角：移动键飞、拖动转视线、关掉后回到原来的角度
-            float[] orbit = camera(context);
+            // 自由视角：移动键飞、拖动转视线、关掉后回到默认视角
             ui.hover(cx, cy);
             ui.shot("hover-freecam-button");
             ui.click(cx, cy, 0);
@@ -176,10 +175,13 @@ public final class BrowserPreviewGameTest implements FabricClientGameTest {
             context.getInput().pressKey(GLFW.GLFW_KEY_ESCAPE);
             context.waitTicks(5);
             ui.click(cx, cy, 0);
-            float[] back = camera(context);
             ui.hover(300, 340);
+            context.waitTicks(3);
+            float[] back = camera(context);
             ui.shot("freecam-off");
-            if (Math.abs(back[0] - orbit[0]) > 0.01 || Math.abs(back[2] - orbit[2]) > 0.01) problems.add("turning freecam off did not return to the orbit view");
+            // 和原作一样：关掉自由视角回到默认视角（默认角度、默认距离）
+            if (Math.abs(back[0] - c0[0]) > 0.01 || Math.abs(back[1] - c0[1]) > 0.01 || Math.abs(back[2] - c0[2]) > 0.01)
+                problems.add("turning freecam off did not return to the default view: " + java.util.Arrays.toString(back) + " vs " + java.util.Arrays.toString(c0));
 
             // ---- 大投影 / 带水的地形 / 坏文件：面板里不卡、不崩
             // 方块实体：箱子（双箱子朝向）、床、告示牌文字、旗帜、头颅、潜影盒、附魔台、钟、讲台、营火、陶罐

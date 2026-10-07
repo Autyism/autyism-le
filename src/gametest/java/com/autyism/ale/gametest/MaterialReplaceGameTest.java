@@ -102,6 +102,17 @@ public final class MaterialReplaceGameTest implements FabricClientGameTest {
             ui.shot("material-list");
             int planks = count(context, list, Items.OAK_PLANKS);
 
+            // 什么都不选直接确定：选中的是它自己，什么都不变
+            boolean editedBefore = context.computeOnClient(c -> schematic.getMetadata().wasModifiedSinceSaved());
+            clickReplace(context, Items.OAK_PLANKS);
+            context.waitFor(c -> c.screen instanceof ReplaceBlockScreen, 40);
+            GT.clickButton(context, "OK");
+            context.waitTicks(5);
+            ui.shot("same-block-ok");
+            check(context, list, Items.OAK_PLANKS, planks);
+            if (context.computeOnClient(c -> schematic.getMetadata().wasModifiedSinceSaved()) != editedBefore)
+                problems.add("replacing a block with itself marked the schematic as edited");
+
             // 木板 → 云杉木板：用鼠标点“替换”，搜索，点格子，确定
             clickReplace(context, Items.OAK_PLANKS);
             context.waitFor(c -> c.screen instanceof ReplaceBlockScreen, 40);
