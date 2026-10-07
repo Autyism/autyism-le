@@ -194,6 +194,10 @@ public final class GT {
         if (!Boolean.getBoolean("ale.frameshot")) return context.takeScreenshot(name);
         context.waitTicks(2);
         java.util.concurrent.CompletableFuture<com.mojang.blaze3d.platform.NativeImage> image = new java.util.concurrent.CompletableFuture<>();
+        // 26.2 起主渲染目标归 GameRenderer 管
+        //? if >=26.2 {
+        /*context.runOnClient(c -> net.minecraft.client.Screenshot.takeScreenshot(c.gameRenderer.mainRenderTarget(), image::complete));
+        *///?} else
         context.runOnClient(c -> net.minecraft.client.Screenshot.takeScreenshot(c.getMainRenderTarget(), image::complete));
         for (int i = 0; i < 40 && !image.isDone(); i++) context.waitTick();
         java.nio.file.Path path = context.computeOnClient(c -> c.gameDirectory.toPath().resolve("screenshots").resolve(name + ".png"));
