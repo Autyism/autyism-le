@@ -188,6 +188,10 @@ public final class BrowserPreviewGameTest implements FabricClientGameTest {
             GT.log("[preview] block entities in the preview: " + beCount);
             if (beCount < 10) problems.add("only " + beCount + " block entities in the preview of ale_block_entities");
             selectAndWatch(context, ui, "ale_huge.schem", 600);
+            // 最费网格的：超过上限只显示一部分，游戏不卡
+            selectAndWatch(context, ui, "ale_dense.schem", 1200);
+            boolean truncated = context.computeOnClient(c -> PreviewSession.current() != null && PreviewSession.current().model().isTruncated());
+            if (!truncated) problems.add("ale_dense.schem should be shown only partly (over the quad limit)");
             selectAndWatch(context, ui, "ale_terrain.schem", 400);
             selectAndWatch(context, ui, "ale_house_struct.nbt", 200);
             clickEntry(context, ui, "broken.litematic", 0);

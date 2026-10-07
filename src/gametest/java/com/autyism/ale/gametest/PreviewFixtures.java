@@ -81,6 +81,7 @@ public final class PreviewFixtures {
         try {
             writeSponge(dir.resolve("ale_terrain.schem"), 160, 24, 160, PreviewFixtures::terrain);
             writeSponge(dir.resolve("ale_huge.schem"), 512, 64, 512, PreviewFixtures::sparse);
+            writeSponge(dir.resolve("ale_dense.schem"), 160, 64, 160, PreviewFixtures::checkerboard);
             Files.write(dir.resolve("broken.litematic"), "this is not a schematic".getBytes());
             Path a = Files.createDirectories(dir.resolve("folder_a").resolve("inner"));
             Files.createDirectories(dir.resolve("folder_b"));
@@ -313,6 +314,11 @@ public final class PreviewFixtures {
         boolean tree = top >= 9 && Math.floorMod(x * 31 + z * 17, 97) == 0;
         if (tree && y <= top + 4) return Blocks.OAK_LOG.defaultBlockState();
         return Blocks.AIR.defaultBlockState();
+    }
+
+    /** 最费网格的情况：三维棋盘格（每个方块的六个面都露在外面），用来测四边形上限和不卡死 */
+    private static BlockState checkerboard(int x, int y, int z, int w, int h, int l) {
+        return ((x + y + z) & 1) == 0 ? (y % 8 == 0 ? Blocks.GLASS : Blocks.STONE).defaultBlockState() : Blocks.AIR.defaultBlockState();
     }
 
     /** 很大但稀疏：只有地面一层和每 32 格一根柱子 */
