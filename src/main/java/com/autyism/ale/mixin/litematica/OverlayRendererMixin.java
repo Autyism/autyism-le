@@ -49,6 +49,10 @@ public abstract class OverlayRendererMixin {
     }
 
     @Inject(method = "renderSchematicVerifierMismatches", at = @At("TAIL"))
+    // 26.1 起 Litematica 的这个方法只剩 ProfilerFiller 参数（两个矩阵本来也没用到）
+    //? if >=26.1 {
+    /*private void ale$renderContainerMismatches(ProfilerFiller profiler, CallbackInfo ci) {
+    *///?} else
     private void ale$renderContainerMismatches(Matrix4f posMatrix, Matrix4f projMatrix, ProfilerFiller profiler, CallbackInfo ci) {
         SchematicPlacement placement = DataManager.getSchematicPlacementManager().getSelectedSchematicPlacement();
         if (placement == null || !placement.hasVerifier()) return;
