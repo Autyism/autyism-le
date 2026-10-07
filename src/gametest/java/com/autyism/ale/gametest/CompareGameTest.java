@@ -25,7 +25,7 @@ import com.mojang.blaze3d.platform.InputConstants;
 public final class CompareGameTest implements FabricClientGameTest {
     @Override
     public void runTest(ClientGameTestContext context) {
-        if (!GTFilter.enabled("compare")) return;
+        if (!GTFilter.explicit("compare")) return;
         boolean original = Previews.ORIGINAL_INSTALLED;
         int oldScale = context.computeOnClient(c -> c.options.guiScale().get());
         UiDriver ui = new UiDriver(context, original ? "cmp-sp" : "cmp-ale");

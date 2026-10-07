@@ -19,7 +19,7 @@ import com.mojang.blaze3d.platform.InputConstants;
 public final class SpBlackBoxGameTest implements FabricClientGameTest {
     @Override
     public void runTest(ClientGameTestContext context) {
-        if (!GTFilter.enabled("spbox")) return;
+        if (!GTFilter.explicit("spbox")) return;
         if (!FabricLoader.getInstance().isModLoaded("schematicpreview")) {
             GT.log("[spbox] Schematic Preview not loaded, skipped");
             return;
