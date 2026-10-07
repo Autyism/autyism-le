@@ -44,14 +44,10 @@ dependencies {
     // gametest 运行时：加载 Schematic Preview 与本作者的打印机，测试联动
     if (providers.gradleProperty("aleGameTest").isPresent) {
         if (schematicPreview.isNotEmpty()) modLocalRuntime("maven.modrinth:schematicpreview:$schematicPreview")
-        // 与用户实例一致的渲染环境：Sodium（可选再加 Iris）。目前只有 1.21.11 的 jar
-        if (providers.gradleProperty("withSodium").isPresent && mc == "1.21.11") {
-            modLocalRuntime(files(rootProject.file("libs/sodium-fabric-0.8.7+mc1.21.11.jar")))
-            if (providers.gradleProperty("withIris").isPresent) modLocalRuntime(files(rootProject.file("libs/iris-fabric-1.10.7+mc1.21.11.jar")))
-        }
-        // 26.x 的 Sodium 从 Modrinth 取（只在测试时加载）
-        val sodium = mapOf("26.1.2" to "mc26.1.2-0.9.2-fabric")
+        // 渲染环境测试：Sodium（-PwithSodium），1.21.11 可再加 Iris（-PwithIris），都从 Modrinth 取，只在测试时加载
+        val sodium = mapOf("1.21.11" to "mc1.21.11-0.8.7-fabric", "26.1.2" to "mc26.1.2-0.9.2-fabric")
         if (providers.gradleProperty("withSodium").isPresent) sodium[mc]?.let { modLocalRuntime("maven.modrinth:sodium:$it") }
+        if (providers.gradleProperty("withIris").isPresent && mc == "1.21.11") modLocalRuntime("maven.modrinth:iris:1.10.7+1.21.11-fabric")
         // 打印机：1.21.11 用 libs 里的发布版，其他版本用打印机仓库各版本的构建
         val printer = if (mc == "1.21.11") rootProject.file("libs/litematica-printer-autyism-1.0.0.jar")
             else rootProject.file("libs/printer/litematica-printer-autyism-1.0.0+$mc.jar")
