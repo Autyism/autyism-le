@@ -27,11 +27,11 @@
     "render.RenderTypeAccessor",
     "render.RenderSetupAccessor",
     "render.GameRendererCameraAccessor",
-    "litematica.WorldRendererSchematicMixin",
     "malilib.WidgetContainerAccess",
     "malilib.GuiListBaseAccess",
     "without.schematicpreview.SchematicBrowserListMixin",
-    "without.schematicpreview.MaterialEntryReplaceMixin"
+    "without.schematicpreview.MaterialEntryReplaceMixin",
+    "litematica.WorldRendererSchematicMixin"
   ],
   "injectors": {
     "defaultRequire": 1

@@ -47,14 +47,10 @@ dependencies {
         if (schematicPreview.isNotEmpty() && !providers.gradleProperty("noSchematicPreview").isPresent) {
             modLocalRuntime("maven.modrinth:schematicpreview:$schematicPreview")
         }
-        // 与用户实例一致的渲染环境：Sodium（可选再加 Iris）。目前只有 1.21.11 的 jar
-        if (providers.gradleProperty("withSodium").isPresent && mc == "1.21.11") {
-            modLocalRuntime(files(rootProject.file("libs/sodium-fabric-0.8.7+mc1.21.11.jar")))
-            if (providers.gradleProperty("withIris").isPresent) modLocalRuntime(files(rootProject.file("libs/iris-fabric-1.10.7+mc1.21.11.jar")))
-        }
-        // 26.x 的 Sodium 从 Modrinth 取（只在测试时加载）
-        val sodium = mapOf("26.1.2" to "mc26.1.2-0.9.2-fabric")
+        // 渲染环境测试：Sodium（-PwithSodium），1.21.11 可再加 Iris（-PwithIris），都从 Modrinth 取，只在测试时加载
+        val sodium = mapOf("1.21.11" to "mc1.21.11-0.8.7-fabric", "26.1.2" to "mc26.1.2-0.9.2-fabric")
         if (providers.gradleProperty("withSodium").isPresent) sodium[mc]?.let { modLocalRuntime("maven.modrinth:sodium:$it") }
+        if (providers.gradleProperty("withIris").isPresent && mc == "1.21.11") modLocalRuntime("maven.modrinth:iris:1.10.7+1.21.11-fabric")
         // 打印机：1.21.11 用 libs 里的发布版，其他版本用打印机仓库各版本的构建
         val printer = if (mc == "1.21.11") rootProject.file("libs/litematica-printer-autyism-1.0.0.jar")
             else rootProject.file("libs/printer/litematica-printer-autyism-1.0.0+$mc.jar")
@@ -70,9 +66,29 @@ java {
     toolchain { languageVersion.set(JavaLanguageVersion.of(requiredJava.majorVersion)) }
 }
 
+// Schematic browser previews, icons and Replace are not ported to 1.21.10 and older yet. Classes without version
+// conditions of their own are wrapped in a whole-file >=1.21.11 condition; these have conditions inside, so the
+// build leaves them out instead (a condition must not sit inside an inactive one)
+val previewFilesWithConditions = listOf(
+    "com/autyism/ale/browser/FolderIconScreen.java", "com/autyism/ale/browser/InfoTextBounds.java",
+    "com/autyism/ale/preview/FullscreenPreviewScreen.java", "com/autyism/ale/preview/GuiCompat.java",
+    "com/autyism/ale/preview/MeshVertexSink.java", "com/autyism/ale/preview/PreviewCamera.java",
+    "com/autyism/ale/preview/PreviewInput.java", "com/autyism/ale/preview/PreviewRenderer.java",
+    "com/autyism/ale/preview/PreviewTarget.java", "com/autyism/ale/preview/SceneMesher.java",
+    "com/autyism/ale/preview/SchematicView.java", "com/autyism/ale/replace/ReplaceBlockScreen.java"
+)
+if (sc.current.parsed < "1.21.11") {
+    sourceSets.named("main") { java.exclude(previewFilesWithConditions) }
+}
+
 tasks.withType<JavaCompile>().configureEach {
     options.encoding = "UTF-8"
     options.release.set(requiredJava.majorVersion.toInt())
+}
+
+// Without a Schematic Preview build (1.21.5) its compat mixin is not compiled either; its line is left out of the mixin config below
+if (schematicPreview.isEmpty()) {
+    sourceSets.named("main") { java.exclude("com/autyism/ale/mixin/compat/schematicpreview/**") }
 }
 
 tasks.processResources {
@@ -85,6 +101,8 @@ tasks.processResources {
         "malilib_compat" to prop("mod.malilib_compat"),
         "litematica_compat" to prop("mod.litematica_compat"),
         "mixin_java" to "JAVA_${requiredJava.majorVersion}",
+        // the schematic browser previews are only in 1.21.11 and 26.x so far
+        "preview_description" to if (sc.current.parsed >= "1.21.11") " The schematic browser gets layouts with 3D thumbnails, a rotatable 3D preview with full screen and free camera, and folder icons, and material lists get a Replace button; these follow DimasKama's Schematic Preview and step aside when it is installed." else "",
     )
     inputs.properties(props)
     inputs.property("schematic_preview", schematicPreview)
@@ -94,7 +112,8 @@ tasks.processResources {
         if (schematicPreview.isEmpty()) add("compat.schematicpreview.")
         if (sc.current.parsed < "26.1") addAll(listOf("render.RenderTypeAccessor", "render.RenderSetupAccessor"))
         if (sc.current.parsed < "26.2") add("render.GameRendererCameraAccessor")
-        // Schematic browser previews, icons and Replace: 1.21.11 first, the other versions follow
+        // Schematic browser previews, icons and Replace: 1.21.11 and 26.x; 1.21.10 and older follow later
+        if (sc.current.parsed < "1.21.11") addAll(listOf("malilib.WidgetContainerAccess", "malilib.GuiListBaseAccess", "without.schematicpreview."))
         // Dev only: -PaleNoMixins=a.B,c.D leaves those mixins out (to find which one breaks something)
         providers.gradleProperty("aleNoMixins").orNull?.split(",")?.filter { it.isNotBlank() }?.let { addAll(it) }
     }
@@ -136,6 +155,20 @@ if (providers.gradleProperty("aleGameTest").isPresent) {
             eula.set(true)
             clearRunDirectory.set(true)
             username.set("ALEGameTest")
+        }
+    }
+    // The preview tests' helpers have version conditions inside: left out on 1.21.10 and older, like the previews
+    if (sc.current.parsed < "1.21.11") {
+        sourceSets.matching { it.name == "gametest" }.configureEach {
+            java.exclude("com/autyism/ale/gametest/PreviewFixtures.java", "com/autyism/ale/gametest/UiDriver.java",
+                "com/autyism/ale/gametest/mixin/FrameCounterMixin.java")
+        }
+        val previewTests = listOf("SpBlackBoxGameTest", "BrowserPreviewGameTest", "FolderIconGameTest", "MaterialReplaceGameTest",
+            "StepAsideGameTest", "CompareGameTest", "FrameCounterMixin")
+        tasks.matching { it.name == "processGametestResources" }.configureEach {
+            (this as ProcessResources).filesMatching(listOf("fabric.mod.json", "autyism-le-gametest.mixins.json")) {
+                filter { line -> if (previewTests.any { line.contains("\"$it\"") || line.contains(".$it\"") }) "" else line }
+            }
         }
     }
     tasks.matching { it.name == "runClientGameTest" }.configureEach {

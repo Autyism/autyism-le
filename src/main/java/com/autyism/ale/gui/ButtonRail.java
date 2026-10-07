@@ -136,7 +136,10 @@ public final class ButtonRail {
         List<int[]> obstacles = new ArrayList<>();
         for (WidgetBase w : acc.ale$getWidgets()) obstacles.add(visibleRect(w));
         for (TextFieldWrapper<? extends GuiTextFieldGeneric> t : acc.ale$getTextFields()) {
+            //? if >=1.21.11 {
             GuiTextFieldGeneric f = t.textField();
+            //?} else
+            //GuiTextFieldGeneric f = t.getTextField();
             obstacles.add(new int[]{f.getX(), f.getY(), f.getWidth(), f.getHeight()});
         }
         java.util.TreeMap<Integer, List<ButtonBase>> rows = new java.util.TreeMap<>();

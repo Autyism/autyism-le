@@ -1,3 +1,5 @@
+//? if >=1.21.11 {
+// 投影浏览器预览、图标和“替换”：1.21.10 及更早以后再移植
 package com.autyism.ale.config;
 
 import com.autyism.ale.AleMod;
@@ -35,3 +37,4 @@ public final class AleHotkeys implements IKeybindProvider {
         manager.addHotkeysForCategory(AleMod.MOD_NAME, "autyism-le.hotkeys.category.generic", AleConfigs.Generic.HOTKEYS);
     }
 }
+//?}

@@ -2,7 +2,7 @@
 mod.id = "autyism-le"
 mod.name = "Autyism's Litematica Enhancement"
 mod.group = "com.autyism.ale"
-mod.version = "1.0.0"
+mod.version = "1.1.0"
 mod.archives_base_name = "autyism-litematica-enhancement"
 mod.loader_compat = ">=0.17.0"
 

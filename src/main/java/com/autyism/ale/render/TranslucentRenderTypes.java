@@ -44,10 +44,14 @@ public final class TranslucentRenderTypes {
         //? if >=26.1 {
         /*net.minecraft.resources.Identifier texture = name != null ? RenderTypeTextures.first(t) : null;
         if (texture != null) {
-        *///?} else {
+        *///?} elif >=1.21.11 {
         if (name != null && !t.state.textures.isEmpty()) {
             net.minecraft.resources.Identifier texture = t.state.textures.values().iterator().next().location();
-        //?}
+        //?} else {
+        /*// 1.21.10 及更早：贴图在渲染类型私有的状态里，经访问器读出（见 RenderTypeTextures）
+        net.minecraft.resources.Identifier texture = name != null ? RenderTypeTextures.first(t) : null;
+        if (texture != null) {
+        *///?}
             // 26.3 没有半透明盔甲类型了，用半透明实体类型
             //? if >=26.3 {
             /*if (name.startsWith("armor_cutout")) return RenderTypes.entityTranslucent(texture);

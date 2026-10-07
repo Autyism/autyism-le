@@ -9,6 +9,8 @@ import fi.dy.masa.malilib.util.StringUtils;
 import java.util.List;
 
 public class AleConfigGui extends GuiConfigsBase {
+    // 设置分页（通用 / 投影浏览器 / 3D 预览）跟着预览功能走：1.21.10 及更早以后再移植
+    //? if >=1.21.11 {
     /** 设置分页：通用 / 投影浏览器 / 3D 预览 */
     public enum Tab {
         GENERIC("autyism-le.gui.tab.generic"),
@@ -31,11 +33,13 @@ public class AleConfigGui extends GuiConfigsBase {
     }
 
     private static Tab tab = Tab.GENERIC;
+    //?}
 
     public AleConfigGui() {
         super(10, 50, AleMod.MOD_ID, null, "autyism-le.gui.title.configs");
     }
 
+    //? if >=1.21.11 {
     @Override
     public void initGui() {
         super.initGui();
@@ -53,9 +57,13 @@ public class AleConfigGui extends GuiConfigsBase {
             x += button.getWidth() + 2;
         }
     }
+    //?}
 
     @Override
     public List<ConfigOptionWrapper> getConfigs() {
+        //? if >=1.21.11 {
         return ConfigOptionWrapper.createFor(tab.options());
+        //?} else
+        //return ConfigOptionWrapper.createFor(AleConfigs.Generic.OPTIONS);
     }
 }

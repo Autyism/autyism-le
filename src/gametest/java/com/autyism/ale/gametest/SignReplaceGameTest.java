@@ -58,9 +58,17 @@ public final class SignReplaceGameTest implements FabricClientGameTest {
     @Override
     public void runTest(ClientGameTestContext context) {
         if (!GTFilter.enabled("signreplace")) return;
+        //? if <1.21.6 {
+        /*// Schematic Preview 没有 1.21.5 的版本，而“替换”按钮是它的：这里只能确认带告示牌的材料列表照常打开、不出错
+        withoutSchematicPreview(context);
+        if (true) return;
+        *///?}
+        //? if >=1.21.11 {
         // 装了 Schematic Preview：测它的“替换”加上 ALE 的告示牌修复；没装：测 ALE 自己的“替换”
         boolean original = FabricLoader.getInstance().isModLoaded("schematicpreview");
         GT.log("[signreplace] using " + (original ? "Schematic Preview's" : "ALE's own") + " Replace dialog");
+        //?} else
+        //if (!FabricLoader.getInstance().isModLoaded("schematicpreview")) throw new AssertionError("Schematic Preview not loaded");
         try (TestSingleplayerContext sp = GT.newWorld(context)) {
             GT.clearArena(sp, 26, -4, 42, 4, 70);
             sp.getServer().runCommand("tp @a 33.5 64 4.5 180 10");
@@ -148,6 +156,49 @@ public final class SignReplaceGameTest implements FabricClientGameTest {
         }
     }
 
+    //? if <1.21.6 {
+    /*private static void withoutSchematicPreview(ClientGameTestContext context) {
+        if (FabricLoader.getInstance().isModLoaded("schematicpreview")) throw new AssertionError("Schematic Preview loaded on a version it has no build for");
+        try (TestSingleplayerContext sp = GT.newWorld(context)) {
+            GT.clearArena(sp, 26, -4, 42, 4, 70);
+            sp.getServer().runCommand("tp @a 33.5 64 4.5 180 10");
+            context.waitFor(c -> c.player != null && Math.abs(c.player.getX() - 33.5) < 0.01, 200);
+            Map<BlockPos, BlockState> layout = layout();
+            sp.getServer().runOnServer(s -> {
+                for (var e : layout.entrySet()) {
+                    s.overworld().setBlock(e.getKey(), e.getValue(), Block.UPDATE_CLIENTS);
+                    if (s.overworld().getBlockEntity(e.getKey()) instanceof SignBlockEntity sign) {
+                        GT.setSignLine(sign, true, 0, Component.literal("front " + e.getKey().getX()));
+                    }
+                }
+            });
+            context.waitTicks(5);
+            SchematicPlacement placement = GT.captureAndPlace(context, sp, MIN, MAX, MIN, "ale_sign_replace");
+            context.runOnClient(c -> {
+                MaterialListSchematic list = new MaterialListSchematic(placement.getSchematic(), true);
+                DataManager.setMaterialList(list);
+                c.setScreen(new GuiMaterialList(list));
+            });
+            context.waitTicks(10);
+            GT.shot(context, "ale-sign-material-list");
+            String problem = context.computeOnClient(c -> {
+                if (!(c.screen instanceof GuiMaterialList gui)) return "material list not open: " + c.screen;
+                boolean signs = false, hanging = false;
+                for (MaterialListEntry e : gui.getMaterialList().getMaterialsAll()) {
+                    signs |= e.getStack().is(Items.OAK_SIGN);
+                    hanging |= e.getStack().is(Items.OAK_HANGING_SIGN);
+                }
+                return signs && hanging ? null : "sign entries missing: signs=" + signs + " hanging=" + hanging;
+            });
+            if (problem != null) throw new AssertionError("[signreplace] " + problem);
+            GT.log("[signreplace] OK: no Schematic Preview for this version (the Replace button is its); material list with signs opens normally");
+        } finally {
+            GT.removeAllPlacements(context);
+            context.runOnClient(c -> c.setScreen(null));
+        }
+    }
+
+    *///?}
     private static BlockState expectedAfter(BlockState before) {
         Block target = null;
         if (before.is(Blocks.OAK_SIGN)) target = Blocks.SPRUCE_SIGN;
@@ -189,7 +240,9 @@ public final class SignReplaceGameTest implements FabricClientGameTest {
             context.waitTicks(2);
             if (shot != null) GT.shot(context, shot);
             GT.clickButton(context, "Ok");
-        } else {
+        }
+        //? if >=1.21.11 {
+        else {
             context.waitFor(c -> c.screen instanceof com.autyism.ale.replace.ReplaceBlockScreen, 40);
             context.getInput().typeChars(search);
             context.waitTicks(3);
@@ -205,6 +258,7 @@ public final class SignReplaceGameTest implements FabricClientGameTest {
             if (shot != null) GT.shot(context, shot);
             GT.clickButton(context, "OK");
         }
+        //?}
         context.waitTicks(5);
     }
 

@@ -9,6 +9,25 @@ stonecutter parameters {
         string(current.parsed >= "1.21.11") {
             replace("ResourceLocation", "Identifier")
         }
+        // Before 1.21.11 the render types are static methods on renderer.RenderType (no rendertype package, no RenderTypes).
+        // One way only: the shared source always stays in the 1.21.11 state.
+        regex(current.parsed < "1.21.11") {
+            replace("""net\.minecraft\.client\.renderer\.rendertype\.RenderTypes?\b""" to """net.minecraft.client.renderer.RenderType""", """(?!)""" to """unused""")
+            replace("""net/minecraft/client/renderer/rendertype/RenderType\b""" to """net/minecraft/client/renderer/RenderType""", """(?!)""" to """unused""")
+            replace("""\bRenderTypes\b""" to """RenderType""", """(?!)""" to """unused""")
+        }
+        // Before 1.21.11: MaLiLib draws GUIs with the vanilla GuiGraphics (no GuiContext), Painting is in entity.decoration,
+        // and items share the block atlas (no separate translucentBlockItemSheet). One way only, like above.
+        regex(current.parsed < "1.21.11") {
+            replace("""fi\.dy\.masa\.malilib\.render\.GuiContext\b""" to """net.minecraft.client.gui.GuiGraphics""", """(?!)""" to """unused""")
+            replace("""(?<!\.)\bGuiContext\b""" to """GuiGraphics""", """(?!)""" to """unused""")
+            replace("""net\.minecraft\.world\.entity\.decoration\.painting\.Painting\b""" to """net.minecraft.world.entity.decoration.Painting""", """(?!)""" to """unused""")
+            replace("""\bSheets\.translucentBlockItemSheet\(\)""" to """Sheets.translucentItemSheet()""", """(?!)""" to """unused""")
+        }
+        // 1.21.5: MaLiLib draws GUI rectangles immediately, without the GuiGraphics (see gui/GuiRects). One way only.
+        regex(current.parsed < "1.21.6") {
+            replace("""\bRenderUtils\.(drawRect|drawOutlinedBox)\(ctx,""" to """com.autyism.ale.gui.GuiRects.$1(ctx,""", """(?!)""" to """unused""")
+        }
         // 26.2: screens moved from Minecraft to Gui; entity type and concrete constants moved (gametests use `c` / `client` for the Minecraft instance)
         regex(current.parsed >= "26.2") {
             replace("""\b(c|client)\.setScreen\(""" to """$1.gui.setScreen(""", """\b(c|client)\.gui\.setScreen\(""" to """$1.setScreen(""")

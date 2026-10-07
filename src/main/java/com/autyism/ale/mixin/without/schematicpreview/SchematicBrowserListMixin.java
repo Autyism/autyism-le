@@ -1,3 +1,5 @@
+//? if >=1.21.11 {
+// 投影浏览器预览、图标和“替换”：1.21.10 及更早以后再移植
 package com.autyism.ale.mixin.without.schematicpreview;
 
 import com.autyism.ale.browser.SchematicBrowserWidget;
@@ -28,3 +30,4 @@ public abstract class SchematicBrowserListMixin {
         cir.setReturnValue(new SchematicBrowserWidget(listX, listY, 100, 100, gui, listener));
     }
 }
+//?}

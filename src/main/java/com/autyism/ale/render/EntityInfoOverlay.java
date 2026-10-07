@@ -109,7 +109,10 @@ public final class EntityInfoOverlay {
             }
         } else if (e instanceof Painting painting) {
             lines.add(StringUtils.translate("autyism-le.info.entity.facing", dir(painting.getDirection())));
+            //? if >=1.21.11 {
             lines.add(painting.getVariant().unwrapKey().map(k -> k.identifier().getPath()).orElse("?"));
+            //?} else
+            //lines.add(painting.getVariant().unwrapKey().map(k -> k.location().getPath()).orElse("?"));
         } else {
             lines.add(StringUtils.translate("autyism-le.info.entity.yaw", Math.round(e.getYRot())));
         }
