@@ -42,8 +42,11 @@ dependencies {
     if (schematicPreview.isNotEmpty()) modCompileOnly("maven.modrinth:schematicpreview:$schematicPreview")
 
     // gametest 运行时：加载 Schematic Preview 与本作者的打印机，测试联动
+    // -PnoSchematicPreview：不加载 Schematic Preview，测试 ALE 自己的预览、图标和替换
     if (providers.gradleProperty("aleGameTest").isPresent) {
-        if (schematicPreview.isNotEmpty()) modLocalRuntime("maven.modrinth:schematicpreview:$schematicPreview")
+        if (schematicPreview.isNotEmpty() && !providers.gradleProperty("noSchematicPreview").isPresent) {
+            modLocalRuntime("maven.modrinth:schematicpreview:$schematicPreview")
+        }
         // 与用户实例一致的渲染环境：Sodium（可选再加 Iris）。目前只有 1.21.11 的 jar
         if (providers.gradleProperty("withSodium").isPresent && mc == "1.21.11") {
             modLocalRuntime(files(rootProject.file("libs/sodium-fabric-0.8.7+mc1.21.11.jar")))
@@ -65,6 +68,18 @@ java {
     sourceCompatibility = requiredJava
     targetCompatibility = requiredJava
     toolchain { languageVersion.set(JavaLanguageVersion.of(requiredJava.majorVersion)) }
+}
+
+// Schematic browser previews, icons and Replace are written for 1.21.11 first; until a version is ported its build leaves them out
+if (sc.current.parsed >= "26.1") {
+    sourceSets.named("main") {
+        java.exclude(
+            "com/autyism/ale/preview/**", "com/autyism/ale/replace/**", "com/autyism/ale/mixin/without/**",
+            "com/autyism/ale/browser/SchematicBrowserWidget.java", "com/autyism/ale/browser/BrowserEntryWidget.java",
+            "com/autyism/ale/browser/FolderIconScreen.java", "com/autyism/ale/browser/InfoTextBounds.java",
+            "com/autyism/ale/mixin/malilib/WidgetContainerAccess.java", "com/autyism/ale/mixin/malilib/GuiListBaseAccess.java"
+        )
+    }
 }
 
 tasks.withType<JavaCompile>().configureEach {
@@ -91,6 +106,8 @@ tasks.processResources {
         if (schematicPreview.isEmpty()) add("compat.schematicpreview.")
         if (sc.current.parsed < "26.1") addAll(listOf("render.RenderTypeAccessor", "render.RenderSetupAccessor"))
         if (sc.current.parsed < "26.2") add("render.GameRendererCameraAccessor")
+        // Schematic browser previews, icons and Replace: 1.21.11 first, the other versions follow
+        if (sc.current.parsed >= "26.1") addAll(listOf("malilib.WidgetContainerAccess", "malilib.GuiListBaseAccess", "without.schematicpreview."))
         // Dev only: -PaleNoMixins=a.B,c.D leaves those mixins out (to find which one breaks something)
         providers.gradleProperty("aleNoMixins").orNull?.split(",")?.filter { it.isNotBlank() }?.let { addAll(it) }
     }
