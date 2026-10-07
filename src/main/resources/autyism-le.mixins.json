@@ -24,6 +24,8 @@
     "render.LevelRendererMixin",
     "litematica.LitematicaRendererMixin",
     "render.RenderTypesMixin",
+    "render.RenderTypeAccessor",
+    "render.RenderSetupAccessor",
     "litematica.WorldRendererSchematicMixin"
   ],
   "injectors": {

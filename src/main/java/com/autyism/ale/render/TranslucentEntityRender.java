@@ -139,6 +139,39 @@ public final class TranslucentEntityRender {
                                 sheeted, foil, mulAlpha(color, alpha), crumbling, outline);
                         return null;
                     }
+                    //? if >=26.1 {
+                    /*case "submitBlockParts" -> {
+                        // 26.1：(pose, rt, parts, tints, light, overlay, outline)。方块模型用方块图集，换成方块图集的半透明类型
+                        PoseStack pose = (PoseStack) args[0];
+                        @SuppressWarnings("unchecked")
+                        List<net.minecraft.client.renderer.block.dispatch.BlockStateModelPart> parts =
+                                (List<net.minecraft.client.renderer.block.dispatch.BlockStateModelPart>) args[2];
+                        int[] tints = (int[]) args[3];
+                        int light = (Integer) args[4], overlay = (Integer) args[5];
+                        List<BakedQuad> quads = new java.util.ArrayList<>();
+                        for (var part : parts) {
+                            for (net.minecraft.core.Direction d : QUAD_SIDES) quads.addAll(part.getQuads(d));
+                        }
+                        target.submitCustomGeometry(pose, Sheets.translucentBlockItemSheet(),
+                                (p, consumer) -> putQuads(p, consumer, quads, tints, alpha, light, overlay));
+                        return null;
+                    }
+                    case "submitItemQuads" -> {
+                        // 26.1：(pose, ctx, light, overlay, outline, tints, quads, foil)，渲染类型在每个面的材质里：按贴图所在图集分组
+                        PoseStack pose = (PoseStack) args[0];
+                        int light = (Integer) args[2], overlay = (Integer) args[3];
+                        int[] tints = (int[]) args[5];
+                        @SuppressWarnings("unchecked")
+                        List<BakedQuad> quads = (List<BakedQuad>) args[6];
+                        java.util.Map<RenderType, List<BakedQuad>> byType = new java.util.LinkedHashMap<>();
+                        for (BakedQuad quad : quads) byType.computeIfAbsent(itemSheetFor(quad), k -> new java.util.ArrayList<>()).add(quad);
+                        for (var e : byType.entrySet()) {
+                            List<BakedQuad> group = e.getValue();
+                            target.submitCustomGeometry(pose, e.getKey(), (p, consumer) -> putQuads(p, consumer, group, tints, alpha, light, overlay));
+                        }
+                        return null;
+                    }
+                    *///?} else {
                     case "submitBlockModel" -> {
                         // (pose, rt, model, r, g, b, light, overlay, outline)
                         PoseStack pose = (PoseStack) args[0];
@@ -190,6 +223,7 @@ public final class TranslucentEntityRender {
                         });
                         return null;
                     }
+                    //?}
                     case "submitCustomGeometry" -> {
                         PoseStack pose = (PoseStack) args[0];
                         RenderType rt = (RenderType) args[1];
@@ -198,6 +232,10 @@ public final class TranslucentEntityRender {
                         return null;
                     }
                     default -> {
+                        //? if >=26.1 {
+                        /*// 默认方法（26.1 按贴图提交模型、Fabric 带网格的提交等）在代理上执行自己的方法体，里面再调用的抽象方法会回到这里
+                        if (method.isDefault()) return InvocationHandler.invokeDefault(proxy, method, args);
+                        *///?}
                         if (method.isDefault() && method.getDeclaringClass().isInterface() && !Proxy.isProxyClass(target.getClass())) {
                             return method.invoke(target, args);
                         }
@@ -210,6 +248,29 @@ public final class TranslucentEntityRender {
         }
     }
 
+    //? if >=26.1 {
+    /*private static RenderType itemSheetFor(BakedQuad quad) {
+        var sprite = quad.materialInfo().sprite();
+        return sprite != null && net.minecraft.client.renderer.texture.TextureAtlas.LOCATION_BLOCKS.equals(sprite.atlasLocation())
+                ? Sheets.translucentBlockItemSheet() : Sheets.translucentItemSheet();
+    }
+
+    private static final net.minecraft.core.Direction[] QUAD_SIDES = {null, net.minecraft.core.Direction.DOWN, net.minecraft.core.Direction.UP,
+            net.minecraft.core.Direction.NORTH, net.minecraft.core.Direction.SOUTH, net.minecraft.core.Direction.WEST, net.minecraft.core.Direction.EAST};
+
+    // 26.1：面写进顶点流，颜色 = 染色 × 幽灵色调，透明度降低
+    private static void putQuads(PoseStack.Pose pose, VertexConsumer consumer, List<BakedQuad> quads, int[] tints, float alpha, int light, int overlay) {
+        com.mojang.blaze3d.vertex.QuadInstance instance = new com.mojang.blaze3d.vertex.QuadInstance();
+        for (BakedQuad quad : quads) {
+            int index = quad.materialInfo().tintIndex();
+            int tint = index >= 0 && tints != null && index < tints.length ? tints[index] : -1;
+            instance.setColor(mulAlpha(tint | 0xFF000000, alpha));
+            instance.setLightCoords(light);
+            instance.setOverlayCoords(overlay);
+            consumer.putBakedQuad(pose, quad, instance);
+        }
+    }
+    *///?} else {
     private static RenderType itemSheetFor(RenderType original) {
         try {
             if (original != null && !original.state.textures.isEmpty()
@@ -220,6 +281,7 @@ public final class TranslucentEntityRender {
         }
         return Sheets.translucentItemSheet();
     }
+    //?}
 
     private static final java.util.Map<Method, String> KINDS = new java.util.concurrent.ConcurrentHashMap<>();
 
@@ -228,15 +290,19 @@ public final class TranslucentEntityRender {
         Class<?>[] p = m.getParameterTypes();
         if (p.length == 1 && p[0] == int.class && OrderedSubmitNodeCollector.class.isAssignableFrom(m.getReturnType())) return "order";
         if (p.length == 0) return "other";
-        if (net.minecraft.client.model.Model.class.isAssignableFrom(p[0]) && (p.length == 8 || p.length == 10)) return "submitModel";
+        if (net.minecraft.client.model.Model.class.isAssignableFrom(p[0]) && (p.length == 8 || p.length == 10) && p[3] == RenderType.class) return "submitModel";
         if (p[0] == net.minecraft.client.model.geom.ModelPart.class && p.length >= 6) return "submitModelPart";
         if (p[0] == PoseStack.class && p.length >= 3) {
+            //? if >=26.1 {
+            /*if (p.length == 7 && p[1] == RenderType.class && List.class.isAssignableFrom(p[2]) && p[3] == int[].class) return "submitBlockParts";
+            if (p.length == 8 && p[1] == net.minecraft.world.item.ItemDisplayContext.class && p[5] == int[].class && List.class.isAssignableFrom(p[6])) return "submitItemQuads";
+            *///?}
             if (p.length == 3 && p[1] == RenderType.class && SubmitNodeCollector.CustomGeometryRenderer.class.isAssignableFrom(p[2])) return "submitCustomGeometry";
             if (p.length >= 8 && BlockStateModel.class.isAssignableFrom(p[2]) && p[3] == float.class) {
                 return p[1] == RenderType.class ? "submitBlockModel" : "submitBlockStateModel";
             }
             if (p.length == 5 && p[1] == BlockState.class) return "submitBlock";
-            if (p.length == 9 && p[1] == net.minecraft.world.item.ItemDisplayContext.class && p[5] == int[].class && List.class.isAssignableFrom(p[6])) return "submitItem";
+            if (p.length == 9 && p[1] == net.minecraft.world.item.ItemDisplayContext.class && p[5] == int[].class && List.class.isAssignableFrom(p[6]) && p[7] == RenderType.class) return "submitItem";
         }
         return "other";
     }

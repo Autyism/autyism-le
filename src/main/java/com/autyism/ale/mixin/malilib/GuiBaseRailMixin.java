@@ -19,6 +19,9 @@ public abstract class GuiBaseRailMixin {
         ButtonRail.onInit((GuiBase) (Object) this);
     }
 
+    //? if >=26.1 {
+    /*@Inject(method = "extractRenderState", at = @At("HEAD"))
+    *///?} else
     @Inject(method = "render", at = @At("HEAD"), remap = true)
     private void ale$railLayout(GuiGraphics graphics, int mouseX, int mouseY, float partialTicks, CallbackInfo ci) {
         ButtonRail.beforeRender((GuiBase) (Object) this);
