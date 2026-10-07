@@ -15,7 +15,7 @@ import net.fabricmc.fabric.api.client.gametest.v1.FabricClientGameTest;
 import net.fabricmc.fabric.api.client.gametest.v1.context.ClientGameTestContext;
 import net.fabricmc.fabric.api.client.gametest.v1.context.TestSingleplayerContext;
 import net.minecraft.world.item.Items;
-import org.lwjgl.glfw.GLFW;
+import com.mojang.blaze3d.platform.InputConstants;
 
 /**
  * 并排对照：同一组投影、同样的窗口，按同样的顺序操作，装了 Schematic Preview 时拍它（cmp-sp-*），
@@ -82,13 +82,13 @@ public final class CompareGameTest implements FabricClientGameTest {
             ui.shot("13b-fullscreen-drag-up");
             ui.scrollAt(320, 180, 1);
             ui.shot("13c-fullscreen-scroll-in");
-            context.getInput().pressKey(GLFW.GLFW_KEY_ESCAPE);
+            context.getInput().pressKey(InputConstants.KEY_ESCAPE);
             context.waitTicks(10);
             ui.hover(300, 345);
             ui.shot("14-back");
             ui.click(cam[0], cam[1], 0);
             ui.hover(548, 260);
-            context.getInput().holdKeyFor(GLFW.GLFW_KEY_W, 15);
+            context.getInput().holdKeyFor(InputConstants.KEY_W, 15);
             ui.shot("15-freecam-w");
             ui.drag(548, 260, 568, 260);
             ui.shot("16-freecam-look");

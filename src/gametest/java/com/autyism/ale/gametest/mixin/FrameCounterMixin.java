@@ -12,7 +12,11 @@ import org.spongepowered.asm.mixin.injection.callback.CallbackInfo;
 @Mixin(GameRenderer.class)
 abstract class FrameCounterMixin {
     @Inject(method = "render", at = @At("HEAD"))
+    //? if >=26.3 {
+    /*private void ale$countFrame(CallbackInfo ci) {
+    *///?} else {
     private void ale$countFrame(DeltaTracker deltaTracker, boolean renderLevel, CallbackInfo ci) {
+    //?}
         GT.frames++;
     }
 }

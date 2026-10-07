@@ -20,7 +20,6 @@ import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.item.Items;
 import net.minecraft.world.level.block.Block;
 import org.jetbrains.annotations.Nullable;
-import org.lwjgl.glfw.GLFW;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -233,7 +232,7 @@ public class ReplaceBlockScreen extends GuiBase {
     @Override
     public boolean onMouseClicked(MouseButtonEvent click, boolean doubleClick) {
         double mx = click.x(), my = click.y();
-        if (click.button() == 0 && mx >= this.gridX && mx < this.gridX + COLUMNS * CELL && my >= this.gridY && my < this.gridY + ROWS * CELL) {
+        if (click.button() == com.mojang.blaze3d.platform.InputConstants.MOUSE_BUTTON_LEFT && mx >= this.gridX && mx < this.gridX + COLUMNS * CELL && my >= this.gridY && my < this.gridY + ROWS * CELL) {
             int c = (int) ((mx - this.gridX) / CELL), r = (int) ((my - this.gridY) / CELL);
             int i = (this.scroll + r) * COLUMNS + c;
             if (i < this.filtered.size()) {
@@ -242,7 +241,7 @@ public class ReplaceBlockScreen extends GuiBase {
             }
             return true;
         }
-        if (click.button() == 0 && maxScroll() > 0 && mx >= this.gridX + COLUMNS * CELL && mx < this.gridX + COLUMNS * CELL + 8
+        if (click.button() == com.mojang.blaze3d.platform.InputConstants.MOUSE_BUTTON_LEFT && maxScroll() > 0 && mx >= this.gridX + COLUMNS * CELL && mx < this.gridX + COLUMNS * CELL + 8
                 && my >= this.gridY && my < this.gridY + ROWS * CELL) {
             this.draggingBar = true;
             scrollTo(my);
@@ -274,7 +273,7 @@ public class ReplaceBlockScreen extends GuiBase {
 
     @Override
     public boolean onKeyTyped(KeyEvent event) {
-        if (event.key() == GLFW.GLFW_KEY_ENTER || event.key() == GLFW.GLFW_KEY_KP_ENTER) {
+        if (event.key() == com.mojang.blaze3d.platform.InputConstants.KEY_RETURN || event.key() == com.mojang.blaze3d.platform.InputConstants.KEY_NUMPADENTER) {
             confirm();
             return true;
         }

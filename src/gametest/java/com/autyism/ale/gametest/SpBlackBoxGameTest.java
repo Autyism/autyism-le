@@ -9,7 +9,7 @@ import net.fabricmc.fabric.api.client.gametest.v1.FabricClientGameTest;
 import net.fabricmc.fabric.api.client.gametest.v1.context.ClientGameTestContext;
 import net.fabricmc.fabric.api.client.gametest.v1.context.TestSingleplayerContext;
 import net.fabricmc.loader.api.FabricLoader;
-import org.lwjgl.glfw.GLFW;
+import com.mojang.blaze3d.platform.InputConstants;
 
 /**
  * 对照用：在开发客户端里把 Schematic Preview 当作“黑盒”运行（只看屏幕、只用鼠标键盘操作），
@@ -84,7 +84,7 @@ public final class SpBlackBoxGameTest implements FabricClientGameTest {
             ui.click(320, 140, 0);
             context.waitTicks(3);
             ui.shot("replace-selected-cell");
-            for (int i = 0; i < 40; i++) context.getInput().pressKey(GLFW.GLFW_KEY_BACKSPACE);
+            for (int i = 0; i < 40; i++) context.getInput().pressKey(InputConstants.KEY_BACKSPACE);
             context.waitTicks(3);
             ui.shot("replace-search-cleared");
             context.getInput().typeChars("spruce_planks");
@@ -117,7 +117,7 @@ public final class SpBlackBoxGameTest implements FabricClientGameTest {
         }
         ui.shot("dialog-open-" + label);
         if (text != null) {
-            for (int i = 0; i < 40; i++) context.getInput().pressKey(GLFW.GLFW_KEY_BACKSPACE);
+            for (int i = 0; i < 40; i++) context.getInput().pressKey(InputConstants.KEY_BACKSPACE);
             if (!text.isEmpty()) context.getInput().typeChars(text);
             context.waitTicks(2);
         }

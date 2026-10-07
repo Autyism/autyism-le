@@ -39,7 +39,7 @@ import net.minecraft.world.level.block.state.properties.BlockStateProperties;
 import net.minecraft.world.level.block.state.properties.Half;
 import net.minecraft.world.level.block.state.properties.SlabType;
 import net.minecraft.world.level.block.state.properties.StairsShape;
-import org.lwjgl.glfw.GLFW;
+import com.mojang.blaze3d.platform.InputConstants;
 
 import java.lang.reflect.Field;
 import java.nio.file.Path;
@@ -327,7 +327,7 @@ public final class MaterialReplaceGameTest implements FabricClientGameTest {
         });
         context.getInput().setCursorPos(pos[0], pos[1]);
         context.waitTick();
-        context.getInput().pressMouse(GLFW.GLFW_MOUSE_BUTTON_LEFT);
+        context.getInput().pressMouse(InputConstants.MOUSE_BUTTON_LEFT);
         context.waitTick();
     }
 }

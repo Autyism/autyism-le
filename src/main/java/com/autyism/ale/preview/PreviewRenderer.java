@@ -185,15 +185,15 @@ public final class PreviewRenderer {
             RenderSystem.AutoStorageIndexBuffer quadIndices = quadIndexBuffer();
             GpuBuffer indexBuffer = quadIndices.getBuffer(maxIndices);
             try (RenderPass pass = openPass(encoder, "ALE schematic preview", target)) {
-                pass.setPipeline(RenderPipelines.SOLID_BLOCK);
+                usePipeline(pass, RenderPipelines.SOLID_BLOCK);
                 pass.setUniform("Projection", projectionSlice);
                 pass.setUniform("Fog", fogSlice);
                 pass.setUniform("DynamicTransforms", transforms);
-                pass.bindTexture("Sampler0", atlas, atlasSampler);
-                pass.bindTexture("Sampler2", lightmap, lightSampler);
+                bindTexture(pass, "Sampler0", atlas, atlasSampler);
+                bindTexture(pass, "Sampler2", lightmap, lightSampler);
                 pass.setIndexBuffer(indexBuffer, quadIndices.type());
                 for (MeshLayer layer : new MeshLayer[]{MeshLayer.SOLID, MeshLayer.CUTOUT, MeshLayer.TRIPWIRE}) {
-                    pass.setPipeline(pipeline(layer));
+                    usePipeline(pass, pipeline(layer));
                     for (Page p : pages) {
                         if (p.layer != layer || p.quads == 0) continue;
                         bindVertices(pass, p.vertices);
@@ -221,12 +221,12 @@ public final class PreviewRenderer {
             RenderSystem.AutoStorageIndexBuffer quadIndices = quadIndexBuffer();
             GpuBuffer plainIndices = unsortedIndices > 0 ? quadIndices.getBuffer(unsortedIndices) : null;
             try (RenderPass pass = openPass(encoder, "ALE schematic preview (translucent)", target)) {
-                pass.setPipeline(pipeline(MeshLayer.TRANSLUCENT));
+                usePipeline(pass, pipeline(MeshLayer.TRANSLUCENT));
                 pass.setUniform("Projection", projectionSlice);
                 pass.setUniform("Fog", fogSlice);
                 pass.setUniform("DynamicTransforms", transforms);
-                pass.bindTexture("Sampler0", atlas, atlasSampler);
-                pass.bindTexture("Sampler2", lightmap, lightSampler);
+                bindTexture(pass, "Sampler0", atlas, atlasSampler);
+                bindTexture(pass, "Sampler2", lightmap, lightSampler);
                 for (Page p : translucent) {
                     bindVertices(pass, p.vertices);
                     if (p.sortedIndices != null) {
@@ -242,6 +242,22 @@ public final class PreviewRenderer {
                 }
             }
         }
+    }
+
+    private static void usePipeline(RenderPass pass, RenderPipeline pipeline) {
+        //? if >=26.3 {
+        /*pass.setPipeline(RenderSystem.getCompiledPipeline(pipeline));
+        *///?} else {
+        pass.setPipeline(pipeline);
+        //?}
+    }
+
+    private static void bindTexture(RenderPass pass, String name, GpuTextureView view, GpuSampler sampler) {
+        //? if >=26.3 {
+        /*pass.setUniform(name, view, sampler);
+        *///?} else {
+        pass.bindTexture(name, view, sampler);
+        //?}
     }
 
     private static RenderSystem.AutoStorageIndexBuffer quadIndexBuffer() {
@@ -372,11 +388,19 @@ public final class PreviewRenderer {
             RenderSystem.setShaderLights(lightsBuffer.slice(0L, Lighting.UBO_SIZE));
             if (scissorOn) RenderSystem.disableScissorForRenderTypeDraws();
             modelView.set(view);
+            //? if >=26.3 {
+            /*// 26.3：先整理提交，再在画进预览纹理的绘制里执行
+            try (FeatureRenderDispatcher.PreparedFrame frame = features.prepareFrame(submits);
+                 RenderPass pass = openPass(RenderSystem.getDevice().createCommandEncoder(), "ALE schematic preview (block entities)", target)) {
+                FeatureRenderDispatcher.renderAllFeatures(pass, frame);
+            }
+            *///?} elif >=26.2 {
+            /*RenderSystem.outputColorTextureOverride = target.colorView();
+            RenderSystem.outputDepthTextureOverride = target.depthView();
+            features.renderAllFeatures(submits);
+            *///?} else {
             RenderSystem.outputColorTextureOverride = target.colorView();
             RenderSystem.outputDepthTextureOverride = target.depthView();
-            //? if >=26.2 {
-            /*features.renderAllFeatures(submits);
-            *///?} else {
             features.renderAllFeatures();
             mc.renderBuffers().bufferSource().endBatch();
             //?}
@@ -385,8 +409,10 @@ public final class PreviewRenderer {
             model.disableBlockEntities();
             AleMod.LOGGER.warn("Schematic preview: block entities could not be drawn and are skipped for this schematic", t);
         } finally {
+            //? if <26.3 {
             RenderSystem.outputColorTextureOverride = null;
             RenderSystem.outputDepthTextureOverride = null;
+            //?}
             modelView.popMatrix();
             RenderSystem.restoreProjectionMatrix();
             if (oldFog != null) RenderSystem.setShaderFog(oldFog);

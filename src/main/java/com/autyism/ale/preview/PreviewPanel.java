@@ -138,16 +138,16 @@ public final class PreviewPanel {
     /** 鼠标按下；用掉了返回 true */
     public boolean mouseClicked(double mouseX, double mouseY, int button, @Nullable Screen parent) {
         if (this.file == null) return false;
-        if (button == 0 && inside(mouseX, mouseY, this.fullX, this.fullY, BUTTON, BUTTON)) {
+        if (button == com.mojang.blaze3d.platform.InputConstants.MOUSE_BUTTON_LEFT && inside(mouseX, mouseY, this.fullX, this.fullY, BUTTON, BUTTON)) {
             PreviewSession session = PreviewSession.forFile(this.file);
             GuiBase.openGui(new FullscreenPreviewScreen(parent, session));
             return true;
         }
-        if (button == 0 && inside(mouseX, mouseY, this.camX, this.camY, BUTTON, BUTTON)) {
+        if (button == com.mojang.blaze3d.platform.InputConstants.MOUSE_BUTTON_LEFT && inside(mouseX, mouseY, this.camX, this.camY, BUTTON, BUTTON)) {
             PreviewSession.setFreecam(!PreviewSession.isFreecam());
             return true;
         }
-        if (button == 0 && isOverPreview(mouseX, mouseY)) {
+        if (button == com.mojang.blaze3d.platform.InputConstants.MOUSE_BUTTON_LEFT && isOverPreview(mouseX, mouseY)) {
             Minecraft mc = Minecraft.getInstance();
             this.dragging = true;
             this.lastX = mc.mouseHandler.getScaledXPos(mc.getWindow());

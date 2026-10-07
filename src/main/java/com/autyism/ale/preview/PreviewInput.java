@@ -12,7 +12,11 @@ public final class PreviewInput {
     public static boolean isDown(KeyMapping mapping) {
         InputConstants.Key key = boundKey(mapping);
         if (key == null || key.getType() != InputConstants.Type.KEYSYM || key.getValue() < 0) return false;
+        //? if >=26.3 {
+        /*return InputConstants.isKeyDown(key.getValue());
+        *///?} else {
         return InputConstants.isKeyDown(Minecraft.getInstance().getWindow(), key.getValue());
+        //?}
     }
 
     /**
