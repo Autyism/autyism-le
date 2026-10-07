@@ -143,6 +143,7 @@ public final class PreviewRenderer {
         if (pages.isEmpty() && model.blockEntityDraws().isEmpty()) return;
         ensureStaticBuffers();
 
+        camera.fitTo(target.aspect());
         Matrix4f projection = camera.projection(target.aspect());
         Matrix4f view = camera.viewRotation();
         Vector3f eye = camera.eye();

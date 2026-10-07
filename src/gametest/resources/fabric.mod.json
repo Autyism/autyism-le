@@ -20,7 +20,8 @@
       "com.autyism.ale.gametest.BrowserPreviewGameTest",
       "com.autyism.ale.gametest.FolderIconGameTest",
       "com.autyism.ale.gametest.MaterialReplaceGameTest",
-      "com.autyism.ale.gametest.StepAsideGameTest"
+      "com.autyism.ale.gametest.StepAsideGameTest",
+      "com.autyism.ale.gametest.CompareGameTest"
     ]
   },
   "depends": {

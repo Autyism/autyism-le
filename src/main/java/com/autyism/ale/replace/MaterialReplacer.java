@@ -95,7 +95,9 @@ public final class MaterialReplacer {
                         Optional<BlockState> replacement = mapping.computeIfAbsent(old, s -> {
                             ItemStack required = cache.getRequiredBuildItemForState(s);
                             if (required == null || required.isEmpty() || !ItemStack.isSameItem(required, item)) return Optional.empty();
-                            return Optional.of(convert(s, newBlock));
+                            BlockState converted = convert(s, newBlock);
+                            // 换成同一个方块（同样的状态）什么都不变，不算进数量
+                            return converted == s ? Optional.empty() : Optional.of(converted);
                         });
                         if (replacement.isEmpty()) continue;
                         BlockState now = replacement.get();
