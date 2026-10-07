@@ -26,7 +26,7 @@ public final class ThumbnailCache {
         FAILED
     }
 
-    private static final int MAX_QUADS = 1_000_000;
+    private static final int MAX_QUADS = 400_000;
     private static final int MAX_TEXTURE = 512;
     private static final int MAX_ENTRIES = 600;
     private static final long FRAME_BUDGET_NANOS = 6_000_000L;

@@ -3,7 +3,7 @@
   "id": "${mod_id}",
   "version": "${mod_version}",
   "name": "${mod_name}",
-  "description": "Quality-of-life additions for Litematica: searchable block and item pickers for MaLiLib block lists, Save edits / Save as buttons for schematic placements, and W/D markers for blocks that are only wrong in waterlogging or orientation. Also adds an info overlay for schematic entities and fluids, translucent schematic entities, entities and container contents in material lists, container checks in the Schematic Verifier, sign wood replacement that keeps the text, and schematic overlays that stay visible through glass.",
+  "description": "Quality-of-life additions for Litematica: searchable block and item pickers for MaLiLib block lists, Save edits / Save as buttons for schematic placements, and W/D markers for blocks that are only wrong in waterlogging or orientation. Also adds an info overlay for schematic entities and fluids, translucent schematic entities, entities and container contents in material lists, container checks in the Schematic Verifier, sign wood replacement that keeps the text, and schematic overlays that stay visible through glass. The schematic browser gets layouts with 3D thumbnails, a rotatable 3D preview with full screen and free camera, and folder icons, and material lists get a Replace button; these follow DimasKama's Schematic Preview and step aside when it is installed.",
   "authors": [
     "Autyism"
   ],

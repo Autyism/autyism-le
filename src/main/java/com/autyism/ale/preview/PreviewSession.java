@@ -13,8 +13,8 @@ import java.nio.file.Path;
  * 同一时间只有一个会话；换选中的文件时旧的会被关掉。
  */
 public final class PreviewSession implements AutoCloseable {
-    /** 大预览的四边形上限（约 4 百万个，几百 MB 显存以内） */
-    private static final int MAX_QUADS = 4_000_000;
+    /** 大预览的四边形上限（约 2 百万个，显存 250 MB 左右） */
+    private static final int MAX_QUADS = 2_000_000;
     /** 每帧最多花在上传网格上的时间 */
     private static final long UPLOAD_BUDGET_NANOS = 4_000_000L;
     /** 自由视角开关在不同投影之间保持（与按钮状态一致） */
