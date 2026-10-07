@@ -5,7 +5,7 @@
 
 <p align="center"><a href="#english">English</a> · <a href="#简体中文">简体中文</a></p>
 
-![Minecraft 1.21.11 | 26.1–26.2](https://img.shields.io/badge/Minecraft-1.21.11_%7C_26.1--26.2-62B47A) ![Fabric](https://img.shields.io/badge/Loader-Fabric-DBD0B4) ![License: AGPL-3.0](https://img.shields.io/badge/License-AGPL--3.0-blue)
+![Minecraft 1.21.11 | 26.1–26.3](https://img.shields.io/badge/Minecraft-1.21.11_%7C_26.1--26.3-62B47A) ![Fabric](https://img.shields.io/badge/Loader-Fabric-DBD0B4) ![License: AGPL-3.0](https://img.shields.io/badge/License-AGPL--3.0-blue)
 
 # English
 
@@ -177,6 +177,7 @@ There is a separate jar for each Minecraft version:
 | 1.21.11 | `autyism-litematica-enhancement-1.0.0.jar` | 21 or newer | 0.17.0 or newer | 0.27.0 or newer | 0.26.0 or newer |
 | 26.1, 26.1.1, 26.1.2 | `autyism-litematica-enhancement-1.0.0+26.1.2.jar` | 25 or newer | 0.19.3 or newer | 0.28.12 or newer | 0.27.14 or newer |
 | 26.2 | `autyism-litematica-enhancement-1.0.0+26.2.jar` | 25 or newer | 0.19.3 or newer | 0.29.6 or newer | 0.28.8 or newer |
+| 26.3 | `autyism-litematica-enhancement-1.0.0+26.3.jar` | 25 or newer | 0.19.3 or newer | 0.30.2 or newer | 0.29.1 or newer |
 
 Fabric API, MaLiLib and Litematica are required, each in the build for your Minecraft version.
 
@@ -196,7 +197,7 @@ ALE is client-side only. Nothing needs to be installed on the server.
 - **Litematica Printer Autyism Edition:** optional and independent; neither mod needs the other. With both installed, the printer's block lists get the picker.
 - **Other MaLiLib-based mods:** their block and item lists get the picker when ALE recognizes them (by the list's name or its current entries).
 - **Mods that add buttons to Litematica screens:** crowded rows become scrollable, so all buttons stay reachable.
-- **Litematica versions:** ALE changes how parts of Litematica work, so it depends on Litematica's internals. It was built and tested with Litematica 0.26.16 and MaLiLib 0.27.20 on 1.21.11, Litematica 0.27.14 and MaLiLib 0.28.12 on 26.1.2, and Litematica 0.28.8 and MaLiLib 0.29.6 on 26.2; a future Litematica update may need a matching ALE update.
+- **Litematica versions:** ALE changes how parts of Litematica work, so it depends on Litematica's internals. It was built and tested with Litematica 0.26.16 and MaLiLib 0.27.20 on 1.21.11, Litematica 0.27.14 and MaLiLib 0.28.12 on 26.1.2, Litematica 0.28.8 and MaLiLib 0.29.6 on 26.2, and Litematica 0.29.1 and MaLiLib 0.30.2 on 26.3; a future Litematica update may need a matching ALE update.
 - No incompatibilities are known at the time of release.
 
 ## Installation
@@ -422,6 +423,7 @@ ALE 没有自己的快捷键和命令，功能都在 Litematica 的界面里，�
 | 1.21.11 | `autyism-litematica-enhancement-1.0.0.jar` | 21 或更新 | 0.17.0 或更新 | 0.27.0 或更新 | 0.26.0 或更新 |
 | 26.1、26.1.1、26.1.2 | `autyism-litematica-enhancement-1.0.0+26.1.2.jar` | 25 或更新 | 0.19.3 或更新 | 0.28.12 或更新 | 0.27.14 或更新 |
 | 26.2 | `autyism-litematica-enhancement-1.0.0+26.2.jar` | 25 或更新 | 0.19.3 或更新 | 0.29.6 或更新 | 0.28.8 或更新 |
+| 26.3 | `autyism-litematica-enhancement-1.0.0+26.3.jar` | 25 或更新 | 0.19.3 或更新 | 0.30.2 或更新 | 0.29.1 或更新 |
 
 Fabric API、MaLiLib 和 Litematica 都是必需的，各自下载你的 Minecraft 版本对应的那一版。
 
@@ -441,7 +443,7 @@ ALE 是纯客户端模组，服务器不需要安装任何东西。
 - **Litematica Printer Autyism Edition（打印机）**：可选，两个模组互不依赖。一起安装时，打印机的方块列表也能用选择界面。
 - **其他 MaLiLib 系模组**：只要 ALE 能根据列表名称或现有内容识别出这是方块或物品列表，就会提供选择界面。
 - **往 Litematica 界面加按钮的模组**：放不下的按钮行会变成可滚动的，所有按钮都点得到。
-- **Litematica 版本**：ALE 修改了 Litematica 内部的一些行为，因此依赖它的内部实现。1.21.11 版基于 Litematica 0.26.16 和 MaLiLib 0.27.20 构建和测试，26.1.2 版基于 Litematica 0.27.14 和 MaLiLib 0.28.12，26.2 版基于 Litematica 0.28.8 和 MaLiLib 0.29.6；Litematica 以后更新时，ALE 可能也需要跟着更新。
+- **Litematica 版本**：ALE 修改了 Litematica 内部的一些行为，因此依赖它的内部实现。1.21.11 版基于 Litematica 0.26.16 和 MaLiLib 0.27.20 构建和测试，26.1.2 版基于 Litematica 0.27.14 和 MaLiLib 0.28.12，26.2 版基于 Litematica 0.28.8 和 MaLiLib 0.29.6，26.3 版基于 Litematica 0.29.1 和 MaLiLib 0.30.2；Litematica 以后更新时，ALE 可能也需要跟着更新。
 - 目前没有已知的不兼容模组。
 
 ## 安装

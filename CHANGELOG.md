@@ -1,5 +1,19 @@
 # Changelog
 
+## 1.0.0+26.3 — 2026-10-07
+
+ALE for Minecraft 26.3, with the same features and settings as 1.0.0 for 1.21.11.
+
+- Needs Java 25, Fabric Loader 0.19.3 or newer, MaLiLib 0.30.2 or newer and Litematica 0.29.1 or newer.
+- Other Minecraft versions have their own jar: `autyism-litematica-enhancement-1.0.0.jar` for 1.21.11, `autyism-litematica-enhancement-1.0.0+26.1.2.jar` for 26.1–26.1.2.
+
+### 中文
+
+适用于 Minecraft 26.3 的 ALE，功能和设置与 1.21.11 的 1.0.0 相同。
+
+- 需要 Java 25、Fabric Loader 0.19.3 或更高、MaLiLib 0.30.2 或更高、Litematica 0.29.1 或更高。
+- 其他 Minecraft 版本有各自的 jar：1.21.11 用 `autyism-litematica-enhancement-1.0.0.jar`，26.1–26.1.2 用 `autyism-litematica-enhancement-1.0.0+26.1.2.jar`。
+
 ## 1.0.0+26.2 — 2026-10-07
 
 ALE for Minecraft 26.2, with the same features and settings as 1.0.0 for 1.21.11.
