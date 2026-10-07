@@ -1,86 +1,116 @@
 plugins {
-    id("net.fabricmc.fabric-loom-remap") version "1.17-SNAPSHOT"
+    // Applies fabric-loom-remap up to 1.21.11 and fabric-loom on 26.1+ (unobfuscated)
+    id("dev.kikugie.loom-back-compat")
 }
 
 fun prop(name: String): String = project.property(name).toString()
 
-version = prop("mod_version")
-group = prop("maven_group")
-base { archivesName.set(prop("archives_base_name")) }
+val mc = sc.current.version
+val requiredJava = if (sc.current.parsed >= "26.1") JavaVersion.VERSION_25 else JavaVersion.VERSION_21
+// Schematic Preview version on Modrinth's maven ("" where it has no build). Its code is All Rights Reserved: fetched, never committed
+val schematicPreview = prop("deps.schematicpreview")
+
+version = "${prop("mod.version")}+$mc"
+group = prop("mod.group")
+base { archivesName.set(prop("mod.archives_base_name")) }
 
 repositories {
     mavenCentral()
     maven("https://maven.fabricmc.net") { name = "FabricMC" }
     maven("https://maven.fallenbreath.me/releases") { name = "FallenBreath" }
-    maven("https://api.modrinth.com/maven") { name = "Modrinth" }
+    exclusiveContent {
+        forRepository { maven("https://api.modrinth.com/maven") { name = "Modrinth" } }
+        filter { includeGroup("maven.modrinth") }
+    }
     maven("https://maven.terraformersmc.com/releases") { name = "TerraformersMC" }
     maven("https://masa.dy.fi/maven") { name = "Masa" }
     maven("https://masa.dy.fi/maven/sakura-ryoko") { name = "SakuraRyoko" }
 }
 
 dependencies {
-    minecraft("com.mojang:minecraft:${prop("minecraft_version")}")
-    mappings(loom.officialMojangMappings())
-    modImplementation("net.fabricmc:fabric-loader:${prop("loader_version")}")
-    modImplementation("net.fabricmc.fabric-api:fabric-api:${prop("fabric_version")}")
-    modImplementation("com.terraformersmc:modmenu:${prop("modmenu")}")
+    minecraft("com.mojang:minecraft:$mc")
+    loomx.applyMojangMappings()
+    modImplementation("net.fabricmc:fabric-loader:${prop("deps.fabric_loader")}")
+    modImplementation("net.fabricmc.fabric-api:fabric-api:${prop("deps.fabric_api")}")
+    modImplementation("com.terraformersmc:modmenu:${prop("deps.modmenu")}")
 
     // 运行时依赖：原版 Litematica + MaLiLib（不打包）
-    modImplementation("fi.dy.masa.malilib:${prop("malilib")}")
-    modImplementation("fi.dy.masa.litematica:${prop("litematica")}")
+    modImplementation("fi.dy.masa.malilib:malilib-fabric-$mc:${prop("deps.malilib")}")
+    modImplementation("fi.dy.masa.litematica:litematica-fabric-$mc:${prop("deps.litematica")}")
 
     // 可选联动：Schematic Preview（编译期可见，运行时按需检测）
-    modCompileOnly(files("libs/schematicpreview-0.0.17+1.21.11.jar"))
+    if (schematicPreview.isNotEmpty()) modCompileOnly("maven.modrinth:schematicpreview:$schematicPreview")
 
     // gametest 运行时：加载 Schematic Preview 与本作者的打印机，测试联动
     if (providers.gradleProperty("aleGameTest").isPresent) {
-        modLocalRuntime(files("libs/schematicpreview-0.0.17+1.21.11.jar"))
-        // 与用户实例一致的渲染环境：Sodium（可选再加 Iris）
-        if (providers.gradleProperty("withSodium").isPresent) {
-            modLocalRuntime(files("libs/sodium-fabric-0.8.7+mc1.21.11.jar"))
-            if (providers.gradleProperty("withIris").isPresent) modLocalRuntime(files("libs/iris-fabric-1.10.7+mc1.21.11.jar"))
+        if (schematicPreview.isNotEmpty()) modLocalRuntime("maven.modrinth:schematicpreview:$schematicPreview")
+        // 与用户实例一致的渲染环境：Sodium（可选再加 Iris）。目前只有 1.21.11 的 jar
+        if (providers.gradleProperty("withSodium").isPresent && mc == "1.21.11") {
+            modLocalRuntime(files(rootProject.file("libs/sodium-fabric-0.8.7+mc1.21.11.jar")))
+            if (providers.gradleProperty("withIris").isPresent) modLocalRuntime(files(rootProject.file("libs/iris-fabric-1.10.7+mc1.21.11.jar")))
         }
-        if (file("libs/litematica-printer-autyism-1.0.0.jar").exists() && providers.gradleProperty("withPrinter").isPresent) {
-            modLocalRuntime(files("libs/litematica-printer-autyism-1.0.0.jar"))
+        // 打印机：1.21.11 用 libs 里的发布版，其他版本用打印机仓库各版本的构建
+        val printer = if (mc == "1.21.11") rootProject.file("libs/litematica-printer-autyism-1.0.0.jar")
+            else rootProject.file("libs/printer/litematica-printer-autyism-1.0.0+$mc.jar")
+        if (printer.exists() && providers.gradleProperty("withPrinter").isPresent) {
+            modLocalRuntime(files(printer))
         }
     }
 }
 
 java {
-    sourceCompatibility = JavaVersion.VERSION_21
-    targetCompatibility = JavaVersion.VERSION_21
+    sourceCompatibility = requiredJava
+    targetCompatibility = requiredJava
+    toolchain { languageVersion.set(JavaLanguageVersion.of(requiredJava.majorVersion)) }
 }
 
 tasks.withType<JavaCompile>().configureEach {
     options.encoding = "UTF-8"
-    options.release.set(21)
+    options.release.set(requiredJava.majorVersion.toInt())
 }
 
 tasks.processResources {
     val props = mapOf(
-        "mod_id" to prop("mod_id"),
-        "mod_name" to prop("mod_name"),
-        "mod_version" to prop("mod_version"),
-        "minecraft_version" to prop("minecraft_version"),
+        "mod_id" to prop("mod.id"),
+        "mod_name" to prop("mod.name"),
+        "mod_version" to prop("mod.version"),
+        "minecraft_version" to prop("mod.mc_compat"),
+        "loader_compat" to prop("mod.loader_compat"),
+        "malilib_compat" to prop("mod.malilib_compat"),
+        "litematica_compat" to prop("mod.litematica_compat"),
+        "mixin_java" to "JAVA_${requiredJava.majorVersion}",
     )
     inputs.properties(props)
-    filesMatching(listOf("fabric.mod.json")) { expand(props) }
+    inputs.property("schematic_preview", schematicPreview)
+    filesMatching(listOf("fabric.mod.json", "*.mixins.json")) { expand(props) }
+    // No Schematic Preview build for this version: leave its compat mixin out of the config
+    if (schematicPreview.isEmpty()) {
+        filesMatching("autyism-le.mixins.json") { filter { line -> if (line.contains("compat.schematicpreview.")) "" else line } }
+    }
 }
 
-tasks.jar {
-    from("LICENSE.md") { rename { "${it}_${prop("archives_base_name")}" } }
+tasks.withType<Jar>().configureEach {
+    val baseName = prop("mod.archives_base_name")
+    from(rootProject.file("LICENSE.md")) { rename { "${it}_$baseName" } }
 }
 
 loom {
     runs {
         named("client") {
             programArguments.addAll(listOf("--width", "1280", "--height", "720", "--username", "ALETest"))
-            runDir("run/client")
+            runDir("../../run/client")
         }
     }
 }
 
-// 客户端 GameTest：./gradlew runClientGameTest -PaleGameTest [-Pgt=name1,name2]
+// Collects the release jars of all versions in build/libs/<mod version>/
+tasks.register<Copy>("buildAndCollect") {
+    group = "build"
+    from(loomx.modJar.flatMap { it.archiveFile })
+    into(rootProject.layout.buildDirectory.dir("libs/${prop("mod.version")}"))
+}
+
+// 客户端 GameTest：./gradlew :1.21.11:runClientGameTest -PaleGameTest [-Pgt=name1,name2]
 if (providers.gradleProperty("aleGameTest").isPresent) {
     fabricApi {
         configureTests {

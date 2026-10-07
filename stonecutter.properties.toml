@@ -1,0 +1,83 @@
+# Shared values; per-version sections below override or add to them.
+mod.id = "autyism-le"
+mod.name = "Autyism's Litematica Enhancement"
+mod.group = "com.autyism.ale"
+mod.version = "1.0.0"
+mod.archives_base_name = "autyism-litematica-enhancement"
+mod.loader_compat = ">=0.17.0"
+
+deps.fabric_loader = "0.19.3"
+
+["1.21.5"]
+mod.mc_compat = "1.21.5"
+mod.malilib_compat = ">=0.24.3"
+mod.litematica_compat = ">=0.22.5"
+deps.fabric_api = "0.128.2+1.21.5"
+deps.malilib = "0.24.3"
+deps.litematica = "0.22.5"
+deps.modmenu = "14.0.2"
+# Schematic Preview has no build for 1.21.5
+deps.schematicpreview = ""
+
+["1.21.8"]
+mod.mc_compat = ">=1.21.6 <=1.21.8"
+mod.malilib_compat = ">=0.25.7"
+mod.litematica_compat = ">=0.23.7"
+deps.fabric_api = "0.136.1+1.21.8"
+deps.malilib = "0.25.7"
+deps.litematica = "0.23.7"
+deps.modmenu = "15.0.2"
+deps.schematicpreview = "0.0.15+1.21.8"
+
+["1.21.10"]
+mod.mc_compat = ">=1.21.9 <=1.21.10"
+mod.malilib_compat = ">=0.26.8"
+mod.litematica_compat = ">=0.24.9"
+deps.fabric_api = "0.138.4+1.21.10"
+deps.malilib = "0.26.8"
+deps.litematica = "0.24.9"
+deps.modmenu = "16.0.1"
+deps.schematicpreview = "0.0.15+1.21.10"
+
+["1.21.11"]
+mod.mc_compat = "1.21.11"
+mod.malilib_compat = ">=0.27.0"
+mod.litematica_compat = ">=0.26.0"
+deps.fabric_api = "0.140.2+1.21.11"
+deps.malilib = "0.27.20"
+deps.litematica = "0.26.16"
+deps.modmenu = "17.0.0"
+deps.schematicpreview = "0.0.17+1.21.11"
+
+["26.1.2"]
+mod.mc_compat = ">=26.1 <=26.1.2"
+mod.loader_compat = ">=0.19.3"
+mod.malilib_compat = ">=0.28.12"
+mod.litematica_compat = ">=0.27.14"
+deps.fabric_api = "0.155.3+26.1.2"
+deps.malilib = "0.28.12"
+deps.litematica = "0.27.14"
+deps.modmenu = "18.0.2"
+deps.schematicpreview = "0.0.17+26.1.2"
+
+["26.2"]
+mod.mc_compat = "~26.2"
+mod.loader_compat = ">=0.19.3"
+mod.malilib_compat = ">=0.29.6"
+mod.litematica_compat = ">=0.28.8"
+deps.fabric_api = "0.161.0+26.2"
+deps.malilib = "0.29.6"
+deps.litematica = "0.28.8"
+deps.modmenu = "20.0.3"
+deps.schematicpreview = "0.0.17+26.2"
+
+["26.3"]
+mod.mc_compat = "~26.3"
+mod.loader_compat = ">=0.19.3"
+mod.malilib_compat = ">=0.30.2"
+mod.litematica_compat = ">=0.29.1"
+deps.fabric_api = "0.161.0+26.3"
+deps.malilib = "0.30.2"
+deps.litematica = "0.29.1"
+deps.modmenu = "21.0.0"
+deps.schematicpreview = "0.0.17+26.3"
