@@ -27,11 +27,11 @@
     "autyism-le.mixins.json"
   ],
   "depends": {
-    "fabricloader": ">=0.17.0",
+    "fabricloader": "${loader_compat}",
     "minecraft": "${minecraft_version}",
     "fabric-api": "*",
-    "malilib": ">=0.27.0",
-    "litematica": ">=0.26.0"
+    "malilib": "${malilib_compat}",
+    "litematica": "${litematica_compat}"
   },
   "suggests": {
     "schematicpreview": "*",
