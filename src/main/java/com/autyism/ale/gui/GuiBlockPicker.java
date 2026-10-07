@@ -10,6 +10,7 @@ import fi.dy.masa.malilib.render.GuiContext;
 import fi.dy.masa.malilib.render.RenderUtils;
 import fi.dy.masa.malilib.util.StringUtils;
 import net.minecraft.client.gui.screens.Screen;
+//? if >=1.21.9
 import net.minecraft.client.input.MouseButtonEvent;
 import net.minecraft.core.registries.BuiltInRegistries;
 import net.minecraft.resources.Identifier;
@@ -130,10 +131,16 @@ public class GuiBlockPicker extends GuiBase {
         listHeight = panelH - 50 - 30;
 
         searchField = new GuiTextFieldGeneric(panelX + 10 + colW + 10, panelY + 22, colW, 18, this.font);
+        //? if >=1.21.11 {
         searchField.setValueWrapper(search);
+        //?} else
+        //searchField.setTextWrapper(search);
         searchField.setFocused(true);
         this.addTextField(searchField, field -> {
+            //? if >=1.21.11 {
             search = field.getValueWrapper();
+            //?} else
+            //search = field.getTextWrapper();
             applyFilter();
             return true;
         });
@@ -259,10 +266,18 @@ public class GuiBlockPicker extends GuiBase {
         return Math.max(0, Math.min(v, max));
     }
 
+    // 1.21.9 起 MaLiLib 的鼠标事件带 MouseButtonEvent，之前是 (x, y, 按键)
+    //? if >=1.21.9 {
     @Override
     public boolean onMouseClicked(MouseButtonEvent click, boolean doubleClick) {
         if (click.button() == InputConstants.MOUSE_BUTTON_LEFT) {
             int mx = (int) click.x(), my = (int) click.y();
+    //?} else {
+    /*@Override
+    public boolean onMouseClicked(int mouseX, int mouseY, int mouseButton) {
+        if (mouseButton == InputConstants.MOUSE_BUTTON_LEFT) {
+            int mx = mouseX, my = mouseY;
+    *///?}
             int leftX = panelX + 10;
             int rightX = panelX + 10 + colW + 10;
             int rows = visibleRows();
@@ -293,11 +308,17 @@ public class GuiBlockPicker extends GuiBase {
                 }
             }
         }
+        //? if >=1.21.9 {
         return super.onMouseClicked(click, doubleClick);
+        //?} else
+        //return super.onMouseClicked(mouseX, mouseY, mouseButton);
     }
 
     @Override
+    //? if >=1.21.9 {
     public boolean onMouseScrolled(double mouseX, double mouseY, double horizontalAmount, double verticalAmount) {
+    //?} else
+    //public boolean onMouseScrolled(int mouseX, int mouseY, double horizontalAmount, double verticalAmount) {
         int step = verticalAmount > 0 ? -3 : 3;
         if (mouseX < panelX + 10 + colW + 5) scrollLeft += step;
         else scrollRight += step;

@@ -16,8 +16,8 @@ plugins {
 stonecutter {
     create(rootProject) {
         // 1.21.8 also runs on 1.21.6-1.21.7, 1.21.10 on 1.21.9, 26.1.2 on 26.1-26.1.1
-        // 1.21.5, 1.21.8 and 1.21.10 are added back once they are ported
-        versions("1.21.11", "26.1.2", "26.2", "26.3")
+        // 1.21.5 and 1.21.8 are added back once they are ported
+        versions("1.21.10", "1.21.11", "26.1.2", "26.2", "26.3")
         vcsVersion = "1.21.11"
     }
 }

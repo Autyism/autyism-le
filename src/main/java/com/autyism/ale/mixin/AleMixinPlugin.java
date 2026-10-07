@@ -38,6 +38,10 @@ public class AleMixinPlugin implements IMixinConfigPlugin {
 
     @Override
     public List<String> getMixins() {
+        //? if <1.21.11 {
+        /*// 1.21.10 及更早才要的访问器（读渲染类型的贴图）。从这里加入，mixin 配置文件在各版本保持一样
+        return List.of("render.CompositeRenderTypeAccessor", "render.CompositeStateAccessor", "render.EmptyTextureStateShardInvoker");
+        *///?} else
         return null;
     }
 

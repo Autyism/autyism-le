@@ -283,7 +283,7 @@ public final class TranslucentEntityRender {
             consumer.putBakedQuad(pose, quad, instance);
         }
     }
-    *///?} else {
+    *///?} elif >=1.21.11 {
     private static RenderType itemSheetFor(RenderType original) {
         try {
             if (original != null && !original.state.textures.isEmpty()
@@ -294,7 +294,12 @@ public final class TranslucentEntityRender {
         }
         return Sheets.translucentItemSheet();
     }
-    //?}
+    //?} else {
+    /*// 1.21.10 及更早物品和方块共用方块图集，半透明的物品类型只有一种
+    private static RenderType itemSheetFor(RenderType original) {
+        return Sheets.translucentItemSheet();
+    }
+    *///?}
 
     private static final java.util.Map<Method, String> KINDS = new java.util.concurrent.ConcurrentHashMap<>();
 
@@ -386,11 +391,14 @@ public final class TranslucentEntityRender {
             return this;
         }
 
+        // 线宽是 1.21.11 才加进顶点里的
+        //? if >=1.21.11 {
         @Override
         public VertexConsumer setLineWidth(float width) {
             delegate.setLineWidth(width);
             return this;
         }
+        //?}
 
         //? if >=26.3 {
         /*@Override
