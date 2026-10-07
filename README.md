@@ -5,7 +5,7 @@
 
 <p align="center"><a href="#english">English</a> · <a href="#简体中文">简体中文</a></p>
 
-![Minecraft 1.21.11](https://img.shields.io/badge/Minecraft-1.21.11-62B47A) ![Fabric](https://img.shields.io/badge/Loader-Fabric-DBD0B4) ![License: AGPL-3.0](https://img.shields.io/badge/License-AGPL--3.0-blue)
+![Minecraft 1.21.11 | 26.1–26.1.2](https://img.shields.io/badge/Minecraft-1.21.11_%7C_26.1--26.1.2-62B47A) ![Fabric](https://img.shields.io/badge/Loader-Fabric-DBD0B4) ![License: AGPL-3.0](https://img.shields.io/badge/License-AGPL--3.0-blue)
 
 # English
 
@@ -170,36 +170,39 @@ A few Litematica options affect ALE's features: the W and D markers are drawn on
 
 ## Requirements
 
-| | Required? | Version |
-|---|---|---|
-| Minecraft | Required | 1.21.11 |
-| Fabric Loader | Required | 0.17.0 or newer |
-| Fabric API | Required | any version for 1.21.11 |
-| MaLiLib | Required | 0.27.0 or newer |
-| Litematica | Required | 0.26.0 or newer |
-| Java | Required | 21 or newer |
-| Mod Menu | Optional | adds a settings button to the mod list |
-| Schematic Preview | Optional | needed for the sign wood replacement |
-| Litematica Printer Autyism Edition | Optional | its block lists get the picker too |
+There is a separate jar for each Minecraft version:
+
+| Minecraft | Jar | Java | Fabric Loader | MaLiLib | Litematica |
+|---|---|---|---|---|---|
+| 1.21.11 | `autyism-litematica-enhancement-1.0.0.jar` | 21 or newer | 0.17.0 or newer | 0.27.0 or newer | 0.26.0 or newer |
+| 26.1, 26.1.1, 26.1.2 | `autyism-litematica-enhancement-1.0.0+26.1.2.jar` | 25 or newer | 0.19.3 or newer | 0.28.12 or newer | 0.27.14 or newer |
+
+Fabric API, MaLiLib and Litematica are required, each in the build for your Minecraft version.
+
+| Optional | |
+|---|---|
+| Mod Menu | adds a settings button to the mod list |
+| Schematic Preview | needed for the sign wood replacement |
+| Litematica Printer Autyism Edition | its block lists get the picker too |
 
 ALE is client-side only. Nothing needs to be installed on the server.
 
 ## Compatibility
 
-- **Sodium and Iris:** ALE's rendering features were tested with Sodium and Iris installed.
+- **Sodium and Iris:** ALE's rendering features were tested with Sodium and Iris installed on 1.21.11, and with Sodium on 26.1.2.
 - **Other rendering mods:** Render Through Glass changes when Litematica draws its see-through parts. If another mod changes world rendering so that this is not possible, ALE falls back to Litematica's normal drawing and only the see-through-glass effect is lost.
 - **Schematic Preview:** optional. Its **Replace** button works as usual; ALE only steps in when a sign is replaced with another sign.
 - **Litematica Printer Autyism Edition:** optional and independent; neither mod needs the other. With both installed, the printer's block lists get the picker.
 - **Other MaLiLib-based mods:** their block and item lists get the picker when ALE recognizes them (by the list's name or its current entries).
 - **Mods that add buttons to Litematica screens:** crowded rows become scrollable, so all buttons stay reachable.
-- **Litematica versions:** ALE changes how parts of Litematica work, so it depends on Litematica's internals. It was built and tested with Litematica 0.26.16 and MaLiLib 0.27.20; a future Litematica update may need a matching ALE update.
+- **Litematica versions:** ALE changes how parts of Litematica work, so it depends on Litematica's internals. It was built and tested with Litematica 0.26.16 and MaLiLib 0.27.20 on 1.21.11, and with Litematica 0.27.14 and MaLiLib 0.28.12 on 26.1.2; a future Litematica update may need a matching ALE update.
 - No incompatibilities are known at the time of release.
 
 ## Installation
 
-1. Install Fabric Loader for Minecraft 1.21.11.
-2. Put Fabric API, MaLiLib and Litematica for 1.21.11 into your `mods` folder.
-3. Download `autyism-litematica-enhancement-1.0.0.jar` and put it into the `mods` folder too.
+1. Install Fabric Loader for your Minecraft version (see the table above for the versions and Java you need).
+2. Put Fabric API, MaLiLib and Litematica for that Minecraft version into your `mods` folder.
+3. Download the ALE jar for your Minecraft version and put it into the `mods` folder too.
 4. Optional: add Mod Menu and Schematic Preview.
 5. Start the game.
 
@@ -411,36 +414,39 @@ ALE 没有自己的快捷键和命令，功能都在 Litematica 的界面里，�
 
 ## 前置与依赖
 
-| | 是否必需 | 版本 |
-|---|---|---|
-| Minecraft | 必需 | 1.21.11 |
-| Fabric Loader | 必需 | 0.17.0 或更新 |
-| Fabric API | 必需 | 1.21.11 的任意版本 |
-| MaLiLib | 必需 | 0.27.0 或更新 |
-| Litematica | 必需 | 0.26.0 或更新 |
-| Java | 必需 | 21 或更新 |
-| Mod Menu | 可选 | 在模组列表里提供设置按钮 |
-| Schematic Preview | 可选 | 告示牌木材替换需要它 |
-| Litematica Printer Autyism Edition | 可选 | 打印机的方块列表也能用选择界面 |
+每个 Minecraft 版本有单独的 jar：
+
+| Minecraft | jar 文件 | Java | Fabric Loader | MaLiLib | Litematica |
+|---|---|---|---|---|---|
+| 1.21.11 | `autyism-litematica-enhancement-1.0.0.jar` | 21 或更新 | 0.17.0 或更新 | 0.27.0 或更新 | 0.26.0 或更新 |
+| 26.1、26.1.1、26.1.2 | `autyism-litematica-enhancement-1.0.0+26.1.2.jar` | 25 或更新 | 0.19.3 或更新 | 0.28.12 或更新 | 0.27.14 或更新 |
+
+Fabric API、MaLiLib 和 Litematica 都是必需的，各自下载你的 Minecraft 版本对应的那一版。
+
+| 可选 | |
+|---|---|
+| Mod Menu | 在模组列表里提供设置按钮 |
+| Schematic Preview | 告示牌木材替换需要它 |
+| Litematica Printer Autyism Edition | 打印机的方块列表也能用选择界面 |
 
 ALE 是纯客户端模组，服务器不需要安装任何东西。
 
 ## 兼容性
 
-- **Sodium 和 Iris**：ALE 的渲染功能在装有 Sodium 和 Iris 的环境下测试过。
+- **Sodium 和 Iris**：ALE 的渲染功能在 1.21.11 上和 Sodium、Iris 一起测试过，在 26.1.2 上和 Sodium 一起测试过。
 - **其他渲染类模组**：“透过玻璃显示投影”会调整 Litematica 半透明部分的绘制时机。如果其他模组改动了世界渲染、导致无法这样做，ALE 会退回 Litematica 原本的绘制方式，只是失去透过玻璃显示的效果。
 - **Schematic Preview**：可选。它的 “Replace” 按钮照常工作，只有用告示牌替换告示牌时 ALE 才会接管。
 - **Litematica Printer Autyism Edition（打印机）**：可选，两个模组互不依赖。一起安装时，打印机的方块列表也能用选择界面。
 - **其他 MaLiLib 系模组**：只要 ALE 能根据列表名称或现有内容识别出这是方块或物品列表，就会提供选择界面。
 - **往 Litematica 界面加按钮的模组**：放不下的按钮行会变成可滚动的，所有按钮都点得到。
-- **Litematica 版本**：ALE 修改了 Litematica 内部的一些行为，因此依赖它的内部实现。本模组基于 Litematica 0.26.16 和 MaLiLib 0.27.20 构建和测试；Litematica 以后更新时，ALE 可能也需要跟着更新。
+- **Litematica 版本**：ALE 修改了 Litematica 内部的一些行为，因此依赖它的内部实现。1.21.11 版基于 Litematica 0.26.16 和 MaLiLib 0.27.20 构建和测试，26.1.2 版基于 Litematica 0.27.14 和 MaLiLib 0.28.12；Litematica 以后更新时，ALE 可能也需要跟着更新。
 - 目前没有已知的不兼容模组。
 
 ## 安装
 
-1. 为 Minecraft 1.21.11 安装 Fabric Loader。
-2. 把 1.21.11 版本的 Fabric API、MaLiLib 和 Litematica 放进 `mods` 文件夹。
-3. 下载 `autyism-litematica-enhancement-1.0.0.jar`，也放进 `mods` 文件夹。
+1. 为你的 Minecraft 版本安装 Fabric Loader（需要的版本和 Java 见上表）。
+2. 把这个 Minecraft 版本对应的 Fabric API、MaLiLib 和 Litematica 放进 `mods` 文件夹。
+3. 下载 ALE 对应你的 Minecraft 版本的 jar，也放进 `mods` 文件夹。
 4. 可选：再装上 Mod Menu 和 Schematic Preview。
 5. 启动游戏。
 
