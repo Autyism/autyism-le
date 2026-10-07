@@ -11,9 +11,10 @@ import org.joml.Vector3f;
  */
 public final class PreviewCamera {
     /** 拖动一个界面像素转多少度 */
-    public static final float DEGREES_PER_PIXEL = 1.1F;
+    /** 拖过整个预览区的宽度（上下拖：高度）转半圈：面板里和全屏里拖同样比例的距离转同样的角度 */
+    public static final float DEGREES_PER_VIEW = 180.0F;
     /** 默认视角四周留的边（1.0 = 刚好贴边） */
-    private static final double MARGIN = 1.06;
+    private static final double MARGIN = 1.04;
 
     private float centerX, centerY, centerZ;
     /** 绕着转的点：默认是投影中心，按画面对齐时会挪一点，让投影在画面里居中 */
@@ -63,12 +64,12 @@ public final class PreviewCamera {
     }
 
     /**
-     * 画之前调用：还没手动缩放过的话，按这个画面的宽高比重新对准：
-     * 默认角度下整个投影（8 个角）在画面里居中、四周留一点边。之后转动时距离和中心不变。
+     * 回到默认视角后第一次画的时候调用一次：按这个画面的宽高比对准，
+     * 默认角度下整个投影（8 个角）在画面里居中、四周留一点边。
+     * 之后（转动、换到全屏）距离和中心都不变，和面板里看到的一样大。
      */
     public void fitTo(float aspect) {
-        if (this.free || !(aspect > 0.0F) || aspect == this.fittedAspect) return;
-        if (!Float.isNaN(this.fittedAspect) && this.distance != this.startDistance) return;
+        if (this.free || !(aspect > 0.0F) || !Float.isNaN(this.fittedAspect)) return;
         this.fittedAspect = aspect;
         double tanV = Math.tan(Math.toRadians(Math.max(5.0, Math.min(170.0, this.fov)) * 0.5));
         double tanH = tanV * aspect;
@@ -173,15 +174,17 @@ public final class PreviewCamera {
         this.version++;
     }
 
-    /** 鼠标拖动（界面像素） */
-    public void drag(double dx, double dy) {
+    /** 鼠标拖动（界面像素）；viewWidth / viewHeight 是预览区的大小 */
+    public void drag(double dx, double dy, double viewWidth, double viewHeight) {
         if (dx == 0 && dy == 0) return;
+        float yawStep = (float) (dx / Math.max(1.0, viewWidth)) * DEGREES_PER_VIEW;
+        float pitchStep = (float) (dy / Math.max(1.0, viewHeight)) * DEGREES_PER_VIEW;
         if (this.free) {
-            this.freeYaw = wrap(this.freeYaw + (float) dx * DEGREES_PER_PIXEL);
-            this.freePitch = clampPitch(this.freePitch + (float) dy * DEGREES_PER_PIXEL);
+            this.freeYaw = wrap(this.freeYaw + yawStep);
+            this.freePitch = clampPitch(this.freePitch + pitchStep);
         } else {
-            this.yaw = wrap(this.yaw + (float) dx * DEGREES_PER_PIXEL);
-            this.pitch = clampPitch(this.pitch + (float) dy * DEGREES_PER_PIXEL);
+            this.yaw = wrap(this.yaw + yawStep);
+            this.pitch = clampPitch(this.pitch + pitchStep);
         }
         this.version++;
     }
