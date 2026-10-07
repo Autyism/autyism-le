@@ -62,6 +62,10 @@ public final class BrowserPreviewGameTest implements FabricClientGameTest {
                 ui.hover(300, 340);
                 ui.shot("mode-" + now.getStringValue());
             }
+            // 缩略图状态：网格里把每个条目翻到屏幕上，等它生成完
+            context.runOnClient(c -> AleConfigs.Browser.LAYOUT.setOptionListValue(BrowserLayout.GRID_5));
+            context.runOnClient(c -> c.setScreen(new GuiSchematicLoad()));
+            context.waitTicks(5);
             checkThumbnail(context, dir.resolve("ale_house.litematic"), ThumbnailCache.State.READY);
             checkThumbnail(context, dir.resolve("ale_house_struct.nbt"), ThumbnailCache.State.READY);
             checkThumbnail(context, dir.resolve("ale_tower.litematic"), ThumbnailCache.State.READY);
@@ -205,9 +209,20 @@ public final class BrowserPreviewGameTest implements FabricClientGameTest {
 
     /** 点击浏览器里的某个条目（找不到就失败） */
     static void clickEntry(ClientGameTestContext context, UiDriver ui, String name, int button) {
+        reveal(context, name);
         double[] c = context.computeOnClient(cl -> GT.entryCenter(cl, name));
         if (c == null) throw new AssertionError("entry " + name + " is not on screen");
         ui.click(c[0], c[1], button);
+    }
+
+    /** 条目不在屏幕上就用滚轮翻（先往下再往上） */
+    static void reveal(ClientGameTestContext context, String name) {
+        for (int i = 0; i < 40 && context.computeOnClient(c -> GT.entryCenter(c, name)) == null; i++) {
+            double s = context.computeOnClient(c -> c.getWindow().getGuiScale());
+            context.getInput().setCursorPos(200 * s, 150 * s);
+            context.getInput().scroll(i < 20 ? -1 : 1);
+            context.waitTicks(2);
+        }
     }
 
     /** 等屏幕上的缩略图都生成完（列表模式不用等） */
@@ -226,8 +241,23 @@ public final class BrowserPreviewGameTest implements FabricClientGameTest {
     }
 
     private void checkThumbnail(ClientGameTestContext context, Path file, ThumbnailCache.State want) {
+        reveal(context, file.getFileName().toString());
+        for (int i = 0; i < 200; i++) {
+            ThumbnailCache.State s = context.computeOnClient(c -> Previews.thumbnails().stateOf(file));
+            if (s != null && s != ThumbnailCache.State.LOADING) break;
+            context.waitTick();
+        }
         ThumbnailCache.State got = context.computeOnClient(c -> Previews.thumbnails().stateOf(file));
-        GT.log("[preview] thumbnail " + file.getFileName() + ": " + got);
+        GT.log("[preview] thumbnail " + file.getFileName() + ": " + got + " (" + context.computeOnClient(c -> Previews.thumbnails().describe(file)) + ")");
+        if (got != want) {
+            GT.shot(context, "thumbnail-problem-" + file.getFileName());
+            for (var t : Thread.getAllStackTraces().entrySet()) {
+                if (!t.getKey().getName().startsWith("ALE schematic preview")) continue;
+                StringBuilder sb = new StringBuilder("[preview] worker " + t.getKey().getName() + " " + t.getKey().getState() + ":");
+                for (StackTraceElement el : t.getValue()) sb.append(" | at ").append(el);
+                GT.log(sb.toString());
+            }
+        }
         if (got != want) problems.add("thumbnail of " + file.getFileName() + " is " + got + ", expected " + want);
     }
 

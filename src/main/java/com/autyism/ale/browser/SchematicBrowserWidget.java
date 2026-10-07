@@ -205,6 +205,7 @@ public class SchematicBrowserWidget extends WidgetSchematicBrowser {
         this.lastMouseY = mouseY;
         Previews.thumbnails().beginFrame();
         super.drawContents(ctx, mouseX, mouseY, partialTicks);
+        Previews.thumbnails().endFrame();
         boolean overToggle = isOverToggle(mouseX, mouseY);
         drawToggle(ctx, overToggle);
         if (overToggle) {

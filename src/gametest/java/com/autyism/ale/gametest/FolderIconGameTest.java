@@ -163,13 +163,8 @@ public final class FolderIconGameTest implements FabricClientGameTest {
     }
 
     private static int[] icon(ClientGameTestContext context, String name) {
-        // 不在屏幕上就用滚轮往下翻（带预览的列表一屏只放得下七八行）
-        for (int i = 0; i < 30 && context.computeOnClient(c -> GT.entryWidget(c, name)) == null; i++) {
-            double s = context.computeOnClient(c -> c.getWindow().getGuiScale());
-            context.getInput().setCursorPos(300 * s, 200 * s);
-            context.getInput().scroll(i < 15 ? -1 : 1);
-            context.waitTicks(2);
-        }
+        // 不在屏幕上就用滚轮翻（带预览的列表一屏只放得下七八行）
+        BrowserPreviewGameTest.reveal(context, name);
         return context.computeOnClient(c -> {
             Object w = GT.entryWidget(c, name);
             if (!(w instanceof BrowserEntryWidget e)) throw new AssertionError("entry " + name + " not on screen");

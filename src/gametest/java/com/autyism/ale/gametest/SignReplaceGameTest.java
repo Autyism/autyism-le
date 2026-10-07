@@ -58,7 +58,9 @@ public final class SignReplaceGameTest implements FabricClientGameTest {
     @Override
     public void runTest(ClientGameTestContext context) {
         if (!GTFilter.enabled("signreplace")) return;
-        if (!FabricLoader.getInstance().isModLoaded("schematicpreview")) throw new AssertionError("Schematic Preview not loaded");
+        // 装了 Schematic Preview：测它的“替换”加上 ALE 的告示牌修复；没装：测 ALE 自己的“替换”
+        boolean original = FabricLoader.getInstance().isModLoaded("schematicpreview");
+        GT.log("[signreplace] using " + (original ? "Schematic Preview's" : "ALE's own") + " Replace dialog");
         try (TestSingleplayerContext sp = GT.newWorld(context)) {
             GT.clearArena(sp, 26, -4, 42, 4, 70);
             sp.getServer().runCommand("tp @a 33.5 64 4.5 180 10");
@@ -86,33 +88,9 @@ public final class SignReplaceGameTest implements FabricClientGameTest {
             context.waitTicks(10);
             GT.shot(context, "ale-sign-material-list");
             clickReplaceFor(context, Items.OAK_SIGN);
-            context.waitFor(c -> c.screen != null && c.screen.getClass().getSimpleName().equals("GuiBlockSelect"), 40);
 
             // 2) 搜索 spruce_wall_sign（故意选“挂墙”形态，必须仍按每块原来的形态替换），点第一个结果，再点“完成”
-            context.runOnClient(c -> {
-                try {
-                    Field f = c.screen.getClass().getDeclaredField("searchField");
-                    f.setAccessible(true);
-                    var field = (net.minecraft.client.gui.components.EditBox) f.get(c.screen);
-                    field.setFocused(true);
-                } catch (ReflectiveOperationException e) {
-                    throw new AssertionError(e);
-                }
-            });
-            context.getInput().typeChars("spruce_wall_sign");
-            context.waitTicks(3);
-            double[] cell = context.computeOnClient(c -> {
-                int x = c.screen.width - 200 >> 1, y = c.screen.height - 200 >> 1;
-                double scale = c.getWindow().getGuiScale();
-                return new double[]{(x + 10) * scale, (y + 38 + 10) * scale};
-            });
-            context.getInput().setCursorPos(cell[0], cell[1]);
-            context.waitTick();
-            context.getInput().pressMouse(com.mojang.blaze3d.platform.InputConstants.MOUSE_BUTTON_LEFT);
-            context.waitTicks(2);
-            GT.shot(context, "ale-sign-block-select");
-            GT.clickButton(context, "Ok");
-            context.waitTicks(5);
+            pickInDialog(context, "spruce_wall_sign", "ale-sign-block-select");
 
             // 3) 检查投影容器
             List<String> problems = context.computeOnClient(c -> {
@@ -146,24 +124,7 @@ public final class SignReplaceGameTest implements FabricClientGameTest {
             });
             context.waitTicks(10);
             clickReplaceFor(context, Items.OAK_HANGING_SIGN);
-            context.waitFor(c -> c.screen != null && c.screen.getClass().getSimpleName().equals("GuiBlockSelect"), 40);
-            context.runOnClient(c -> {
-                try {
-                    Field f = c.screen.getClass().getDeclaredField("searchField");
-                    f.setAccessible(true);
-                    ((net.minecraft.client.gui.components.EditBox) f.get(c.screen)).setFocused(true);
-                } catch (ReflectiveOperationException e) {
-                    throw new AssertionError(e);
-                }
-            });
-            context.getInput().typeChars("cherry_hanging_sign");
-            context.waitTicks(3);
-            context.getInput().setCursorPos(cell[0], cell[1]);
-            context.waitTick();
-            context.getInput().pressMouse(com.mojang.blaze3d.platform.InputConstants.MOUSE_BUTTON_LEFT);
-            context.waitTicks(2);
-            GT.clickButton(context, "Ok");
-            context.waitTicks(5);
+            pickInDialog(context, "cherry_hanging_sign", null);
             List<String> problems2 = context.computeOnClient(c -> {
                 List<String> out = new ArrayList<>();
                 LitematicaSchematic schematic = placement.getSchematic();
@@ -200,6 +161,51 @@ public final class SignReplaceGameTest implements FabricClientGameTest {
     @SuppressWarnings({"unchecked", "rawtypes"})
     private static BlockState copy(BlockState from, BlockState to, net.minecraft.world.level.block.state.properties.Property p) {
         return to.hasProperty(p) ? to.setValue(p, from.getValue(p)) : to;
+    }
+
+    /** 在“替换”对话框里搜索并点第一个结果，再确定（Schematic Preview 的或 ALE 自己的对话框） */
+    private static void pickInDialog(ClientGameTestContext context, String search, @org.jetbrains.annotations.Nullable String shot) {
+        if (FabricLoader.getInstance().isModLoaded("schematicpreview")) {
+            context.waitFor(c -> c.screen != null && c.screen.getClass().getSimpleName().equals("GuiBlockSelect"), 40);
+            context.runOnClient(c -> {
+                try {
+                    Field f = c.screen.getClass().getDeclaredField("searchField");
+                    f.setAccessible(true);
+                    ((net.minecraft.client.gui.components.EditBox) f.get(c.screen)).setFocused(true);
+                } catch (ReflectiveOperationException e) {
+                    throw new AssertionError(e);
+                }
+            });
+            context.getInput().typeChars(search);
+            context.waitTicks(3);
+            double[] cell = context.computeOnClient(c -> {
+                int x = c.screen.width - 200 >> 1, y = c.screen.height - 200 >> 1;
+                double scale = c.getWindow().getGuiScale();
+                return new double[]{(x + 10) * scale, (y + 38 + 10) * scale};
+            });
+            context.getInput().setCursorPos(cell[0], cell[1]);
+            context.waitTick();
+            context.getInput().pressMouse(com.mojang.blaze3d.platform.InputConstants.MOUSE_BUTTON_LEFT);
+            context.waitTicks(2);
+            if (shot != null) GT.shot(context, shot);
+            GT.clickButton(context, "Ok");
+        } else {
+            context.waitFor(c -> c.screen instanceof com.autyism.ale.replace.ReplaceBlockScreen, 40);
+            context.getInput().typeChars(search);
+            context.waitTicks(3);
+            double[] cell = context.computeOnClient(c -> {
+                int[] g = ((com.autyism.ale.replace.ReplaceBlockScreen) c.screen).gridGeometry();
+                double scale = c.getWindow().getGuiScale();
+                return new double[]{(g[0] + g[2] / 2.0) * scale, (g[1] + g[2] / 2.0) * scale};
+            });
+            context.getInput().setCursorPos(cell[0], cell[1]);
+            context.waitTick();
+            context.getInput().pressMouse(com.mojang.blaze3d.platform.InputConstants.MOUSE_BUTTON_LEFT);
+            context.waitTicks(2);
+            if (shot != null) GT.shot(context, shot);
+            GT.clickButton(context, "OK");
+        }
+        context.waitTicks(5);
     }
 
     /** 在材料列表里找到某物品那一行的“Replace”按钮并用鼠标点击 */

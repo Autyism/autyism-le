@@ -56,6 +56,8 @@ public final class ThumbnailCache {
     }
 
     private final Map<Path, Entry> entries = new HashMap<>();
+    /** 已经读好、等着上传和绘制的缩略图（按请求先后，先来的先做） */
+    private final java.util.LinkedHashSet<Entry> work = new java.util.LinkedHashSet<>();
     private long frame;
     private long frameStart;
 
@@ -74,7 +76,7 @@ public final class ThumbnailCache {
             // 尺寸变了（换了显示方式）：重新生成
             e.state = State.LOADING;
         }
-        if (e.state == State.LOADING) progress(e);
+        if (e.state == State.LOADING) request(e);
         if (e.state == State.READY && e.target.isReady()) e.target.blit(g, x, y, x + w, y + h);
         return e.state;
     }
@@ -100,29 +102,50 @@ public final class ThumbnailCache {
         return e;
     }
 
-    private void progress(Entry e) {
+    /** 画的时候只做便宜的事：开始后台读取、处理“太大 / 读不出”；上传和绘制留到这一帧最后（endFrame） */
+    private void request(Entry e) {
         if (e.model == null) {
             long maxVolume = AleConfigs.Browser.THUMBNAIL_MAX_VOLUME.getIntegerValue();
             e.model = PreviewModel.start(e.file, new PreviewModel.Options(maxVolume, MAX_QUADS, AleConfigs.Preview.BLOCK_ENTITIES.getBooleanValue()));
         }
-        PreviewModel model = e.model;
-        switch (model.status()) {
+        switch (e.model.status()) {
             case TOO_BIG -> finish(e, State.TOO_BIG);
             case FAILED -> finish(e, State.FAILED);
+            case READY -> this.work.add(e);
             case LOADING -> {
             }
-            case READY -> {
-                if (overBudget()) return;
-                model.upload(this.frameStart + FRAME_BUDGET_NANOS);
-                if (!model.isComplete() || overBudget()) return;
-                PreviewCamera camera = new PreviewCamera();
-                camera.frame(model.sizeX(), model.sizeY(), model.sizeZ());
-                e.target.ensureSize(e.wantW, e.wantH);
-                PreviewRenderer.render(model, camera, e.target, AleConfigs.Preview.BLOCK_ENTITIES.getBooleanValue());
-                e.renderedW = e.wantW;
-                e.renderedH = e.wantH;
-                finish(e, State.READY);
+        }
+    }
+
+    /**
+     * 每帧画完条目后调用：按请求先后上传网格、画缩略图，直到用完这一帧的时间预算。
+     * 至少完成一个，保证不管这一帧别的东西花了多少时间，缩略图都会一个个出来。
+     */
+    public void endFrame() {
+        long start = System.nanoTime();
+        boolean progressed = false;
+        for (java.util.Iterator<Entry> it = this.work.iterator(); it.hasNext(); ) {
+            Entry e = it.next();
+            PreviewModel model = e.model;
+            if (model == null || e.state != State.LOADING || model.status() != PreviewModel.Status.READY) {
+                it.remove();
+                continue;
             }
+            if (progressed && System.nanoTime() - start > FRAME_BUDGET_NANOS) break;
+            model.upload(progressed ? start + FRAME_BUDGET_NANOS : Long.MAX_VALUE);
+            if (!model.isComplete()) {
+                progressed = true;
+                continue;
+            }
+            PreviewCamera camera = new PreviewCamera();
+            camera.frame(model.sizeX(), model.sizeY(), model.sizeZ());
+            e.target.ensureSize(e.wantW, e.wantH);
+            PreviewRenderer.render(model, camera, e.target, AleConfigs.Preview.BLOCK_ENTITIES.getBooleanValue());
+            e.renderedW = e.wantW;
+            e.renderedH = e.wantH;
+            finish(e, State.READY);
+            it.remove();
+            progressed = true;
         }
     }
 
@@ -132,10 +155,6 @@ public final class ThumbnailCache {
             e.model.close();
             e.model = null;
         }
-    }
-
-    private boolean overBudget() {
-        return System.nanoTime() - this.frameStart > FRAME_BUDGET_NANOS;
     }
 
     /** 每帧画缩略图之前调用一次：开始这一帧的时间预算 */
@@ -152,6 +171,7 @@ public final class ThumbnailCache {
         if (oldest != null) {
             oldest.close();
             this.entries.remove(oldest.file);
+            this.work.remove(oldest);
         }
     }
 
@@ -169,6 +189,7 @@ public final class ThumbnailCache {
     }
 
     public void clear() {
+        this.work.clear();
         for (Iterator<Entry> it = this.entries.values().iterator(); it.hasNext(); ) {
             it.next().close();
             it.remove();
@@ -177,6 +198,14 @@ public final class ThumbnailCache {
 
     public boolean isEmpty() {
         return this.entries.isEmpty();
+    }
+
+    /** 测试用：某个缩略图的详细状态 */
+    public String describe(Path file) {
+        Entry e = this.entries.get(file);
+        if (e == null) return "no entry (frame " + this.frame + ")";
+        return e.state + " model=" + (e.model == null ? "none" : e.model.debugState())
+                + " want=" + e.wantW + "x" + e.wantH + " rendered=" + e.renderedW + "x" + e.renderedH + " lastUsed=" + e.lastUsed + " frame=" + this.frame;
     }
 
     /** 测试用：某个文件缩略图的状态（还没请求过为 null） */
