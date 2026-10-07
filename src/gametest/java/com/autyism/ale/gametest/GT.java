@@ -22,6 +22,9 @@ public final class GT {
     private GT() {
     }
 
+    /** 测试正按住的键（MaLiLib 26.3 起读真实键盘状态，见 HeldKeysMixin） */
+    public static final java.util.Set<Integer> HELD_KEYS = java.util.concurrent.ConcurrentHashMap.newKeySet();
+
     public static void log(String msg) {
         System.out.println("[ALE-GT] " + msg);
     }
@@ -210,6 +213,36 @@ public final class GT {
             throw new java.io.UncheckedIOException(e);
         }
         return path;
+    }
+
+    /**
+     * 按住或松开一个 MaLiLib 热键的键。26.3 起 MaLiLib 按扫描码自己记录按下的键（PRESSED_KEYS），gametest 模拟的按键记不进去，
+     * 所以这里直接记进去并刷新这个热键的状态；更早的版本模拟按键本身就够了。
+     */
+    public static void setHotkeyHeld(ClientGameTestContext context, fi.dy.masa.malilib.hotkeys.IKeybind keybind, boolean held) {
+        List<Integer> keys = context.computeOnClient(c -> keybind.getKeys());
+        if (held) HELD_KEYS.addAll(keys);
+        else HELD_KEYS.removeAll(keys);
+        for (int k : keys) {
+            if (held) context.getInput().holdKey(k);
+            else context.getInput().releaseKey(k);
+        }
+        context.runOnClient(c -> {
+            try {
+                java.lang.reflect.Field f = fi.dy.masa.malilib.hotkeys.KeybindMulti.class.getDeclaredField("PRESSED_KEYS");
+                f.setAccessible(true);
+                @SuppressWarnings("unchecked") List<Integer> pressed = (List<Integer>) f.get(null);
+                for (Integer k : keys) {
+                    pressed.remove(k);
+                    if (held) pressed.add(k);
+                }
+                ((fi.dy.masa.malilib.hotkeys.KeybindMulti) keybind).updateIsPressed();
+            } catch (NoSuchFieldException e) {
+                // MaLiLib before 26.3: the simulated key is enough
+            } catch (ReflectiveOperationException e) {
+                throw new AssertionError(e);
+            }
+        });
     }
 
     /** 隐藏或显示界面（F1）。26.2 起由 Hud 管理，只能切换 */

@@ -24,10 +24,13 @@ public abstract class LitematicaRendererMixin {
     /*private void ale$skipLateTranslucent(com.mojang.blaze3d.pipeline.RenderTarget target, ChunkSectionLayerGroup group, CallbackInfo ci) {
     *///?} else
     private void ale$skipLateTranslucent(ChunkSectionLayerGroup group, @Nullable GpuSampler sampler, CallbackInfo ci) {
-        if (group == ChunkSectionLayerGroup.TRANSLUCENT && !GlassRenderState.drawingEarly && GlassRenderState.translucentDrawnEarly
+        if (group != ChunkSectionLayerGroup.TRANSLUCENT) return;
+        if (!GlassRenderState.drawingEarly && GlassRenderState.translucentDrawnEarly
                 && AleConfigs.Generic.RENDER_THROUGH_GLASS.getBooleanValue()) {
             ci.cancel();
+            return;
         }
+        GlassRenderState.translucentDrawnThisFrame = true;
     }
 
     @Inject(method = "renderSchematicOverlays", at = @At("HEAD"), cancellable = true)
