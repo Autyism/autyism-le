@@ -26,7 +26,6 @@ import net.minecraft.world.level.block.*;
 import net.minecraft.world.level.block.entity.SignBlockEntity;
 import net.minecraft.world.level.block.state.BlockState;
 import net.minecraft.world.level.block.state.properties.BlockStateProperties;
-import org.lwjgl.glfw.GLFW;
 
 import java.lang.reflect.Field;
 import java.util.ArrayList;
@@ -70,8 +69,8 @@ public final class SignReplaceGameTest implements FabricClientGameTest {
                     s.overworld().setBlock(e.getKey(), e.getValue(), Block.UPDATE_CLIENTS);
                     if (s.overworld().getBlockEntity(e.getKey()) instanceof SignBlockEntity sign) {
                         String id = String.valueOf(e.getKey().getX());
-                        sign.updateText(t -> t.setMessage(0, Component.literal("front " + id)), true);
-                        sign.updateText(t -> t.setMessage(2, Component.literal("back " + id)), false);
+                        GT.setSignLine(sign, true, 0, Component.literal("front " + id));
+                        GT.setSignLine(sign, false, 2, Component.literal("back " + id));
                     }
                 }
             });
@@ -109,7 +108,7 @@ public final class SignReplaceGameTest implements FabricClientGameTest {
             });
             context.getInput().setCursorPos(cell[0], cell[1]);
             context.waitTick();
-            context.getInput().pressMouse(GLFW.GLFW_MOUSE_BUTTON_LEFT);
+            context.getInput().pressMouse(com.mojang.blaze3d.platform.InputConstants.MOUSE_BUTTON_LEFT);
             context.waitTicks(2);
             context.takeScreenshot("ale-sign-block-select");
             GT.clickButton(context, "Ok");
@@ -161,7 +160,7 @@ public final class SignReplaceGameTest implements FabricClientGameTest {
             context.waitTicks(3);
             context.getInput().setCursorPos(cell[0], cell[1]);
             context.waitTick();
-            context.getInput().pressMouse(GLFW.GLFW_MOUSE_BUTTON_LEFT);
+            context.getInput().pressMouse(com.mojang.blaze3d.platform.InputConstants.MOUSE_BUTTON_LEFT);
             context.waitTicks(2);
             GT.clickButton(context, "Ok");
             context.waitTicks(5);
@@ -234,7 +233,7 @@ public final class SignReplaceGameTest implements FabricClientGameTest {
         });
         context.getInput().setCursorPos(pos[0], pos[1]);
         context.waitTick();
-        context.getInput().pressMouse(GLFW.GLFW_MOUSE_BUTTON_LEFT);
+        context.getInput().pressMouse(com.mojang.blaze3d.platform.InputConstants.MOUSE_BUTTON_LEFT);
         context.waitTick();
     }
 }

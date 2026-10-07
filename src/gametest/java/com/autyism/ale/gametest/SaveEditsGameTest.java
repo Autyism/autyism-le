@@ -14,7 +14,6 @@ import net.minecraft.network.chat.Component;
 import net.minecraft.world.level.block.Blocks;
 import net.minecraft.world.level.block.entity.SignBlockEntity;
 import net.minecraft.world.level.block.state.BlockState;
-import org.lwjgl.glfw.GLFW;
 
 import java.nio.file.Files;
 import java.nio.file.Path;
@@ -40,7 +39,7 @@ public final class SaveEditsGameTest implements FabricClientGameTest {
                 for (BlockPos p : BlockPos.betweenClosed(MIN, MAX)) s.overworld().setBlockAndUpdate(p, Blocks.STONE.defaultBlockState());
                 s.overworld().setBlockAndUpdate(SIGN, Blocks.OAK_SIGN.defaultBlockState());
                 if (s.overworld().getBlockEntity(SIGN) instanceof SignBlockEntity sign) {
-                    sign.updateText(t -> t.setMessage(0, Component.literal("hello")), true);
+                    GT.setSignLine(sign, true, 0, Component.literal("hello"));
                 }
             });
             context.waitTicks(5);
@@ -78,7 +77,7 @@ public final class SaveEditsGameTest implements FabricClientGameTest {
             GT.clickButton(context, "Save as");
             context.waitFor(c -> c.screen instanceof GuiTextInput, 40);
             context.takeScreenshot("ale-save-as-dialog");
-            context.getInput().pressKey(GLFW.GLFW_KEY_ENTER);
+            context.getInput().pressKey(com.mojang.blaze3d.platform.InputConstants.KEY_RETURN);
             context.waitTicks(5);
             verifyFile(context, dir, "ale_save_test_edited.litematic");
             GT.log("[save] save-as OK: ale_save_test_edited.litematic written");

@@ -6,7 +6,6 @@ import fi.dy.masa.malilib.gui.GuiStringListEdit;
 import net.fabricmc.fabric.api.client.gametest.v1.FabricClientGameTest;
 import net.fabricmc.fabric.api.client.gametest.v1.context.ClientGameTestContext;
 import net.fabricmc.fabric.api.client.gametest.v1.context.TestSingleplayerContext;
-import org.lwjgl.glfw.GLFW;
 
 import java.lang.reflect.Field;
 import java.util.List;
@@ -76,7 +75,7 @@ public final class BlockPickerGameTest implements FabricClientGameTest {
         });
         context.getInput().setCursorPos(pos[0], pos[1]);
         context.waitTick();
-        context.getInput().pressMouse(GLFW.GLFW_MOUSE_BUTTON_LEFT);
+        context.getInput().pressMouse(com.mojang.blaze3d.platform.InputConstants.MOUSE_BUTTON_LEFT);
         context.waitTick();
     }
 

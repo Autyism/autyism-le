@@ -48,6 +48,10 @@ public final class TranslucentRenderTypes {
         if (name != null && !t.state.textures.isEmpty()) {
             net.minecraft.resources.Identifier texture = t.state.textures.values().iterator().next().location();
         //?}
+            // 26.3 没有半透明盔甲类型了，用半透明实体类型
+            //? if >=26.3 {
+            /*if (name.startsWith("armor_cutout")) return RenderTypes.entityTranslucent(texture);
+            *///?} else
             if (name.startsWith("armor_cutout")) return RenderTypes.armorTranslucent(texture);
             if (name.equals("entity_solid") || name.startsWith("entity_cutout") || name.equals("entity_smooth_cutout")) {
                 return RenderTypes.entityTranslucent(texture);

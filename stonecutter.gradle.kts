@@ -19,6 +19,11 @@ stonecutter parameters {
             replace("""\bBlocks\.RED_STAINED_GLASS\b""" to """Blocks.STAINED_GLASS.red()""", """\bBlocks\.STAINED_GLASS\.red\(\)""" to """Blocks.RED_STAINED_GLASS""")
             replace("""\bItems\.WHITE_SHULKER_BOX\b""" to """Items.DYED_SHULKER_BOX.white()""", """\bItems\.DYED_SHULKER_BOX\.white\(\)""" to """Items.WHITE_SHULKER_BOX""")
         }
+        // 26.3: blaze3d API classes moved to renderpearl
+        string(current.parsed >= "26.3") {
+            replace("com.mojang.blaze3d.textures.GpuSampler", "com.mojang.renderpearl.api.textures.GpuSampler")
+            replace("InputConstants.Type.KEYSYM", "InputConstants.Type.KEYBOARD")
+        }
         // 26.1: GUI drawing moved to an extract pass
         string(current.parsed >= "26.1") {
             replace("GuiGraphics", "GuiGraphicsExtractor")

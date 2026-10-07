@@ -5,7 +5,6 @@ import net.fabricmc.fabric.api.client.gametest.v1.FabricClientGameTest;
 import net.fabricmc.fabric.api.client.gametest.v1.context.ClientGameTestContext;
 import net.fabricmc.fabric.api.client.gametest.v1.context.TestSingleplayerContext;
 import net.fabricmc.loader.api.FabricLoader;
-import org.lwjgl.glfw.GLFW;
 
 import java.lang.reflect.Method;
 import java.nio.file.Files;
@@ -59,7 +58,7 @@ public final class KbpGameTest implements FabricClientGameTest {
                 Path file = FabricLoader.getInstance().getGameDir().resolve((String) call(b, "file"));
                 long before = Files.exists(file) ? file.toFile().lastModified() : 0;
                 context.waitTicks(25); // 文件时间精度
-                boolean ok = context.computeOnClient(c -> (boolean) callStatic("bind", b, InputConstants.Type.KEYSYM.getOrCreate(GLFW.GLFW_KEY_F19), 0));
+                boolean ok = context.computeOnClient(c -> (boolean) callStatic("bind", b, InputConstants.Type.KEYSYM.getOrCreate(InputConstants.KEY_F19), 0));
                 context.waitTicks(10);
                 Object now = context.computeOnClient(c -> callStatic("find", id));
                 String newValue = now == null ? null : (String) call(now, "value");
