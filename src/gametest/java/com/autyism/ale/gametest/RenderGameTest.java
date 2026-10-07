@@ -53,12 +53,12 @@ public final class RenderGameTest implements FabricClientGameTest {
                 s.overworld().setBlockAndUpdate(FACING_POS, Blocks.OAK_STAIRS.defaultBlockState().setValue(StairBlock.FACING, Direction.SOUTH));
             });
             context.waitTicks(40);
-            Path shot = context.takeScreenshot("ale-waterlogged-w");
+            Path shot = GT.shot(context, "ale-waterlogged-w");
             int blueOn = countBlue(shot);
             context.runOnClient(c -> AleConfigs.Generic.WATERLOGGED_MARKER.setBooleanValue(false));
             context.runOnClient(c -> fi.dy.masa.litematica.data.DataManager.getSchematicPlacementManager().markAllPlacementsOfSchematicForRebuild(placement.getSchematic()));
             context.waitTicks(40);
-            Path shotOff = context.takeScreenshot("ale-waterlogged-w-off");
+            Path shotOff = GT.shot(context, "ale-waterlogged-w-off");
             int blueOff = countBlue(shotOff);
             context.runOnClient(c -> AleConfigs.Generic.WATERLOGGED_MARKER.setBooleanValue(true));
             GT.log("[render] blue pixels: marker on=" + blueOn + " off=" + blueOff);
@@ -68,12 +68,12 @@ public final class RenderGameTest implements FabricClientGameTest {
             // 朝向不对的楼梯：红色 D
             context.runOnClient(c -> fi.dy.masa.litematica.data.DataManager.getSchematicPlacementManager().markAllPlacementsOfSchematicForRebuild(placement.getSchematic()));
             context.waitTicks(40);
-            Path dOn = context.takeScreenshot("ale-orientation-d");
+            Path dOn = GT.shot(context, "ale-orientation-d");
             int redOn = countRed(dOn);
             context.runOnClient(c -> AleConfigs.Generic.ORIENTATION_MARKER.setBooleanValue(false));
             context.runOnClient(c -> fi.dy.masa.litematica.data.DataManager.getSchematicPlacementManager().markAllPlacementsOfSchematicForRebuild(placement.getSchematic()));
             context.waitTicks(40);
-            Path dOff = context.takeScreenshot("ale-orientation-d-off");
+            Path dOff = GT.shot(context, "ale-orientation-d-off");
             int redOff = countRed(dOff);
             context.runOnClient(c -> AleConfigs.Generic.ORIENTATION_MARKER.setBooleanValue(true));
             GT.log("[render] red pixels: D marker on=" + redOn + " off=" + redOff);

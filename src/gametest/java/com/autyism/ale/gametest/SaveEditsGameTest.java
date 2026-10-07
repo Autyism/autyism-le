@@ -63,7 +63,7 @@ public final class SaveEditsGameTest implements FabricClientGameTest {
             // 打开放置设置界面，点“保存修改”
             context.runOnClient(c -> c.setScreen(new GuiPlacementConfiguration(placement)));
             context.waitTicks(5);
-            context.takeScreenshot("ale-save-buttons");
+            GT.shot(context, "ale-save-buttons");
             GT.clickButton(context, "Save edits");
             context.waitTicks(5);
             verifyFile(context, dir, "ale_save_test.litematic");
@@ -76,7 +76,7 @@ public final class SaveEditsGameTest implements FabricClientGameTest {
             context.waitTicks(5);
             GT.clickButton(context, "Save as");
             context.waitFor(c -> c.screen instanceof GuiTextInput, 40);
-            context.takeScreenshot("ale-save-as-dialog");
+            GT.shot(context, "ale-save-as-dialog");
             context.getInput().pressKey(com.mojang.blaze3d.platform.InputConstants.KEY_RETURN);
             context.waitTicks(5);
             verifyFile(context, dir, "ale_save_test_edited.litematic");

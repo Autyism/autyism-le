@@ -27,20 +27,20 @@ public final class BlockPickerGameTest implements FabricClientGameTest {
                 c.setScreen(new GuiStringListEdit(Configs.Visuals.IGNORABLE_EXISTING_BLOCKS, configs, null, configs));
             });
             context.waitTicks(5);
-            context.takeScreenshot("ale-picker-list-edit");
+            GT.shot(context, "ale-picker-list-edit");
             GT.clickButton(context, "Pick blocks");
             context.waitFor(c -> c.screen instanceof GuiBlockPicker, 40);
             context.getInput().typeChars("minecraft:cobblestone");
             context.waitTicks(3);
-            context.takeScreenshot("ale-picker-search");
+            GT.shot(context, "ale-picker-search");
             clickRow(context, true, 0);
             context.waitTicks(2);
-            context.takeScreenshot("ale-picker-added");
+            GT.shot(context, "ale-picker-added");
             List<String> after = context.computeOnClient(c -> List.copyOf(Configs.Visuals.IGNORABLE_EXISTING_BLOCKS.getStrings()));
             if (!after.equals(List.of("minecraft:cobblestone"))) throw new AssertionError("[picker] list after adding: " + after);
             GT.clickButton(context, "Done");
             context.waitFor(c -> c.screen instanceof GuiStringListEdit, 40);
-            context.takeScreenshot("ale-picker-back");
+            GT.shot(context, "ale-picker-back");
             GT.log("[picker] add OK: " + after);
 
             // 再打开，点左边的 − 移除

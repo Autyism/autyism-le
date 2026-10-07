@@ -80,9 +80,9 @@ public final class GlassGameTest implements FabricClientGameTest {
     private static int visibleDiff(ClientGameTestContext context, SchematicPlacement placement, boolean throughGlass,
                                    boolean overlay, boolean ghost, String name) {
         set(context, placement, throughGlass, false, false);
-        Path base = context.takeScreenshot("ale-glass-" + name + "-base");
+        Path base = GT.shot(context, "ale-glass-" + name + "-base");
         set(context, placement, throughGlass, overlay, ghost);
-        Path with = context.takeScreenshot("ale-glass-" + name);
+        Path with = GT.shot(context, "ale-glass-" + name);
         return diff(base, with);
     }
 
