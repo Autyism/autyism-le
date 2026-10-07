@@ -39,7 +39,7 @@ All features except the scrollable button rows can be turned off in ALE's settin
 
 - **Layouts with 3D thumbnails.** A small button at the top-left of Litematica's schematic browser switches between the plain list, a list with previews (taller rows with a 3D thumbnail of each schematic) and grids with 5, 4 or 3 tiles per row. Thumbnails are built in the background for the entries on screen, so folders with hundreds of files stay smooth. Schematics larger than the size limit (125,000 blocks by default) show "Too large" instead, unreadable files show "Can't read". ALE remembers the layout; the gaps and row heights can be changed in its settings.
 - **3D preview of the selected schematic.** Below the schematic's information on the right, ALE draws the whole schematic in 3D: real block models with lighting, all regions, water and glass, and block entities such as chests, signs, banners and beds. Drag with the left mouse button to turn it and use the mouse wheel to move closer or further away. Very large schematics are built piece by piece from the middle outwards and stop at about two million faces, so the game never freezes.
-- **Full screen and free camera.** Two small buttons under the information open the preview full screen (Esc goes back and keeps the view) and switch on a free camera: fly with your movement keys and drag to look around.
+- **Full screen and free camera.** Two small buttons under the information open the preview full screen (Esc goes back and keeps the view) and switch on a free camera: fly with your movement keys and drag to look around. Switching the free camera off goes back to the starting view.
 - **Icons for folders and schematics.** Right-click the icon of a folder or schematic to give it an item as icon, for example a redstone block for your redstone builds. Choose whether the item replaces the small folder symbol, is shown large, or a schematic inside the folder is previewed. The icons are stored in ALE's settings file, not in your schematic folders.
 
 ### Material lists and verification
@@ -318,7 +318,7 @@ Autyism 的投影增强（Autyism's Litematica Enhancement，简称 ALE）是 [L
 
 - **带 3D 缩略图的显示方式**：Litematica 投影浏览器左上角有一个小按钮，可以在普通列表、带预览的列表（行更高，每个投影前面有 3D 缩略图）和每行 5 / 4 / 3 个的网格之间切换。缩略图只为屏幕上看得到的条目在后台生成，几百个文件的文件夹也能流畅浏览。超过体积上限（默认 125000 个方块）的投影显示“太大”，读不出来的文件显示“无法读取”。ALE 会记住显示方式，间距和行高可以在设置里调整。
 - **选中投影的 3D 预览**：右边投影信息的下面会画出整个投影的 3D 预览：真实的方块模型和光照、所有区域、水和玻璃，以及箱子、告示牌、旗帜、床等方块实体。按住左键拖动可以转动，滚轮可以拉近拉远。很大的投影会从中间向外一块一块生成，大约两百万个面之后停止，游戏不会卡住。
-- **全屏和自由视角**：信息下面有两个小按钮：一个打开全屏预览（按 Esc 返回，视角保持不变），一个开启自由视角：用移动键飞行，拖动鼠标转视角。
+- **全屏和自由视角**：信息下面有两个小按钮：一个打开全屏预览（按 Esc 返回，视角保持不变），一个开启自由视角：用移动键飞行，拖动鼠标转视角。关掉自由视角后回到初始视角。
 - **文件夹和投影的图标**：右键文件夹（或投影）的图标，可以给它换一个物品图标，比如给红石作品的文件夹用红石块。可以选择物品代替小的文件夹标记、显示成大图标，或者显示文件夹里一个投影的预览。图标保存在 ALE 自己的设置文件里，不会往你的投影文件夹里写东西。
 
 ### 材料列表与验证
