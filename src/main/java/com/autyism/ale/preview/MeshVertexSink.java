@@ -22,7 +22,8 @@ final class MeshVertexSink implements VertexConsumer {
     private static final int COLOR = FORMAT.getOffset(VertexFormatElement.COLOR);
     private static final int UV0 = FORMAT.getOffset(VertexFormatElement.UV0);
     private static final int UV2 = FORMAT.getOffset(VertexFormatElement.UV2);
-    private static final int NORMAL = FORMAT.getOffset(VertexFormatElement.NORMAL);
+    /** 26.1 起方块格式没有法线（面的明暗已经算进颜色里）：-1 */
+    private static final int NORMAL = FORMAT.contains(VertexFormatElement.NORMAL) ? FORMAT.getOffset(VertexFormatElement.NORMAL) : -1;
     private static final short FULL_BRIGHT = 240;
 
     private long address;
@@ -151,7 +152,7 @@ final class MeshVertexSink implements VertexConsumer {
 
     @Override
     public VertexConsumer setNormal(float x, float y, float z) {
-        if (this.current >= 0) {
+        if (this.current >= 0 && NORMAL >= 0) {
             MemoryUtil.memPutByte(this.current + NORMAL, normal(x));
             MemoryUtil.memPutByte(this.current + NORMAL + 1, normal(y));
             MemoryUtil.memPutByte(this.current + NORMAL + 2, normal(z));

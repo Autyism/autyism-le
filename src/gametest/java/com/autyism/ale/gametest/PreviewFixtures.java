@@ -328,13 +328,14 @@ public final class PreviewFixtures {
 
     private static String stateString(BlockState st) {
         StringBuilder sb = new StringBuilder(BuiltInRegistries.BLOCK.getKey(st.getBlock()).toString());
-        if (!st.getValues().isEmpty()) {
+        var props = st.getProperties();
+        if (!props.isEmpty()) {
             sb.append('[');
             boolean first = true;
-            for (var e : st.getValues().entrySet()) {
+            for (var p : props) {
                 if (!first) sb.append(',');
                 first = false;
-                sb.append(e.getKey().getName()).append('=').append(name(e.getKey(), e.getValue()));
+                sb.append(p.getName()).append('=').append(name(p, st.getValue(p)));
             }
             sb.append(']');
         }

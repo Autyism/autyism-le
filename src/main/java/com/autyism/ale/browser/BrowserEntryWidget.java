@@ -195,7 +195,7 @@ public class BrowserEntryWidget extends WidgetDirectoryEntry {
         g.pose().pushMatrix();
         g.pose().translate(x + (w - width * scale) / 2.0F, y + (h - font.lineHeight * scale) / 2.0F + scale);
         g.pose().scale(scale, scale);
-        g.drawString(font, text, 0, 0, color, true);
+        com.autyism.ale.preview.GuiCompat.text(g, font, text, 0, 0, color, true);
         g.pose().popMatrix();
     }
 
@@ -205,7 +205,7 @@ public class BrowserEntryWidget extends WidgetDirectoryEntry {
         g.pose().pushMatrix();
         g.pose().translate(x, y);
         g.pose().scale(scale, scale);
-        g.renderItem(stack, 0, 0);
+        com.autyism.ale.preview.GuiCompat.item(g, stack, 0, 0);
         g.pose().popMatrix();
     }
 

@@ -1,7 +1,6 @@
 package com.autyism.ale.preview;
 
 import com.mojang.blaze3d.platform.InputConstants;
-import net.fabricmc.fabric.api.client.keybinding.v1.KeyBindingHelper;
 import net.minecraft.client.KeyMapping;
 import net.minecraft.client.Minecraft;
 
@@ -11,7 +10,7 @@ public final class PreviewInput {
     }
 
     public static boolean isDown(KeyMapping mapping) {
-        InputConstants.Key key = KeyBindingHelper.getBoundKeyOf(mapping);
+        InputConstants.Key key = boundKey(mapping);
         if (key == null || key.getType() != InputConstants.Type.KEYSYM || key.getValue() < 0) return false;
         return InputConstants.isKeyDown(Minecraft.getInstance().getWindow(), key.getValue());
     }
@@ -37,14 +36,24 @@ public final class PreviewInput {
         g.fill(tx - 3, ty + h + 2, tx + w + 3, ty + h + 3, 0xFF707070);
         g.fill(tx - 3, ty - 3, tx - 2, ty + h + 3, 0xFF707070);
         g.fill(tx + w + 2, ty - 3, tx + w + 3, ty + h + 3, 0xFF707070);
-        for (int i = 0; i < list.size(); i++) g.drawString(font, list.get(i), tx, ty + i * 10, 0xFFFFFFFF, true);
+        for (int i = 0; i < list.size(); i++) GuiCompat.text(g, font, list.get(i), tx, ty + i * 10, 0xFFFFFFFF, true);
+    }
+
+    /** 绑定的键（原版按名字存的那个） */
+    @org.jetbrains.annotations.Nullable
+    private static InputConstants.Key boundKey(KeyMapping mapping) {
+        try {
+            return InputConstants.getKey(mapping.saveString());
+        } catch (Throwable t) {
+            return null;
+        }
     }
 
     /** 这个键码是不是某个移动键（自由视角时这些键归预览，不触发浏览器的搜索） */
     public static boolean isMovementKey(int keyCode) {
         var o = Minecraft.getInstance().options;
         for (KeyMapping m : new KeyMapping[]{o.keyUp, o.keyDown, o.keyLeft, o.keyRight, o.keyJump, o.keyShift, o.keySprint}) {
-            InputConstants.Key key = KeyBindingHelper.getBoundKeyOf(m);
+            InputConstants.Key key = boundKey(m);
             if (key != null && key.getType() == InputConstants.Type.KEYSYM && key.getValue() == keyCode) return true;
         }
         return false;

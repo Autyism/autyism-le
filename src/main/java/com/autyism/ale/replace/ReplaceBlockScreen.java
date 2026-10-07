@@ -164,11 +164,19 @@ public class ReplaceBlockScreen extends GuiBase {
                 StringUtils.translate(block.getDescriptionId()));
     }
 
+    //? if >=26.1 {
+    /*@Override
+    public void extractRenderState(GuiGraphics g, int mouseX, int mouseY, float partialTicks) {
+        if (this.getParent() != null) this.getParent().extractRenderState(g, -1, -1, partialTicks);
+        super.extractRenderState(g, mouseX, mouseY, partialTicks);
+    }
+    *///?} else {
     @Override
     public void render(GuiGraphics g, int mouseX, int mouseY, float partialTicks) {
         if (this.getParent() != null) this.getParent().render(g, -1, -1, partialTicks);
         super.render(g, mouseX, mouseY, partialTicks);
     }
+    //?}
 
     @Override
     protected void drawScreenBackground(GuiContext ctx, int mouseX, int mouseY) {

@@ -142,12 +142,20 @@ public class FolderIconScreen extends GuiBase implements Previews.PreviewOwnedSc
         return super.onKeyTyped(event);
     }
 
+    // 后面的浏览器照常画（可以看到改动），对话框画在上面
+    //? if >=26.1 {
+    /*@Override
+    public void extractRenderState(GuiGraphics g, int mouseX, int mouseY, float partialTicks) {
+        if (this.getParent() != null) this.getParent().extractRenderState(g, -1, -1, partialTicks);
+        super.extractRenderState(g, mouseX, mouseY, partialTicks);
+    }
+    *///?} else {
     @Override
     public void render(GuiGraphics g, int mouseX, int mouseY, float partialTicks) {
-        // 后面的浏览器照常画（可以看到改动），对话框画在上面
         if (this.getParent() != null) this.getParent().render(g, -1, -1, partialTicks);
         super.render(g, mouseX, mouseY, partialTicks);
     }
+    //?}
 
     @Override
     protected void drawScreenBackground(GuiContext ctx, int mouseX, int mouseY) {

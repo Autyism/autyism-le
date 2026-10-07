@@ -26,8 +26,29 @@ public final class FullscreenPreviewScreen extends Screen implements Previews.Pr
         this.session = session;
     }
 
+    //? if >=26.1 {
+    /*@Override
+    public void extractRenderState(GuiGraphics g, int mouseX, int mouseY, float partialTicks) {
+        draw(g);
+    }
+
+    @Override
+    public void extractBackground(GuiGraphics g, int mouseX, int mouseY, float partialTicks) {
+        // 背景在 draw 里画成纯黑
+    }
+    *///?} else {
     @Override
     public void render(GuiGraphics g, int mouseX, int mouseY, float partialTicks) {
+        draw(g);
+    }
+
+    @Override
+    public void renderBackground(GuiGraphics g, int mouseX, int mouseY, float partialTicks) {
+        // 背景在 draw 里画成纯黑
+    }
+    //?}
+
+    private void draw(GuiGraphics g) {
         g.fill(0, 0, this.width, this.height, 0xFF000000);
         if (this.dragging) {
             Minecraft mc = Minecraft.getInstance();
@@ -41,13 +62,8 @@ public final class FullscreenPreviewScreen extends Screen implements Previews.Pr
         PreviewModel model = this.session.model();
         if (!model.isSized()) {
             String text = StringUtils.translate(model.status() == PreviewModel.Status.FAILED ? "autyism-le.preview.failed" : "autyism-le.preview.loading");
-            g.drawString(this.font, text, (this.width - this.font.width(text)) / 2, this.height / 2, 0xFFA0A0A0, true);
+            GuiCompat.text(g, this.font, text, (this.width - this.font.width(text)) / 2, this.height / 2, 0xFFA0A0A0, true);
         }
-    }
-
-    @Override
-    public void renderBackground(GuiGraphics g, int mouseX, int mouseY, float partialTicks) {
-        // 背景在 render 里画成纯黑
     }
 
     @Override

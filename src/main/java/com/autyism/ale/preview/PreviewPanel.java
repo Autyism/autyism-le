@@ -97,7 +97,7 @@ public final class PreviewPanel {
             text = StringUtils.translate("autyism-le.preview.loading");
         }
         if (text != null) {
-            g.drawString(font, text, x + (w - font.width(text)) / 2, y + (h - font.lineHeight) / 2, color, true);
+            GuiCompat.text(g, font, text, x + (w - font.width(text)) / 2, y + (h - font.lineHeight) / 2, color, true);
             return;
         }
         if (!model.isComplete()) {
@@ -106,7 +106,7 @@ public final class PreviewPanel {
             g.fill(x, y + h - 2, x + bar, y + h, 0xC0FFFFFF);
         } else if (model.isTruncated()) {
             String note = StringUtils.translate("autyism-le.preview.truncated");
-            g.drawString(font, note, x + 2, y + h - font.lineHeight - 1, 0xFFA0A0A0, true);
+            GuiCompat.text(g, font, note, x + 2, y + h - font.lineHeight - 1, 0xFFA0A0A0, true);
         }
     }
 

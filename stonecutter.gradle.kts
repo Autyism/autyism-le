@@ -30,6 +30,10 @@ stonecutter parameters {
             replace("fi.dy.masa.malilib.util.ItemType", "fi.dy.masa.malilib.util.data.ItemType")
             replace("net.minecraft.client.renderer.block.model.BakedQuad", "net.minecraft.client.resources.model.geometry.BakedQuad")
             replace("net.minecraft.client.renderer.block.model.BlockStateModel", "net.minecraft.client.renderer.block.dispatch.BlockStateModel")
+            // schematic previews
+            replace("net.minecraft.client.gui.render.state.BlitRenderState", "net.minecraft.client.renderer.state.gui.BlitRenderState")
+            replace("net.minecraft.client.renderer.state.CameraRenderState", "net.minecraft.client.renderer.state.level.CameraRenderState")
+            replace("net.minecraft.world.level.BlockAndTintGetter", "net.minecraft.client.renderer.block.BlockAndTintGetter")
         }
     }
 }

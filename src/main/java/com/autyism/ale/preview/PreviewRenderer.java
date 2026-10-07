@@ -18,7 +18,6 @@ import com.mojang.blaze3d.textures.GpuTextureView;
 import com.mojang.blaze3d.vertex.PoseStack;
 import com.mojang.blaze3d.vertex.VertexFormat;
 import net.minecraft.client.Minecraft;
-import net.minecraft.client.renderer.PerspectiveProjectionMatrixBuffer;
 import net.minecraft.client.renderer.RenderPipelines;
 import net.minecraft.client.renderer.blockentity.BlockEntityRenderDispatcher;
 import net.minecraft.client.renderer.blockentity.BlockEntityRenderer;
@@ -64,8 +63,13 @@ public final class PreviewRenderer {
 
     private static final int MAX_SORTED_QUADS = 200_000;
 
+    //? if >=26.1 {
+    /*@Nullable
+    private static net.minecraft.client.renderer.ProjectionMatrixBuffer projectionBuffer;
+    *///?} else {
     @Nullable
-    private static PerspectiveProjectionMatrixBuffer projectionBuffer;
+    private static net.minecraft.client.renderer.PerspectiveProjectionMatrixBuffer projectionBuffer;
+    //?}
     @Nullable
     private static GpuBuffer noFogBuffer;
     @Nullable
@@ -128,8 +132,13 @@ public final class PreviewRenderer {
         return switch (layer) {
             case SOLID -> RenderPipelines.SOLID_BLOCK;
             case CUTOUT -> RenderPipelines.CUTOUT_BLOCK;
+            //? if >=26.1 {
+            /*case TRIPWIRE -> RenderPipelines.CUTOUT_BLOCK;
+            case TRANSLUCENT -> RenderPipelines.TRANSLUCENT_BLOCK;
+            *///?} else {
             case TRIPWIRE -> RenderPipelines.TRIPWIRE_BLOCK;
             case TRANSLUCENT -> RenderPipelines.TRANSLUCENT_MOVING_BLOCK;
+            //?}
         };
     }
 
@@ -155,7 +164,11 @@ public final class PreviewRenderer {
         Minecraft mc = Minecraft.getInstance();
         GpuTextureView atlas = mc.getTextureManager().getTexture(TextureAtlas.LOCATION_BLOCKS).getTextureView();
         GpuSampler atlasSampler = RenderSystem.getSamplerCache().getRepeat(FilterMode.NEAREST, true);
+        //? if >=26.1 {
+        /*GpuTextureView lightmap = mc.gameRenderer.lightmap();
+        *///?} else {
         GpuTextureView lightmap = mc.gameRenderer.lightTexture().getTextureView();
+        //?}
         GpuSampler lightSampler = RenderSystem.getSamplerCache().getClampToEdge(FilterMode.LINEAR);
 
         int maxIndices = 0;
@@ -270,6 +283,7 @@ public final class PreviewRenderer {
         CameraRenderState camera = new CameraRenderState();
         camera.initialized = true;
         camera.pos = new Vec3(eye.x, eye.y, eye.z);
+        //? if <26.1
         camera.entityPos = camera.pos;
         camera.orientation = new Quaternionf().rotationYXZ((float) Math.PI - (float) Math.toRadians(previewCamera.yaw()),
                 -(float) Math.toRadians(previewCamera.pitch()), 0.0F);
@@ -341,7 +355,11 @@ public final class PreviewRenderer {
             if (state instanceof ChestRenderState chest) {
                 BlockState bs = be.getBlockState();
                 if (bs.hasProperty(ChestBlock.TYPE)) chest.type = bs.getValue(ChestBlock.TYPE);
+                //? if >=26.1 {
+                /*if (bs.hasProperty(BlockStateProperties.HORIZONTAL_FACING)) chest.facing = bs.getValue(BlockStateProperties.HORIZONTAL_FACING);
+                *///?} else {
                 if (bs.hasProperty(BlockStateProperties.HORIZONTAL_FACING)) chest.angle = bs.getValue(BlockStateProperties.HORIZONTAL_FACING).toYRot();
+                //?}
             }
             draw.state = state;
             draw.blockEntity = null;
@@ -364,7 +382,11 @@ public final class PreviewRenderer {
 
     private static void ensureStaticBuffers() {
         GpuDevice device = RenderSystem.getDevice();
-        if (projectionBuffer == null) projectionBuffer = new PerspectiveProjectionMatrixBuffer("ALE schematic preview");
+        //? if >=26.1 {
+        /*if (projectionBuffer == null) projectionBuffer = new net.minecraft.client.renderer.ProjectionMatrixBuffer("ALE schematic preview");
+        *///?} else {
+        if (projectionBuffer == null) projectionBuffer = new net.minecraft.client.renderer.PerspectiveProjectionMatrixBuffer("ALE schematic preview");
+        //?}
         if (noFogBuffer == null) {
             try (MemoryStack stack = MemoryStack.stackPush()) {
                 ByteBuffer data = Std140Builder.onStack(stack, FogRenderer.FOG_UBO_SIZE)

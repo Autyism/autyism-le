@@ -23,7 +23,7 @@ final class UiDriver {
         context.waitTicks(2);
         context.runOnClient(c -> {
             c.options.guiScale().set(3);
-            c.resizeDisplay();
+            resize(c);
         });
         context.waitTicks(2);
     }
@@ -33,8 +33,16 @@ final class UiDriver {
         context.runOnClient(c -> c.options.guiScale().set(guiScale));
         context.getInput().resizeWindow(1280, 720);
         context.waitTicks(2);
-        context.runOnClient(c -> c.resizeDisplay());
+        context.runOnClient(UiDriver::resize);
         context.waitTicks(2);
+    }
+
+    private static void resize(net.minecraft.client.Minecraft c) {
+        //? if >=26.1 {
+        /*c.resizeGui();
+        *///?} else {
+        c.resizeDisplay();
+        //?}
     }
 
     double scale() {
