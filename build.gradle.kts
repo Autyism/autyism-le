@@ -49,6 +49,9 @@ dependencies {
             modLocalRuntime(files(rootProject.file("libs/sodium-fabric-0.8.7+mc1.21.11.jar")))
             if (providers.gradleProperty("withIris").isPresent) modLocalRuntime(files(rootProject.file("libs/iris-fabric-1.10.7+mc1.21.11.jar")))
         }
+        // 26.x 的 Sodium 从 Modrinth 取（只在测试时加载）
+        val sodium = mapOf("26.1.2" to "mc26.1.2-0.9.2-fabric")
+        if (providers.gradleProperty("withSodium").isPresent) sodium[mc]?.let { modLocalRuntime("maven.modrinth:sodium:$it") }
         // 打印机：1.21.11 用 libs 里的发布版，其他版本用打印机仓库各版本的构建
         val printer = if (mc == "1.21.11") rootProject.file("libs/litematica-printer-autyism-1.0.0.jar")
             else rootProject.file("libs/printer/litematica-printer-autyism-1.0.0+$mc.jar")
@@ -88,6 +91,8 @@ tasks.processResources {
         if (schematicPreview.isEmpty()) add("compat.schematicpreview.")
         if (sc.current.parsed < "26.1") addAll(listOf("render.RenderTypeAccessor", "render.RenderSetupAccessor"))
         if (sc.current.parsed < "26.2") add("render.GameRendererCameraAccessor")
+        // Dev only: -PaleNoMixins=a.B,c.D leaves those mixins out (to find which one breaks something)
+        providers.gradleProperty("aleNoMixins").orNull?.split(",")?.filter { it.isNotBlank() }?.let { addAll(it) }
     }
     inputs.property("absent_mixins", absentMixins.joinToString())
     if (absentMixins.isNotEmpty()) {
