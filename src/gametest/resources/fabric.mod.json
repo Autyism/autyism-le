@@ -17,7 +17,10 @@
       "com.autyism.ale.gametest.TranslucentEntityGameTest",
       "com.autyism.ale.gametest.InfoOverlayGameTest",
       "com.autyism.ale.gametest.SpBlackBoxGameTest",
-      "com.autyism.ale.gametest.BrowserPreviewGameTest"
+      "com.autyism.ale.gametest.BrowserPreviewGameTest",
+      "com.autyism.ale.gametest.FolderIconGameTest",
+      "com.autyism.ale.gametest.MaterialReplaceGameTest",
+      "com.autyism.ale.gametest.StepAsideGameTest"
     ]
   },
   "depends": {

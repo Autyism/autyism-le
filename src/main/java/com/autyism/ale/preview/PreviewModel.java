@@ -116,6 +116,13 @@ public final class PreviewModel implements AutoCloseable {
         this.blockEntitiesDisabled = true;
     }
 
+    /** 测试用：会画出来的方块实体个数 */
+    public int blockEntityCount() {
+        int n = 0;
+        for (PreviewRenderer.BlockEntityDraw d : blockEntityDraws()) if (!d.failed) n++;
+        return n;
+    }
+
     // ------------------------------------------------------------------ 后台
 
     private void build() {

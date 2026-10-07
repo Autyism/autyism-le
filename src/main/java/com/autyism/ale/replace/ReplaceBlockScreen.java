@@ -185,10 +185,7 @@ public class ReplaceBlockScreen extends GuiBase {
 
     @Override
     protected void drawContents(GuiContext ctx, int mouseX, int mouseY, float partialTicks) {
-        if (this.draggingBar) {
-            if (net.minecraft.client.Minecraft.getInstance().mouseHandler.isLeftPressed()) scrollTo(mouseY);
-            else this.draggingBar = false;
-        }
+        if (this.draggingBar) scrollTo(mouseY);
         if (this.search.isEmpty()) {
             this.drawString(ctx, StringUtils.translate("autyism-le.gui.label.search_hint"), this.left + 14, this.top + 25, 0xFF777777);
         }
@@ -221,7 +218,7 @@ public class ReplaceBlockScreen extends GuiBase {
             RenderUtils.drawRect(ctx, this.gridX + COLUMNS * CELL + 2, barY, 3, barH, 0xFFAAAAAA);
         }
         if (hovered != null) {
-            RenderUtils.drawHoverText(ctx, mouseX, mouseY, List.of(hovered.name(), "§7" + hovered.id()));
+            com.autyism.ale.preview.PreviewInput.tooltip(ctx, mouseX, mouseY, hovered.name(), "§7" + hovered.id());
         }
     }
 

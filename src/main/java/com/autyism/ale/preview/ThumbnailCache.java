@@ -179,6 +179,13 @@ public final class ThumbnailCache {
         return this.entries.isEmpty();
     }
 
+    /** 测试用：某个文件缩略图的状态（还没请求过为 null） */
+    @Nullable
+    public State stateOf(Path file) {
+        Entry e = this.entries.get(file);
+        return e == null ? null : e.state;
+    }
+
     private static long modified(Path file) {
         try {
             return Files.getLastModifiedTime(file).toMillis();

@@ -16,6 +16,30 @@ public final class PreviewInput {
         return InputConstants.isKeyDown(Minecraft.getInstance().getWindow(), key.getValue());
     }
 
+    /**
+     * 悬停提示：在鼠标右上方画一个小框。MaLiLib 界面里拿到的绘图对象不是原版那一个，原版的延后提示不会显示，
+     * 所以这里自己画，并放到新的一层，保证在其他界面元素上面。
+     */
+    public static void tooltip(net.minecraft.client.gui.GuiGraphics g, int x, int y, String... lines) {
+        net.minecraft.client.gui.Font font = Minecraft.getInstance().font;
+        java.util.List<String> list = new java.util.ArrayList<>();
+        for (String line : lines) java.util.Collections.addAll(list, line.split("\n"));
+        int w = 0;
+        for (String s : list) w = Math.max(w, font.width(s));
+        int h = list.size() * 10 - 2;
+        int tx = x + 12, ty = y - 12;
+        if (tx + w + 4 > g.guiWidth()) tx = Math.max(4, x - 12 - w);
+        if (ty + h + 4 > g.guiHeight()) ty = g.guiHeight() - h - 4;
+        ty = Math.max(4, ty);
+        g.nextStratum();
+        g.fill(tx - 3, ty - 3, tx + w + 3, ty + h + 3, 0xF0101010);
+        g.fill(tx - 3, ty - 3, tx + w + 3, ty - 2, 0xFF707070);
+        g.fill(tx - 3, ty + h + 2, tx + w + 3, ty + h + 3, 0xFF707070);
+        g.fill(tx - 3, ty - 3, tx - 2, ty + h + 3, 0xFF707070);
+        g.fill(tx + w + 2, ty - 3, tx + w + 3, ty + h + 3, 0xFF707070);
+        for (int i = 0; i < list.size(); i++) g.drawString(font, list.get(i), tx, ty + i * 10, 0xFFFFFFFF, true);
+    }
+
     /** 这个键码是不是某个移动键（自由视角时这些键归预览，不触发浏览器的搜索） */
     public static boolean isMovementKey(int keyCode) {
         var o = Minecraft.getInstance().options;

@@ -148,8 +148,9 @@ public final class PreviewRenderer {
         Vector3f eye = camera.eye();
         GpuBufferSlice projectionSlice = projectionBuffer.getBuffer(projection);
         GpuBufferSlice fogSlice = noFogBuffer.slice(0L, FogRenderer.FOG_UBO_SIZE);
+        // 相机平移放进模型视图矩阵（半透明方块的着色器不加 ModelOffset）
         GpuBufferSlice transforms = RenderSystem.getDynamicUniforms()
-                .writeTransform(view, new Vector4f(1.0F, 1.0F, 1.0F, 1.0F), new Vector3f(-eye.x, -eye.y, -eye.z), new Matrix4f());
+                .writeTransform(new Matrix4f(view).translate(-eye.x, -eye.y, -eye.z), new Vector4f(1.0F, 1.0F, 1.0F, 1.0F), new Vector3f(), new Matrix4f());
         Minecraft mc = Minecraft.getInstance();
         GpuTextureView atlas = mc.getTextureManager().getTexture(TextureAtlas.LOCATION_BLOCKS).getTextureView();
         GpuSampler atlasSampler = RenderSystem.getSamplerCache().getRepeat(FilterMode.NEAREST, true);
