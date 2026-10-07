@@ -40,6 +40,9 @@ public abstract class LevelRendererMixin {
             profiler.push("ale_schematic_before_translucent");
             LitematicaRenderer.getInstance().piecewiseDrawBlockLayerGroup(ChunkSectionLayerGroup.TRANSLUCENT, this.chunkLayerSampler);
             GlassRenderState.translucentDrawnEarly = true;
+            //? if >=26.2 {
+            /*LitematicaRenderer.getInstance().renderSchematicOverlays(((com.autyism.ale.mixin.render.GameRendererCameraAccessor) Minecraft.getInstance().gameRenderer).ale$mainCamera(), profiler);
+            *///?} else
             LitematicaRenderer.getInstance().renderSchematicOverlays(Minecraft.getInstance().gameRenderer.getMainCamera(), profiler);
             GlassRenderState.overlaysDrawnEarly = true;
             profiler.pop();

@@ -26,6 +26,7 @@
     "render.RenderTypesMixin",
     "render.RenderTypeAccessor",
     "render.RenderSetupAccessor",
+    "render.GameRendererCameraAccessor",
     "litematica.WorldRendererSchematicMixin"
   ],
   "injectors": {

@@ -87,6 +87,7 @@ tasks.processResources {
     val absentMixins = buildList {
         if (schematicPreview.isEmpty()) add("compat.schematicpreview.")
         if (sc.current.parsed < "26.1") addAll(listOf("render.RenderTypeAccessor", "render.RenderSetupAccessor"))
+        if (sc.current.parsed < "26.2") add("render.GameRendererCameraAccessor")
     }
     inputs.property("absent_mixins", absentMixins.joinToString())
     if (absentMixins.isNotEmpty()) {

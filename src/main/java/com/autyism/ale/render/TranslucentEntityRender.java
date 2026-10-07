@@ -112,6 +112,7 @@ public final class TranslucentEntityRender {
                         submitModelRaw(target, args[0], args[1], (PoseStack) args[2], rt, light, overlay, mulAlpha(tint, alpha), sprite, outline, crumbling);
                         return null;
                     }
+                    //? if <26.2 {
                     case "submitModelPart" -> {
                         // 统一转成参数最全的版本：(part, pose, rt, light, overlay, sprite, sheeted, hasFoil, color, crumbling, outline)
                         Object part = args[0];
@@ -139,6 +140,7 @@ public final class TranslucentEntityRender {
                                 sheeted, foil, mulAlpha(color, alpha), crumbling, outline);
                         return null;
                     }
+                    //?}
                     //? if >=26.1 {
                     /*case "submitBlockParts" -> {
                         // 26.1：(pose, rt, parts, tints, light, overlay, outline)。方块模型用方块图集，换成方块图集的半透明类型
@@ -291,6 +293,8 @@ public final class TranslucentEntityRender {
         if (p.length == 1 && p[0] == int.class && OrderedSubmitNodeCollector.class.isAssignableFrom(m.getReturnType())) return "order";
         if (p.length == 0) return "other";
         if (net.minecraft.client.model.Model.class.isAssignableFrom(p[0]) && (p.length == 8 || p.length == 10) && p[3] == RenderType.class) return "submitModel";
+        // 26.2 起提交模型部件只剩默认方法（包成模型再提交），交给默认方法处理
+        //? if <26.2
         if (p[0] == net.minecraft.client.model.geom.ModelPart.class && p.length >= 6) return "submitModelPart";
         if (p[0] == PoseStack.class && p.length >= 3) {
             //? if >=26.1 {
