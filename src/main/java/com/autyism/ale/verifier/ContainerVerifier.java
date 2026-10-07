@@ -1,7 +1,10 @@
 package com.autyism.ale.verifier;
 
 import com.autyism.ale.config.AleConfigs;
+//? if >=1.21.11 {
 import fi.dy.masa.litematica.data.EntityDataManager;
+//?} else
+//import fi.dy.masa.litematica.data.EntitiesDataStorage;
 import fi.dy.masa.litematica.schematic.verifier.SchematicVerifier;
 import fi.dy.masa.litematica.world.WorldSchematic;
 import net.minecraft.client.Minecraft;
@@ -121,11 +124,20 @@ public final class ContainerVerifier {
             FETCHES.remove(pos);
             return f.getNow(List.of());
         }
+        // 1.21.10 及更早 Litematica 的实体数据管理器叫 EntitiesDataStorage
+        //? if >=1.21.11 {
         Container c = EntityDataManager.getInstance().getBlockInventoryWrapped(worldClient, pos, false);
         if (c == null) {
             EntityDataManager.getInstance().requestBlockEntityWrapped(worldClient, pos);
             return null;
         }
+        //?} else {
+        /*Container c = EntitiesDataStorage.getInstance().getBlockInventory(worldClient, pos, false);
+        if (c == null) {
+            EntitiesDataStorage.getInstance().requestBlockEntity(worldClient, pos);
+            return null;
+        }
+        *///?}
         return nonEmpty(c);
     }
 

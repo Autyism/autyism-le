@@ -6,6 +6,12 @@
   "environment": "client",
   "entrypoints": {
     "fabric-client-gametest": [
+      "com.autyism.ale.gametest.SpBlackBoxGameTest",
+      "com.autyism.ale.gametest.BrowserPreviewGameTest",
+      "com.autyism.ale.gametest.FolderIconGameTest",
+      "com.autyism.ale.gametest.MaterialReplaceGameTest",
+      "com.autyism.ale.gametest.StepAsideGameTest",
+      "com.autyism.ale.gametest.CompareGameTest",
       "com.autyism.ale.gametest.SaveEditsGameTest",
       "com.autyism.ale.gametest.SignReplaceGameTest",
       "com.autyism.ale.gametest.MaterialsGameTest",
@@ -15,13 +21,7 @@
       "com.autyism.ale.gametest.RenderGameTest",
       "com.autyism.ale.gametest.GlassGameTest",
       "com.autyism.ale.gametest.TranslucentEntityGameTest",
-      "com.autyism.ale.gametest.InfoOverlayGameTest",
-      "com.autyism.ale.gametest.SpBlackBoxGameTest",
-      "com.autyism.ale.gametest.BrowserPreviewGameTest",
-      "com.autyism.ale.gametest.FolderIconGameTest",
-      "com.autyism.ale.gametest.MaterialReplaceGameTest",
-      "com.autyism.ale.gametest.StepAsideGameTest",
-      "com.autyism.ale.gametest.CompareGameTest"
+      "com.autyism.ale.gametest.InfoOverlayGameTest"
     ]
   },
   "depends": {

@@ -4,9 +4,9 @@
   "package": "com.autyism.ale.gametest.mixin",
   "compatibilityLevel": "JAVA_21",
   "client": [
+    "FrameCounterMixin",
     "BestWorldMixin",
-    "HeldKeysMixin",
-    "FrameCounterMixin"
+    "HeldKeysMixin"
   ],
   "injectors": {
     "defaultRequire": 1

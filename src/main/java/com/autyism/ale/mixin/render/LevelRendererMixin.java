@@ -2,10 +2,12 @@ package com.autyism.ale.mixin.render;
 
 import com.autyism.ale.config.AleConfigs;
 import com.autyism.ale.render.GlassRenderState;
+//? if >=1.21.11
 import com.mojang.blaze3d.textures.GpuSampler;
 import fi.dy.masa.litematica.render.LitematicaRenderer;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.renderer.LevelRenderer;
+//? if >=1.21.6
 import net.minecraft.client.renderer.chunk.ChunkSectionLayerGroup;
 import net.minecraft.util.profiling.Profiler;
 import org.spongepowered.asm.mixin.Mixin;
@@ -19,8 +21,18 @@ import org.spongepowered.asm.mixin.injection.callback.CallbackInfo;
  */
 @Mixin(LevelRenderer.class)
 public abstract class LevelRendererMixin {
+    //? if >=1.21.11 {
     @Shadow
     private GpuSampler chunkLayerSampler;
+    //?}
+
+    //? if <1.21.6 {
+    /*// 1.21.5：提前画半透明层要用原版画这一层时的两个矩阵
+    @org.spongepowered.asm.mixin.Unique
+    private org.joml.Matrix4f ale$modelView;
+    @org.spongepowered.asm.mixin.Unique
+    private org.joml.Matrix4f ale$projection;
+    *///?}
 
     //? if >=26.3 {
     /*@Shadow
@@ -46,14 +58,30 @@ public abstract class LevelRendererMixin {
             at = @At(value = "INVOKE",
                     target = "Lnet/minecraft/client/renderer/chunk/ChunkSectionsToRender;renderGroup(Lnet/minecraft/client/renderer/chunk/ChunkSectionLayerGroup;Lcom/mojang/blaze3d/textures/GpuSampler;)V",
                     ordinal = 1))
-    *///?} else {
+    *///?} elif >=1.21.11 {
     // method_62214 是 addMainPass 里的主渲染 lambda（开发环境与正式环境同名）
     @Inject(method = "method_62214", remap = false,
             at = @At(value = "INVOKE", remap = true,
                     target = "Lnet/minecraft/client/renderer/chunk/ChunkSectionsToRender;renderGroup(Lnet/minecraft/client/renderer/chunk/ChunkSectionLayerGroup;Lcom/mojang/blaze3d/textures/GpuSampler;)V",
                     ordinal = 1))
-    //?}
+    //?} elif >=1.21.6 {
+    /*// method_62214 是 addMainPass 里的主渲染 lambda（开发环境与正式环境同名）；1.21.11 之前分组绘制没有采样器参数
+    @Inject(method = "method_62214", remap = false,
+            at = @At(value = "INVOKE", remap = true,
+                    target = "Lnet/minecraft/client/renderer/chunk/ChunkSectionsToRender;renderGroup(Lnet/minecraft/client/renderer/chunk/ChunkSectionLayerGroup;)V",
+                    ordinal = 1))
+    *///?}
+    //? if >=1.21.6 {
     private void ale$drawSchematicBeforeTranslucent(CallbackInfo ci) {
+    //?} else {
+    /*// 1.21.5 还没有分组绘制：每一层地形单独画（renderSectionLayer），在画半透明层之前插入
+    @Inject(method = "renderSectionLayer", at = @At("HEAD"))
+    private void ale$drawSchematicBeforeTranslucent(net.minecraft.client.renderer.RenderType layer, double x, double y, double z,
+                                                    org.joml.Matrix4f modelView, org.joml.Matrix4f projection, CallbackInfo ci) {
+        if (layer != net.minecraft.client.renderer.RenderType.translucent()) return;
+        this.ale$modelView = modelView;
+        this.ale$projection = projection;
+    *///?}
         if (!AleConfigs.Generic.RENDER_THROUGH_GLASS.getBooleanValue()) return;
         ale$drawEarly();
     }
@@ -106,11 +134,19 @@ public abstract class LevelRendererMixin {
     /*private void ale$drawTranslucentLayer() {
         LitematicaRenderer.getInstance().piecewiseDrawBlockLayerGroup(this.targets.main.get(), ChunkSectionLayerGroup.TRANSLUCENT);
     }
-    *///?} else {
+    *///?} elif >=1.21.11 {
     private void ale$drawTranslucentLayer() {
         LitematicaRenderer.getInstance().piecewiseDrawBlockLayerGroup(ChunkSectionLayerGroup.TRANSLUCENT, this.chunkLayerSampler);
     }
-    //?}
+    //?} elif >=1.21.6 {
+    /*private void ale$drawTranslucentLayer() {
+        LitematicaRenderer.getInstance().piecewiseDrawBlockLayerGroup(ChunkSectionLayerGroup.TRANSLUCENT);
+    }
+    *///?} else {
+    /*private void ale$drawTranslucentLayer() {
+        LitematicaRenderer.getInstance().piecewiseRenderTranslucent(this.ale$modelView, this.ale$projection, Profiler.get());
+    }
+    *///?}
 
     //? if >=26.2 {
     /*// 26.2 起 GameRenderer 不再公开主摄像机

@@ -1,3 +1,5 @@
+//? if >=1.21.11 {
+// 投影浏览器预览、图标和“替换”：1.21.10 及更早以后再移植
 package com.autyism.ale.replace;
 
 import com.autyism.ale.AleMod;
@@ -83,3 +85,4 @@ public final class MaterialRefresh {
         for (Runnable r : due) r.run();
     }
 }
+//?}

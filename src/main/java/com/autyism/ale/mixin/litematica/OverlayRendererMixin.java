@@ -38,7 +38,14 @@ public abstract class OverlayRendererMixin {
 
     /** 看向投影实体（比方块更近）时，显示实体的对比框，替代方块信息 */
     @Inject(method = "renderHoverInfo", at = @At("HEAD"), cancellable = true)
+    // 1.21.11 之前这个方法还带 Minecraft 参数（1.21.5 时排在最前）
+    //? if >=1.21.11 {
     private void ale$entityInfo(fi.dy.masa.malilib.render.GuiContext ctx, ProfilerFiller profiler, CallbackInfo ci) {
+    //?} elif >=1.21.6 {
+    /*private void ale$entityInfo(net.minecraft.client.gui.GuiGraphics ctx, net.minecraft.client.Minecraft mc, ProfilerFiller profiler, CallbackInfo ci) {
+    *///?} else {
+    /*private void ale$entityInfo(net.minecraft.client.Minecraft mc, net.minecraft.client.gui.GuiGraphics ctx, ProfilerFiller profiler, CallbackInfo ci) {
+    *///?}
         if (!com.autyism.ale.config.AleConfigs.Generic.INFO_FLUIDS_ENTITIES.getBooleanValue()) return;
         if (!fi.dy.masa.litematica.config.Hotkeys.RENDER_INFO_OVERLAY.getKeybind().isKeybindHeld()) return;
         if (!fi.dy.masa.litematica.config.Configs.InfoOverlays.BLOCK_INFO_OVERLAY_ENABLED.getBooleanValue()) return;
@@ -60,15 +67,24 @@ public abstract class OverlayRendererMixin {
         if (positions.isEmpty()) return;
         //? if >=26.2 {
         /*RenderContext ctx = new RenderContext(() -> "autyism-le:container_mismatches", MaLiLibPipelines.DEBUG_LINES_MASA_SIMPLE_NO_DEPTH_NO_CULL, 0);
-        *///?} else
+        *///?} elif >=1.21.6 {
         RenderContext ctx = new RenderContext(() -> "autyism-le:container_mismatches", MaLiLibPipelines.DEBUG_LINES_MASA_SIMPLE_NO_DEPTH_NO_CULL);
+        //?} else {
+        /*RenderContext ctx = new RenderContext(MaLiLibPipelines.DEBUG_LINES_MASA_SIMPLE_NO_DEPTH_NO_CULL);
+        *///?}
         BufferBuilder buffer = ctx.getBuilder();
         for (BlockPos pos : positions) {
+            // 1.21.11 起线宽写在顶点里；之前是绘制时统一设置（见下面的 lineWidth）
+            //? if >=1.21.11 {
             fi.dy.masa.malilib.render.RenderUtils.drawBlockBoundingBoxOutlinesBatchedLinesSimple(pos, ALE_CONTAINER_COLOR, 0.004, 3.0f, buffer);
+            //?} else
+            //fi.dy.masa.malilib.render.RenderUtils.drawBlockBoundingBoxOutlinesBatchedLinesSimple(pos, ALE_CONTAINER_COLOR, 0.004, buffer);
         }
         try {
             MeshData meshData = buffer.build();
             if (meshData != null) {
+                //? if <1.21.11
+                //ctx.lineWidth(3.0f);
                 ctx.draw(meshData, false, true);
                 meshData.close();
             }

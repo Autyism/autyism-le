@@ -9,7 +9,11 @@ import fi.dy.masa.litematica.selection.Box;
 import fi.dy.masa.litematica.world.SchematicWorldHandler;
 import fi.dy.masa.litematica.world.WorldSchematic;
 import fi.dy.masa.malilib.util.ItemType;
+// 1.21.11 起 Litematica 的投影数据用 MaLiLib 自己的 CompoundData，之前是原版的 CompoundTag
+//? if >=1.21.11 {
 import fi.dy.masa.malilib.util.data.tag.CompoundData;
+//?} else
+//import net.minecraft.nbt.CompoundTag;
 import it.unimi.dsi.fastutil.objects.Object2IntOpenHashMap;
 import net.minecraft.client.Minecraft;
 import net.minecraft.core.component.DataComponents;
@@ -45,6 +49,7 @@ public final class MaterialExtras {
 
     /** 投影世界里与 box 相交的实体（投影世界按区块保存实体，通用的 getEntities 查不到） */
     public static List<Entity> schematicEntities(WorldSchematic ws, AABB box) {
+        //? if >=1.21.11 {
         List<Entity> out = new ArrayList<>();
         int cx0 = net.minecraft.util.Mth.floor(box.minX) >> 4, cx1 = net.minecraft.util.Mth.floor(box.maxX) >> 4;
         int cz0 = net.minecraft.util.Mth.floor(box.minZ) >> 4, cz1 = net.minecraft.util.Mth.floor(box.maxZ) >> 4;
@@ -54,6 +59,10 @@ public final class MaterialExtras {
             }
         }
         return out;
+        //?} else {
+        /*// 1.21.10 及更早：投影世界自己的 getEntities 就是逐个区块查的
+        return new ArrayList<>(ws.getEntities((Entity) null, box, e -> true));
+        *///?}
     }
 
     // ------------------------------------------------------------------ 实体 → 物品
@@ -73,11 +82,17 @@ public final class MaterialExtras {
     }
 
     @Nullable
+    //? if >=1.21.11 {
     private static Entity createEntity(CompoundData nbt) {
+    //?} else
+    //private static Entity createEntity(CompoundTag nbt) {
         Level level = Minecraft.getInstance().level;
         if (level == null) return null;
         try {
+            //? if >=1.21.11 {
             return fi.dy.masa.litematica.util.EntityUtils.createEntityAndPassengersFromData(nbt, level);
+            //?} else
+            //return fi.dy.masa.litematica.util.EntityUtils.createEntityAndPassengersFromNBT(nbt, level);
         } catch (Exception e) {
             return null;
         }
@@ -90,7 +105,10 @@ public final class MaterialExtras {
             List<LitematicaSchematic.EntityInfo> list = schematic.getEntityListForRegion(region);
             if (list == null) continue;
             for (LitematicaSchematic.EntityInfo info : list) {
+                //? if >=1.21.11 {
                 Entity e = createEntity(info.nbt());
+                //?} else
+                //Entity e = createEntity(info.nbt);
                 if (e == null) continue;
                 Item item = itemForEntity(e);
                 if (item != null) counts.addTo(item, 1);
@@ -171,6 +189,7 @@ public final class MaterialExtras {
         var registry = Minecraft.getInstance().level != null ? Minecraft.getInstance().level.registryAccess() : null;
         if (registry == null) return new HashMap<>();
         for (String region : regions) {
+            //? if >=1.21.11 {
             Map<net.minecraft.core.BlockPos, CompoundData> bes = schematic.getBlockEntityMapForRegion(region);
             if (bes != null) {
                 for (CompoundData data : bes.values()) {
@@ -178,10 +197,31 @@ public final class MaterialExtras {
                     if (inv != null) addContainer(inv, counts);
                 }
             }
+            //?} elif >=1.21.6 {
+            /*Map<net.minecraft.core.BlockPos, CompoundTag> bes = schematic.getBlockEntityMapForRegion(region);
+            if (bes != null) {
+                for (CompoundTag data : bes.values()) {
+                    Container inv = fi.dy.masa.malilib.util.InventoryUtils.getNbtInventory(data, -1, registry);
+                    if (inv != null) addContainer(inv, counts);
+                }
+            }
+            *///?} else {
+            /*// 1.21.5 的 MaLiLib 不给格数时按物品条数建容器，空格后面的物品会丢掉：直接给它的上限 256 格
+            Map<net.minecraft.core.BlockPos, CompoundTag> bes = schematic.getBlockEntityMapForRegion(region);
+            if (bes != null) {
+                for (CompoundTag data : bes.values()) {
+                    Container inv = fi.dy.masa.malilib.util.InventoryUtils.getNbtInventory(data, 256, registry);
+                    if (inv != null) addContainer(inv, counts);
+                }
+            }
+            *///?}
             List<LitematicaSchematic.EntityInfo> entities = schematic.getEntityListForRegion(region);
             if (entities != null) {
                 for (LitematicaSchematic.EntityInfo info : entities) {
+                    //? if >=1.21.11 {
                     Entity e = createEntity(info.nbt());
+                    //?} else
+                    //Entity e = createEntity(info.nbt);
                     if (e == null) continue;
                     if (e instanceof ItemFrame frame) {
                         add(frame.getItem(), counts);

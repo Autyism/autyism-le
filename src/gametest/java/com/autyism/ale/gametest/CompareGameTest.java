@@ -1,3 +1,5 @@
+//? if >=1.21.11 {
+// 投影浏览器预览、图标和“替换”：1.21.10 及更早以后再移植
 package com.autyism.ale.gametest;
 
 import com.autyism.ale.browser.BrowserEntryWidget;
@@ -230,3 +232,4 @@ public final class CompareGameTest implements FabricClientGameTest {
         return new double[]{g[0] + g[2] / 2.0, g[1] + g[2] / 2.0};
     }
 }
+//?}
