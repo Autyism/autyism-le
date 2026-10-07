@@ -56,15 +56,15 @@ public final class PrinterListsGameTest implements FabricClientGameTest {
                 }
             });
             context.waitTicks(5);
-            context.takeScreenshot("ale-printer-" + tag + "-tab");
+            GT.shot(context, "ale-printer-" + tag + "-tab");
             context.runOnClient(c -> c.setScreen(new GuiStringListEdit(list, (GuiConfigsBase) ui[0], null, ui[0])));
             context.waitTicks(5);
-            context.takeScreenshot("ale-printer-" + tag + "-list");
+            GT.shot(context, "ale-printer-" + tag + "-list");
             GT.clickButton(context, "Pick blocks");
             context.waitFor(c -> c.screen instanceof GuiBlockPicker, 40);
             context.getInput().typeChars(search);
             context.waitTicks(3);
-            context.takeScreenshot("ale-printer-" + tag + "-picker");
+            GT.shot(context, "ale-printer-" + tag + "-picker");
             GT.log("[printerlists] " + tag + " OK, list=" + context.computeOnClient(c -> List.copyOf(list.getStrings())));
         } finally {
             context.runOnClient(c -> {

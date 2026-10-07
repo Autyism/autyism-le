@@ -186,6 +186,28 @@ public final class GT {
         context.waitTick();
     }
 
+    /**
+     * 测试截图。加 -PframeShot 时改为保存游戏正常循环里画出的最后一帧，不用 gametest 额外渲染的那一帧
+     * （26.1.2 上那次额外渲染会在 Sodium 里崩溃）。
+     */
+    public static java.nio.file.Path shot(ClientGameTestContext context, String name) {
+        if (!Boolean.getBoolean("ale.frameshot")) return context.takeScreenshot(name);
+        context.waitTicks(2);
+        java.util.concurrent.CompletableFuture<com.mojang.blaze3d.platform.NativeImage> image = new java.util.concurrent.CompletableFuture<>();
+        context.runOnClient(c -> net.minecraft.client.Screenshot.takeScreenshot(c.getMainRenderTarget(), image::complete));
+        for (int i = 0; i < 40 && !image.isDone(); i++) context.waitTick();
+        java.nio.file.Path path = context.computeOnClient(c -> c.gameDirectory.toPath().resolve("screenshots").resolve(name + ".png"));
+        com.mojang.blaze3d.platform.NativeImage img = image.getNow(null);
+        if (img == null) throw new AssertionError("frame screenshot " + name + " did not complete");
+        try (img) {
+            java.nio.file.Files.createDirectories(path.getParent());
+            img.writeToFile(path);
+        } catch (java.io.IOException e) {
+            throw new java.io.UncheckedIOException(e);
+        }
+        return path;
+    }
+
     /** 隐藏或显示界面（F1）。26.2 起由 Hud 管理，只能切换 */
     public static void setGuiHidden(net.minecraft.client.Minecraft client, boolean hidden) {
         //? if >=26.2 {

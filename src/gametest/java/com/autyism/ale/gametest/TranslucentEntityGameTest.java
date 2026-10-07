@@ -111,7 +111,7 @@ public final class TranslucentEntityGameTest implements FabricClientGameTest {
             DataManager.getSchematicPlacementManager().markAllPlacementsOfSchematicForRebuild(placement.getSchematic());
         });
         context.waitTicks(20);
-        return context.takeScreenshot("ale-entities-" + name);
+        return GT.shot(context, "ale-entities-" + name);
     }
 
     private static int diff(Path a, Path b) {

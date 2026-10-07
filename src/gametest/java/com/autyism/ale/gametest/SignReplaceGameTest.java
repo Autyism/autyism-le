@@ -84,7 +84,7 @@ public final class SignReplaceGameTest implements FabricClientGameTest {
                 c.setScreen(new GuiMaterialList(list));
             });
             context.waitTicks(10);
-            context.takeScreenshot("ale-sign-material-list");
+            GT.shot(context, "ale-sign-material-list");
             clickReplaceFor(context, Items.OAK_SIGN);
             context.waitFor(c -> c.screen != null && c.screen.getClass().getSimpleName().equals("GuiBlockSelect"), 40);
 
@@ -110,7 +110,7 @@ public final class SignReplaceGameTest implements FabricClientGameTest {
             context.waitTick();
             context.getInput().pressMouse(com.mojang.blaze3d.platform.InputConstants.MOUSE_BUTTON_LEFT);
             context.waitTicks(2);
-            context.takeScreenshot("ale-sign-block-select");
+            GT.shot(context, "ale-sign-block-select");
             GT.clickButton(context, "Ok");
             context.waitTicks(5);
 

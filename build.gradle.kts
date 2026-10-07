@@ -137,5 +137,6 @@ if (providers.gradleProperty("aleGameTest").isPresent) {
     tasks.matching { it.name == "runClientGameTest" }.configureEach {
         (this as JavaExec).systemProperty("ale.gt", (project.findProperty("gt") ?: "").toString())
         (this as JavaExec).systemProperty("ale.debugrail", (project.findProperty("debugrail") ?: "false").toString())
+        (this as JavaExec).systemProperty("ale.frameshot", (project.findProperty("frameShot") != null).toString())
     }
 }

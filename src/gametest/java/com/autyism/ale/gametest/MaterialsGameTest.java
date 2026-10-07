@@ -107,10 +107,10 @@ public final class MaterialsGameTest implements FabricClientGameTest {
                 c.setScreen(new GuiMaterialList(list));
             });
             context.waitTicks(5);
-            context.takeScreenshot("ale-material-list-entities");
+            GT.shot(context, "ale-material-list-entities");
             GT.clickButton(context, "Contents");
             context.waitTicks(5);
-            context.takeScreenshot("ale-container-contents");
+            GT.shot(context, "ale-container-contents");
             Map<Item, Integer> contents = context.computeOnClient(c -> {
                 if (!(c.screen instanceof GuiMaterialList g)) throw new AssertionError("contents screen not open: " + c.screen);
                 MaterialListBase list = g.getMaterialList();
@@ -136,7 +136,7 @@ public final class MaterialsGameTest implements FabricClientGameTest {
             int after = verify(context, placement);
             boolean flaggedBarrel = context.computeOnClient(c -> ContainerVerifier.getMismatches(placement.getSchematicVerifier()).contains(BARREL));
             if (after != 1 || !flaggedBarrel) throw new AssertionError("[materials] verifier container mismatches=" + after + " barrelFlagged=" + flaggedBarrel);
-            context.takeScreenshot("ale-verifier-container");
+            GT.shot(context, "ale-verifier-container");
             // 补好内容 → 标记自动消失
             sp.getServer().runOnServer(s -> {
                 if (s.overworld().getBlockEntity(BARREL) instanceof BarrelBlockEntity barrel) barrel.setItem(0, new ItemStack(Items.APPLE, 10));
