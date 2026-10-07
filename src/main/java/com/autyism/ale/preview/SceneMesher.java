@@ -1,20 +1,15 @@
 package com.autyism.ale.preview;
 
 import com.autyism.ale.AleMod;
-import com.mojang.blaze3d.vertex.PoseStack;
 import fi.dy.masa.malilib.util.data.tag.CompoundData;
 import fi.dy.masa.malilib.util.data.tag.converter.DataConverterNbt;
 import net.minecraft.client.Minecraft;
-import net.minecraft.client.renderer.ItemBlockRenderTypes;
-import net.minecraft.client.renderer.block.BlockRenderDispatcher;
 import net.minecraft.client.renderer.block.ModelBlockRenderer;
-import net.minecraft.client.renderer.block.model.BlockModelPart;
 import net.minecraft.client.renderer.chunk.ChunkSectionLayer;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.HolderLookup;
 import net.minecraft.nbt.CompoundTag;
 import net.minecraft.util.ProblemReporter;
-import net.minecraft.util.RandomSource;
 import net.minecraft.world.level.block.EntityBlock;
 import net.minecraft.world.level.block.RenderShape;
 import net.minecraft.world.level.block.entity.BlockEntity;
@@ -67,10 +62,17 @@ final class SceneMesher {
     private final Map<BlockPos, CompoundData> blockEntityData;
     @Nullable
     private final HolderLookup.Provider registries;
-    private final BlockRenderDispatcher dispatcher = Minecraft.getInstance().getBlockRenderer();
-    private final RandomSource random = RandomSource.create();
-    private final List<BlockModelPart> parts = new ArrayList<>();
-    private final PoseStack pose = new PoseStack();
+    //? if >=26.1 {
+    /*private final ModelBlockRenderer blockRenderer;
+    private final net.minecraft.client.renderer.block.FluidRenderer fluidRenderer;
+    private final net.minecraft.client.renderer.block.BlockStateModelSet models;
+    private final boolean cutoutLeaves;
+    *///?} else {
+    private final net.minecraft.client.renderer.block.BlockRenderDispatcher dispatcher = Minecraft.getInstance().getBlockRenderer();
+    private final net.minecraft.util.RandomSource random = net.minecraft.util.RandomSource.create();
+    private final List<net.minecraft.client.renderer.block.model.BlockModelPart> parts = new ArrayList<>();
+    private final com.mojang.blaze3d.vertex.PoseStack pose = new com.mojang.blaze3d.vertex.PoseStack();
+    //?}
     private final BlockPos.MutableBlockPos mpos = new BlockPos.MutableBlockPos();
     private int failures;
 
@@ -79,13 +81,24 @@ final class SceneMesher {
         this.view = view;
         this.blockEntityData = blockEntityData;
         this.registries = Minecraft.getInstance().level != null ? Minecraft.getInstance().level.registryAccess() : null;
+        //? if >=26.1 {
+        /*Minecraft mc = Minecraft.getInstance();
+        this.blockRenderer = new ModelBlockRenderer(mc.options.ambientOcclusion().get(), true, mc.getBlockColors());
+        this.fluidRenderer = new net.minecraft.client.renderer.block.FluidRenderer(mc.getModelManager().getFluidStateModelSet());
+        this.models = mc.getModelManager().getBlockStateModelSet();
+        this.cutoutLeaves = mc.options.cutoutLeaves().get();
+        *///?}
     }
 
     /** 生成一批区段（每个区段是 {sx, sy, sz}）；取消时返回 null（已分配的内存已释放） */
     @Nullable
     MeshPart mesh(List<int[]> sections, BooleanSupplier cancelled) {
         MeshPart part = new MeshPart();
+        //? if >=26.1 {
+        /*net.minecraft.client.renderer.block.BlockModelLighter.enableCaching();
+        *///?} else {
         ModelBlockRenderer.enableCaching();
+        //?}
         try {
             double cx = 0, cy = 0, cz = 0;
             for (int[] s : sections) {
@@ -104,7 +117,11 @@ final class SceneMesher {
                 part.centerZ = (float) (cz / sections.size());
             }
         } finally {
+            //? if >=26.1 {
+            /*net.minecraft.client.renderer.block.BlockModelLighter.clearCache();
+            *///?} else {
             ModelBlockRenderer.clearCache();
+            //?}
         }
         MeshVertexSink translucent = part.layers.get(MeshLayer.TRANSLUCENT);
         if (translucent != null) part.translucentCentroids = centroids(translucent);
@@ -121,8 +138,31 @@ final class SceneMesher {
                     if (state.isAir()) continue;
                     this.mpos.set(x, y, z);
                     FluidState fluid = state.getFluidState();
+                    //? if >=26.1 {
+                    /*// 26.1 起每个四边形自己带层（同一个方块的面可以在不同层）；出错时把这个方块已经写进去的都退回
+                    Marks marks = new Marks(part, x0, y0, z0);
                     if (!fluid.isEmpty()) {
-                        MeshVertexSink sink = part.sink(layer(ItemBlockRenderTypes.getRenderLayer(fluid)));
+                        try {
+                            this.fluidRenderer.tesselate(this.view, this.mpos, l -> marks.sink(layer(l)), state, fluid);
+                        } catch (Throwable t) {
+                            marks.rollback();
+                            failed(state, t);
+                        }
+                    }
+                    if (state.getRenderShape() == RenderShape.MODEL) {
+                        boolean opaque = ModelBlockRenderer.forceOpaque(this.cutoutLeaves, state);
+                        try {
+                            this.blockRenderer.tesselateBlock((qx, qy, qz, quad, instance) ->
+                                            marks.sink(opaque ? MeshLayer.SOLID : layer(quad.materialInfo().layer())).putBlockBakedQuad(qx, qy, qz, quad, instance),
+                                    x - x0, y - y0, z - z0, this.view, this.mpos, state, this.models.get(state), state.getSeed(this.mpos));
+                        } catch (Throwable t) {
+                            marks.rollback();
+                            failed(state, t);
+                        }
+                    }
+                    *///?} else {
+                    if (!fluid.isEmpty()) {
+                        MeshVertexSink sink = part.sink(layer(net.minecraft.client.renderer.ItemBlockRenderTypes.getRenderLayer(fluid)));
                         sink.setOffset(x0, y0, z0);
                         int mark = sink.vertexCount();
                         try {
@@ -133,7 +173,7 @@ final class SceneMesher {
                         }
                     }
                     if (state.getRenderShape() == RenderShape.MODEL) {
-                        MeshVertexSink sink = part.sink(layer(ItemBlockRenderTypes.getChunkRenderType(state)));
+                        MeshVertexSink sink = part.sink(layer(net.minecraft.client.renderer.ItemBlockRenderTypes.getChunkRenderType(state)));
                         sink.setOffset(x0, y0, z0);
                         int mark = sink.vertexCount();
                         this.pose.pushPose();
@@ -150,6 +190,7 @@ final class SceneMesher {
                             this.pose.popPose();
                         }
                     }
+                    //?}
                     if (this.blockEntityData != null && state.hasBlockEntity()) {
                         BlockEntity be = createBlockEntity(this.mpos.immutable(), state);
                         if (be != null) part.blockEntities.add(new PlacedBlockEntity(this.mpos.immutable(), be));
@@ -186,8 +227,36 @@ final class SceneMesher {
             case SOLID -> MeshLayer.SOLID;
             case CUTOUT -> MeshLayer.CUTOUT;
             case TRANSLUCENT -> MeshLayer.TRANSLUCENT;
+            //? if <26.1
             case TRIPWIRE -> MeshLayer.TRIPWIRE;
         };
+    }
+
+    /** 一个方块开始写之前各层的位置：方块画到一半出错时全部退回 */
+    private static final class Marks {
+        private final MeshPart part;
+        private final int x0, y0, z0;
+        private final EnumMap<MeshLayer, Integer> marks = new EnumMap<>(MeshLayer.class);
+
+        Marks(MeshPart part, int x0, int y0, int z0) {
+            this.part = part;
+            this.x0 = x0;
+            this.y0 = y0;
+            this.z0 = z0;
+        }
+
+        MeshVertexSink sink(MeshLayer layer) {
+            MeshVertexSink sink = this.part.sink(layer);
+            if (!this.marks.containsKey(layer)) {
+                this.marks.put(layer, sink.vertexCount());
+                sink.setOffset(this.x0, this.y0, this.z0);
+            }
+            return sink;
+        }
+
+        void rollback() {
+            for (var e : this.marks.entrySet()) this.part.sink(e.getKey()).rollback(e.getValue());
+        }
     }
 
     private static float[] centroids(MeshVertexSink sink) {

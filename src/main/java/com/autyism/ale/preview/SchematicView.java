@@ -132,6 +132,12 @@ public final class SchematicView implements BlockAndTintGetter {
         return null;
     }
 
+    //? if >=26.1 {
+    /*@Override
+    public net.minecraft.world.level.CardinalLighting cardinalLighting() {
+        return net.minecraft.world.level.CardinalLighting.DEFAULT;
+    }
+    *///?} else {
     @Override
     public float getShade(Direction direction, boolean shade) {
         if (!shade) return 1.0F;
@@ -142,6 +148,7 @@ public final class SchematicView implements BlockAndTintGetter {
             case WEST, EAST -> 0.6F;
         };
     }
+    //?}
 
     @Override
     public LevelLightEngine getLightEngine() {

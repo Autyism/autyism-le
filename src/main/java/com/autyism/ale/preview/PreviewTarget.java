@@ -36,10 +36,10 @@ public final class PreviewTarget implements AutoCloseable {
         if (this.color != null && this.width == width && this.height == height) return false;
         close();
         GpuDevice device = RenderSystem.getDevice();
-        this.color = device.createTexture(() -> "ALE schematic preview", GpuTexture.USAGE_TEXTURE_BINDING | GpuTexture.USAGE_RENDER_ATTACHMENT,
+        this.color = device.createTexture(() -> "ALE schematic preview", GpuTexture.USAGE_TEXTURE_BINDING | GpuTexture.USAGE_RENDER_ATTACHMENT | GpuTexture.USAGE_COPY_DST,
                 TextureFormat.RGBA8, width, height, 1, 1);
         this.colorView = device.createTextureView(this.color);
-        this.depth = device.createTexture(() -> "ALE schematic preview depth", GpuTexture.USAGE_RENDER_ATTACHMENT, TextureFormat.DEPTH32, width, height, 1, 1);
+        this.depth = device.createTexture(() -> "ALE schematic preview depth", GpuTexture.USAGE_RENDER_ATTACHMENT | GpuTexture.USAGE_COPY_DST, TextureFormat.DEPTH32, width, height, 1, 1);
         this.depthView = device.createTextureView(this.depth);
         this.width = width;
         this.height = height;
@@ -81,9 +81,14 @@ public final class PreviewTarget implements AutoCloseable {
     /** 把纹理贴到界面的 (x0, y0)-(x1, y1)（界面坐标）；纹理里的颜色是预乘透明度的 */
     public void blit(GuiGraphics g, int x0, int y0, int x1, int y1) {
         if (this.colorView == null) return;
-        g.guiRenderState.submitGuiElement(new BlitRenderState(RenderPipelines.GUI_TEXTURED_PREMULTIPLIED_ALPHA,
+        BlitRenderState blit = new BlitRenderState(RenderPipelines.GUI_TEXTURED_PREMULTIPLIED_ALPHA,
                 TextureSetup.singleTexture(this.colorView, RenderSystem.getSamplerCache().getClampToEdge(FilterMode.NEAREST)),
-                new Matrix3x2f(g.pose()), x0, y0, x1, y1, 0.0F, 1.0F, 1.0F, 0.0F, -1, g.scissorStack.peek()));
+                new Matrix3x2f(g.pose()), x0, y0, x1, y1, 0.0F, 1.0F, 1.0F, 0.0F, -1, g.scissorStack.peek());
+        //? if >=26.1 {
+        /*g.guiRenderState.addGuiElement(blit);
+        *///?} else {
+        g.guiRenderState.submitGuiElement(blit);
+        //?}
     }
 
     /**
