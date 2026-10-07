@@ -25,6 +25,28 @@ public abstract class RenderTypesMixin {
         ale$swap(texture, cir);
     }
 
+    //? if >=26.1 {
+    /*// 26.1 起改了名：带背面剔除的叫 entityCutoutCull，不剔除的叫 entityCutout(…)，entitySmoothCutout 没有了
+    @Inject(method = "entityCutoutCull", at = @At("HEAD"), cancellable = true)
+    private static void ale$cutout(Identifier texture, CallbackInfoReturnable<RenderType> cir) {
+        ale$swap(texture, cir);
+    }
+
+    @Inject(method = "entityCutout(Lnet/minecraft/resources/Identifier;Z)Lnet/minecraft/client/renderer/rendertype/RenderType;", at = @At("HEAD"), cancellable = true)
+    private static void ale$cutoutNoCull(Identifier texture, boolean outline, CallbackInfoReturnable<RenderType> cir) {
+        ale$swap(texture, cir);
+    }
+
+    @Inject(method = "entityCutout(Lnet/minecraft/resources/Identifier;)Lnet/minecraft/client/renderer/rendertype/RenderType;", at = @At("HEAD"), cancellable = true)
+    private static void ale$cutoutNoCull1(Identifier texture, CallbackInfoReturnable<RenderType> cir) {
+        ale$swap(texture, cir);
+    }
+
+    @Inject(method = "entityCutoutZOffset(Lnet/minecraft/resources/Identifier;Z)Lnet/minecraft/client/renderer/rendertype/RenderType;", at = @At("HEAD"), cancellable = true)
+    private static void ale$cutoutZ(Identifier texture, boolean outline, CallbackInfoReturnable<RenderType> cir) {
+        ale$swap(texture, cir);
+    }
+    *///?} else {
     @Inject(method = "entityCutout", at = @At("HEAD"), cancellable = true)
     private static void ale$cutout(Identifier texture, CallbackInfoReturnable<RenderType> cir) {
         ale$swap(texture, cir);
@@ -49,9 +71,14 @@ public abstract class RenderTypesMixin {
     private static void ale$smooth(Identifier texture, CallbackInfoReturnable<RenderType> cir) {
         ale$swap(texture, cir);
     }
+    //?}
 
     @Inject(method = "armorCutoutNoCull", at = @At("HEAD"), cancellable = true)
     private static void ale$armor(Identifier texture, CallbackInfoReturnable<RenderType> cir) {
+        // 26.3 没有半透明盔甲类型了，用半透明实体类型
+        //? if >=26.3 {
+        /*if (TranslucentEntityRender.ACTIVE.get()) cir.setReturnValue(RenderTypes.entityTranslucent(texture));
+        *///?} else
         if (TranslucentEntityRender.ACTIVE.get()) cir.setReturnValue(RenderTypes.armorTranslucent(texture));
     }
 }

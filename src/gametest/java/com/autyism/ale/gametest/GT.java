@@ -182,7 +182,7 @@ public final class GT {
         });
         context.getInput().setCursorPos(pos[0], pos[1]);
         context.waitTick();
-        context.getInput().pressMouse(org.lwjgl.glfw.GLFW.GLFW_MOUSE_BUTTON_LEFT);
+        context.getInput().pressMouse(com.mojang.blaze3d.platform.InputConstants.MOUSE_BUTTON_LEFT);
         context.waitTick();
     }
 
@@ -192,5 +192,15 @@ public final class GT {
         /*if (client.gui.hud.isHidden() != hidden) client.gui.hud.toggle();
         *///?} else
         client.options.hideGui = hidden;
+    }
+
+    /** 告示牌某一面的某一行写上文字。26.3 起 SignText 不可变，要经过 Mutable，正反面用 SignTextSlot */
+    public static void setSignLine(net.minecraft.world.level.block.entity.SignBlockEntity sign, boolean front, int line,
+                                   net.minecraft.network.chat.Component text) {
+        //? if >=26.3 {
+        /*sign.updateText(t -> t.asMutable().setLine(line, text).asImmutable(),
+                front ? net.minecraft.world.level.block.entity.SignTextSlot.FRONT : net.minecraft.world.level.block.entity.SignTextSlot.BACK);
+        *///?} else
+        sign.updateText(t -> t.setMessage(line, text), front);
     }
 }

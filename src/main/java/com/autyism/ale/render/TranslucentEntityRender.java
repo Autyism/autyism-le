@@ -90,6 +90,16 @@ public final class TranslucentEntityRender {
                     case "order" -> {
                         return wrapOrdered((OrderedSubmitNodeCollector) method.invoke(target, args));
                     }
+                    //? if >=26.3 {
+                    /*case "submitModel" -> {
+                        // 26.3：(model, state, pose, rt, light, overlay, tint, uvMapping, outline)，没有碎裂覆盖层
+                        RenderType rt = TranslucentRenderTypes.translucent((RenderType) args[3]);
+                        int light = (Integer) args[4], overlay = (Integer) args[5];
+                        int tint = (Integer) args[6], outline = (Integer) args[8];
+                        submitModelUv(target, args[0], args[1], (PoseStack) args[2], rt, light, overlay, mulAlpha(tint, alpha), args[7], outline);
+                        return null;
+                    }
+                    *///?} else {
                     case "submitModel" -> {
                         // 10 参数：(model, state, pose, rt, light, overlay, tint, sprite, outline, crumbling)
                         // 8 参数默认方法：(model, state, pose, rt, light, overlay, outline, crumbling)，tint 固定为 -1
@@ -112,6 +122,7 @@ public final class TranslucentEntityRender {
                         submitModelRaw(target, args[0], args[1], (PoseStack) args[2], rt, light, overlay, mulAlpha(tint, alpha), sprite, outline, crumbling);
                         return null;
                     }
+                    //?}
                     //? if <26.2 {
                     case "submitModelPart" -> {
                         // 统一转成参数最全的版本：(part, pose, rt, light, overlay, sprite, sheeted, hasFoil, color, crumbling, outline)
@@ -292,6 +303,9 @@ public final class TranslucentEntityRender {
         Class<?>[] p = m.getParameterTypes();
         if (p.length == 1 && p[0] == int.class && OrderedSubmitNodeCollector.class.isAssignableFrom(m.getReturnType())) return "order";
         if (p.length == 0) return "other";
+        //? if >=26.3 {
+        /*if (net.minecraft.client.model.Model.class.isAssignableFrom(p[0]) && p.length == 9 && p[3] == RenderType.class) return "submitModel";
+        *///?} else
         if (net.minecraft.client.model.Model.class.isAssignableFrom(p[0]) && (p.length == 8 || p.length == 10) && p[3] == RenderType.class) return "submitModel";
         // 26.2 起提交模型部件只剩默认方法（包成模型再提交），交给默认方法处理
         //? if <26.2
@@ -311,12 +325,21 @@ public final class TranslucentEntityRender {
         return "other";
     }
 
+    //? if >=26.3 {
+    /*@SuppressWarnings({"unchecked", "rawtypes"})
+    private static void submitModelUv(OrderedSubmitNodeCollector target, Object model, Object state, PoseStack pose, RenderType rt,
+                                      int light, int overlay, int tint, Object uvMapping, int outline) {
+        target.submitModel((net.minecraft.client.model.Model) model, state, pose, rt, light, overlay, tint,
+                (net.minecraft.client.renderer.texture.UvMapping) uvMapping, outline);
+    }
+    *///?} else {
     @SuppressWarnings({"unchecked", "rawtypes"})
     private static void submitModelRaw(OrderedSubmitNodeCollector target, Object model, Object state, PoseStack pose, RenderType rt,
                                        int light, int overlay, int tint, net.minecraft.client.renderer.texture.TextureAtlasSprite sprite,
                                        int outline, net.minecraft.client.renderer.feature.ModelFeatureRenderer.CrumblingOverlay crumbling) {
         target.submitModel((net.minecraft.client.model.Model) model, state, pose, rt, light, overlay, tint, sprite, outline, crumbling);
     }
+    //?}
 
     /** 顶点颜色乘上透明度 */
     public record AlphaConsumer(VertexConsumer delegate, float alpha) implements VertexConsumer {
@@ -368,6 +391,14 @@ public final class TranslucentEntityRender {
             delegate.setLineWidth(width);
             return this;
         }
+
+        //? if >=26.3 {
+        /*@Override
+        public VertexConsumer setUv3(float u, float v) {
+            delegate.setUv3(u, v);
+            return this;
+        }
+        *///?}
 
         @Override
         public void addVertex(float x, float y, float z, int color, float u, float v, int overlay, int light, float nx, float ny, float nz) {
