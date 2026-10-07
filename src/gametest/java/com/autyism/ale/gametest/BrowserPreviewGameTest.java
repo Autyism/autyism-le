@@ -13,7 +13,7 @@ import net.fabricmc.fabric.api.client.gametest.v1.FabricClientGameTest;
 import net.fabricmc.fabric.api.client.gametest.v1.context.ClientGameTestContext;
 import net.fabricmc.fabric.api.client.gametest.v1.context.TestSingleplayerContext;
 import org.joml.Vector3f;
-import org.lwjgl.glfw.GLFW;
+import com.mojang.blaze3d.platform.InputConstants;
 
 import java.nio.file.Path;
 import java.util.ArrayList;
@@ -147,7 +147,7 @@ public final class BrowserPreviewGameTest implements FabricClientGameTest {
             if (Math.abs(Math.abs(f1[0] - c4[0]) - wantFull) > 2.0F) problems.add("drag 60 px in full screen turned " + (f1[0] - c4[0]) + ", expected " + wantFull);
             ui.scrollAt(320, 180, 1);
             ui.shot("fullscreen-zoom");
-            context.getInput().pressKey(GLFW.GLFW_KEY_ESCAPE);
+            context.getInput().pressKey(InputConstants.KEY_ESCAPE);
             context.waitTicks(10);
             if (!context.computeOnClient(c -> c.screen instanceof GuiSchematicLoad)) problems.add("Esc in full screen did not go back to the browser");
             float[] f2 = camera(context);
@@ -162,11 +162,11 @@ public final class BrowserPreviewGameTest implements FabricClientGameTest {
             if (!context.computeOnClient(c -> PreviewSession.isFreecam())) problems.add("freecam button did not turn on free camera");
             ui.hover(548, 260);
             Vector3f e0 = eye(context);
-            context.getInput().holdKeyFor(GLFW.GLFW_KEY_W, 20);
+            context.getInput().holdKeyFor(InputConstants.KEY_W, 20);
             Vector3f e1 = eye(context);
             ui.shot("freecam-forward");
             if (e0.distance(e1) < 1.0F) problems.add("W did not move the free camera (" + e0 + " -> " + e1 + ")");
-            context.getInput().holdKeyFor(GLFW.GLFW_KEY_SPACE, 10);
+            context.getInput().holdKeyFor(InputConstants.KEY_SPACE, 10);
             Vector3f e2 = eye(context);
             if (!(e2.y > e1.y + 0.5F)) problems.add("space did not move the free camera up");
             float[] l0 = camera(context);
@@ -180,11 +180,11 @@ public final class BrowserPreviewGameTest implements FabricClientGameTest {
             ui.click(fx, fy, 0);
             context.waitTicks(5);
             Vector3f g0 = eye(context);
-            context.getInput().holdKeyFor(GLFW.GLFW_KEY_D, 15);
+            context.getInput().holdKeyFor(InputConstants.KEY_D, 15);
             Vector3f g1 = eye(context);
             ui.shot("fullscreen-freecam-strafe");
             if (g0.distance(g1) < 1.0F) problems.add("D did not move the free camera in full screen");
-            context.getInput().pressKey(GLFW.GLFW_KEY_ESCAPE);
+            context.getInput().pressKey(InputConstants.KEY_ESCAPE);
             context.waitTicks(5);
             ui.click(cx, cy, 0);
             ui.hover(300, 340);

@@ -12,7 +12,7 @@ import net.fabricmc.fabric.api.client.gametest.v1.FabricClientGameTest;
 import net.fabricmc.fabric.api.client.gametest.v1.context.ClientGameTestContext;
 import net.fabricmc.fabric.api.client.gametest.v1.context.TestSingleplayerContext;
 import net.fabricmc.loader.api.FabricLoader;
-import org.lwjgl.glfw.GLFW;
+import com.mojang.blaze3d.platform.InputConstants;
 
 import java.nio.file.Files;
 import java.nio.file.Path;
@@ -91,7 +91,7 @@ public final class FolderIconGameTest implements FabricClientGameTest {
             // 投影文件也能换图标；回车 = 确定
             openDialog(context, ui, "ale_tower.litematic");
             context.getInput().typeChars("minecraft:diamond_block");
-            context.getInput().pressKey(GLFW.GLFW_KEY_ENTER);
+            context.getInput().pressKey(InputConstants.KEY_RETURN);
             context.waitTicks(10);
             expect(context, dir.resolve("ale_tower.litematic"), "minecraft:diamond_block", FolderIcons.Placement.SMALL);
 
@@ -112,7 +112,7 @@ public final class FolderIconGameTest implements FabricClientGameTest {
 
             // 无效的 ID：对话框不关，提示错误
             openDialog(context, ui, "folder_b");
-            for (int i = 0; i < 40; i++) context.getInput().pressKey(GLFW.GLFW_KEY_BACKSPACE);
+            for (int i = 0; i < 40; i++) context.getInput().pressKey(InputConstants.KEY_BACKSPACE);
             context.getInput().typeChars("minecraft:not_an_item");
             GT.clickButton(context, "OK");
             context.waitTicks(5);
@@ -206,7 +206,7 @@ public final class FolderIconGameTest implements FabricClientGameTest {
         });
         context.getInput().setCursorPos(pos[0], pos[1]);
         context.waitTick();
-        context.getInput().pressMouse(GLFW.GLFW_MOUSE_BUTTON_LEFT);
+        context.getInput().pressMouse(InputConstants.MOUSE_BUTTON_LEFT);
         context.waitTicks(2);
     }
 }

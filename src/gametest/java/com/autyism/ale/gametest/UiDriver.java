@@ -1,7 +1,7 @@
 package com.autyism.ale.gametest;
 
 import net.fabricmc.fabric.api.client.gametest.v1.context.ClientGameTestContext;
-import org.lwjgl.glfw.GLFW;
+import com.mojang.blaze3d.platform.InputConstants;
 
 import java.nio.file.Path;
 
@@ -57,7 +57,7 @@ final class UiDriver {
 
     void click(double x, double y, int button) {
         hover(x, y);
-        context.getInput().pressMouse(button == 0 ? GLFW.GLFW_MOUSE_BUTTON_LEFT : button == 1 ? GLFW.GLFW_MOUSE_BUTTON_RIGHT : GLFW.GLFW_MOUSE_BUTTON_MIDDLE);
+        context.getInput().pressMouse(button == 0 ? InputConstants.MOUSE_BUTTON_LEFT : button == 1 ? InputConstants.MOUSE_BUTTON_RIGHT : InputConstants.MOUSE_BUTTON_MIDDLE);
         context.waitTicks(2);
     }
 
@@ -66,7 +66,7 @@ final class UiDriver {
     }
 
     void drag(double x0, double y0, double x1, double y1, int button) {
-        int b = button == 0 ? GLFW.GLFW_MOUSE_BUTTON_LEFT : button == 1 ? GLFW.GLFW_MOUSE_BUTTON_RIGHT : GLFW.GLFW_MOUSE_BUTTON_MIDDLE;
+        int b = button == 0 ? InputConstants.MOUSE_BUTTON_LEFT : button == 1 ? InputConstants.MOUSE_BUTTON_RIGHT : InputConstants.MOUSE_BUTTON_MIDDLE;
         hover(x0, y0);
         context.getInput().holdMouse(b);
         context.waitTick();

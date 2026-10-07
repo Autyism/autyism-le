@@ -70,18 +70,6 @@ java {
     toolchain { languageVersion.set(JavaLanguageVersion.of(requiredJava.majorVersion)) }
 }
 
-// Schematic browser previews, icons and Replace are written for 1.21.11 first; until a version is ported its build leaves them out
-if (sc.current.parsed >= "26.3") {
-    sourceSets.named("main") {
-        java.exclude(
-            "com/autyism/ale/preview/**", "com/autyism/ale/replace/**", "com/autyism/ale/mixin/without/**",
-            "com/autyism/ale/browser/SchematicBrowserWidget.java", "com/autyism/ale/browser/BrowserEntryWidget.java",
-            "com/autyism/ale/browser/FolderIconScreen.java", "com/autyism/ale/browser/InfoTextBounds.java",
-            "com/autyism/ale/mixin/malilib/WidgetContainerAccess.java", "com/autyism/ale/mixin/malilib/GuiListBaseAccess.java"
-        )
-    }
-}
-
 tasks.withType<JavaCompile>().configureEach {
     options.encoding = "UTF-8"
     options.release.set(requiredJava.majorVersion.toInt())
@@ -107,7 +95,6 @@ tasks.processResources {
         if (sc.current.parsed < "26.1") addAll(listOf("render.RenderTypeAccessor", "render.RenderSetupAccessor"))
         if (sc.current.parsed < "26.2") add("render.GameRendererCameraAccessor")
         // Schematic browser previews, icons and Replace: 1.21.11 first, the other versions follow
-        if (sc.current.parsed >= "26.3") addAll(listOf("malilib.WidgetContainerAccess", "malilib.GuiListBaseAccess", "without.schematicpreview."))
         // Dev only: -PaleNoMixins=a.B,c.D leaves those mixins out (to find which one breaks something)
         providers.gradleProperty("aleNoMixins").orNull?.split(",")?.filter { it.isNotBlank() }?.let { addAll(it) }
     }

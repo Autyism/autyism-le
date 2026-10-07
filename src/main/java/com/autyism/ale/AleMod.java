@@ -20,11 +20,9 @@ public class AleMod implements ClientModInitializer {
         net.fabricmc.fabric.api.client.event.lifecycle.v1.ClientTickEvents.END_CLIENT_TICK.register(
                 client -> com.autyism.ale.verifier.ContainerVerifier.tick());
         // 投影浏览器预览：离开浏览器时释放缓存；材料列表替换后的延迟刷新
-        //? if <26.3 {
         net.fabricmc.fabric.api.client.event.lifecycle.v1.ClientTickEvents.END_CLIENT_TICK.register(client -> {
             com.autyism.ale.preview.Previews.tick(client);
             com.autyism.ale.replace.MaterialRefresh.tick();
         });
-        //?}
     }
 }

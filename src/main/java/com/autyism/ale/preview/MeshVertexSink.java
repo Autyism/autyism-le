@@ -173,6 +173,11 @@ final class MeshVertexSink implements VertexConsumer {
         return this;
     }
 
+    /** 26.3 起顶点多了第三组纹理坐标；方块格式里没有，忽略 */
+    public VertexConsumer setUv3(float u, float v) {
+        return this;
+    }
+
     private static byte normal(float f) {
         return (byte) ((int) (Math.max(-1.0F, Math.min(1.0F, f)) * 127.0F) & 0xFF);
     }

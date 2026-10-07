@@ -241,7 +241,7 @@ public class SchematicBrowserWidget extends WidgetSchematicBrowser {
 
     @Override
     public boolean onMouseClicked(MouseButtonEvent click, boolean doubleClick) {
-        if (click.button() == 0 && isOverToggle(click.x(), click.y())) {
+        if (click.button() == com.mojang.blaze3d.platform.InputConstants.MOUSE_BUTTON_LEFT && isOverToggle(click.x(), click.y())) {
             cycleLayout();
             return true;
         }
