@@ -22,6 +22,10 @@ public abstract class MaterialListBaseMixin {
     @ModifyVariable(method = "setMaterialListEntries", at = @At("HEAD"), argsOnly = true)
     private List<MaterialListEntry> ale$addEntities(List<MaterialListEntry> list) {
         if (!AleConfigs.Generic.MATERIAL_LIST_ENTITIES.getBooleanValue()) return list;
+        //? if >=26.3 {
+        /*// 26.3 起 Litematica 的材料列表自己会统计投影里的实体，不再重复添加
+        if (true) return list;
+        *///?}
         Object self = this;
         try {
             if (self instanceof MaterialListPlacement mlp) {

@@ -28,6 +28,10 @@ public abstract class MaterialListSchematicMixin extends MaterialListBase {
     @Inject(method = "reCreateMaterialList", at = @At("TAIL"))
     private void ale$addEntities(CallbackInfo ci) {
         if (!AleConfigs.Generic.MATERIAL_LIST_ENTITIES.getBooleanValue()) return;
+        //? if >=26.3 {
+        /*// 26.3 起 Litematica 的材料列表自己会统计投影里的实体，不再重复添加
+        if (true) return;
+        *///?}
         try {
             this.materialListAll = ImmutableList.copyOf(MaterialExtras.withEntities(this.materialListAll,
                     MaterialExtras.entityItems(this.schematic, this.regions), null));
