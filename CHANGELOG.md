@@ -1,5 +1,49 @@
 # Changelog
 
+## 1.1.0 — 2026-10-08
+
+- Schematic browser layouts: a list, a list with 3D thumbnails, or grids with 5, 4 or 3 tiles per row.
+- A 3D preview of the selected schematic, with full screen and a free camera.
+- Item icons for folders and schematics (right-click an icon).
+- **Replace** in material lists, and the sign wood fix works with it without Schematic Preview.
+- For Minecraft 1.21.11 and 26.1–26.3; the 1.21.5–1.21.10 jars stay at 1.0.0.
+
+More: open "Details" below.
+
+<details><summary>Details</summary>
+
+- **Browser layouts**: a small button at the top-left of Litematica's schematic browser switches between the list, a list with 3D thumbnails and grids with 5, 4 or 3 tiles per row. Thumbnails are built in the background; schematics over the size limit (125,000 blocks by default) show "Too large".
+- **3D preview** under the schematic's information: real block models with lighting, all regions and block entities. Drag to turn, scroll to zoom, and use the two small buttons for full screen and a free camera that flies with the movement keys.
+- **Icons**: right-click the icon of a folder or schematic to pick an item, shown small, large or as the preview of a schematic inside the folder. The icons are kept in ALE's settings file.
+- **Replace** next to **Ignore** in material lists: swaps every block of a material for another block, keeps shared states, standing/wall forms and sign text, and updates the list and the schematic right away. Replacing sign wood keeps the signs intact without Schematic Preview.
+- New **Schematic browser** and **3D preview** settings tabs, and an **Open ALE Settings** hotkey (not bound).
+- When Schematic Preview is installed, ALE leaves the browser previews, icons and **Replace** to it. These features follow DimasKama's Schematic Preview.
+- The 1.21.5–1.21.10 builds are not re-released; the new features come to them later.
+
+</details>
+
+### 中文
+
+- 投影浏览器的显示方式：列表、带 3D 缩略图的列表，或者每行 5 / 4 / 3 个的网格。
+- 选中投影的 3D 预览，支持全屏和自由视角。
+- 文件夹和投影可以用物品做图标（右键图标）。
+- 材料列表加入“替换”，用它更换告示牌木材不再需要 Schematic Preview。
+- 适用于 Minecraft 1.21.11 和 26.1–26.3；1.21.5–1.21.10 的 jar 仍是 1.0.0。
+
+更多：点开下面的“详细说明”。
+
+<details><summary>详细说明</summary>
+
+- **浏览器显示方式**：Litematica 投影浏览器左上角的小按钮可以在列表、带 3D 缩略图的列表和每行 5 / 4 / 3 个的网格之间切换。缩略图在后台生成；超过体积上限（默认 125000 个方块）的投影显示“太大”。
+- 投影信息下面的 **3D 预览**：真实的方块模型和光照、所有区域和方块实体。拖动转动，滚轮缩放，两个小按钮分别打开全屏和自由视角（用移动键飞行）。
+- **图标**：右键文件夹或投影的图标选一个物品，可以显示成小图标、大图标，或者显示文件夹里一个投影的预览。图标保存在 ALE 的设置文件里。
+- 材料列表“忽略”旁边的 **替换**：把一种材料的方块全部换成另一种方块，保留共有的方块状态、立式/挂墙形态和告示牌文字，列表和投影会马上更新。更换告示牌木材时，不装 Schematic Preview 也会保留告示牌。
+- 设置里新增“投影浏览器”和“3D 预览”分页，以及“打开 ALE 设置”热键（默认不绑定）。
+- 装了 Schematic Preview 时，浏览器预览、图标和“替换”由它提供。这些功能参照了 DimasKama 的 Schematic Preview。
+- 1.21.5–1.21.10 不重新发布，新功能以后再加。
+
+</details>
+
 ## 1.0.0+1.21.10 — 2026-10-07
 
 ALE for Minecraft 1.21.9–1.21.10, with the same features and settings as 1.0.0 for 1.21.11.
