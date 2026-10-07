@@ -43,7 +43,7 @@ public final class TranslucentEntityGameTest implements FabricClientGameTest {
             sp.getServer().runCommand("time set noon");
             sp.getServer().runCommand("tp @a 114.5 64.5 7.5 180 10");
             context.waitFor(c -> c.player != null && Math.abs(c.player.getX() - 114.5) < 0.01, 200);
-            context.runOnClient(c -> c.options.hideGui = true);
+            context.runOnClient(c -> GT.setGuiHidden(c, true));
             sp.getServer().runOnServer(s -> {
                 ServerLevel level = s.overworld();
                 for (int x = 104; x <= 124; x++)
@@ -96,7 +96,7 @@ public final class TranslucentEntityGameTest implements FabricClientGameTest {
         } finally {
             GT.removeAllPlacements(context);
             context.runOnClient(c -> {
-                c.options.hideGui = false;
+                GT.setGuiHidden(c, false);
                 AleConfigs.Generic.TRANSLUCENT_ENTITIES.setBooleanValue(true);
                 Configs.Visuals.RENDER_SCHEMATIC_ENTITIES.setBooleanValue(true);
             });

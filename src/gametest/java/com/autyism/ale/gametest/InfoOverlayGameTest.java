@@ -40,7 +40,7 @@ public final class InfoOverlayGameTest implements FabricClientGameTest {
             context.waitFor(c -> c.player != null && Math.abs(c.player.getX() - 134.5) < 0.01, 200);
             context.waitTicks(20);
             context.runOnClient(c -> {
-                c.options.hideGui = false;
+                GT.setGuiHidden(c, false);
                 Configs.InfoOverlays.BLOCK_INFO_OVERLAY_ENABLED.setBooleanValue(true);
             });
             sp.getServer().runOnServer(s -> {

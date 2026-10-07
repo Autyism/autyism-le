@@ -34,7 +34,7 @@ public final class GlassGameTest implements FabricClientGameTest {
             sp.getServer().runCommand("time set noon");
             sp.getServer().runCommand("tp @a 91.5 64 6.5 180 15");
             context.waitFor(c -> c.player != null && Math.abs(c.player.getX() - 91.5) < 0.01, 200);
-            context.runOnClient(c -> c.options.hideGui = true);
+            context.runOnClient(c -> GT.setGuiHidden(c, true));
             sp.getServer().runOnServer(s -> {
                 s.overworld().setBlockAndUpdate(WRONG, Blocks.OAK_STAIRS.defaultBlockState().setValue(StairBlock.FACING, Direction.NORTH));
                 s.overworld().setBlockAndUpdate(MISSING, Blocks.GOLD_BLOCK.defaultBlockState());
@@ -67,7 +67,7 @@ public final class GlassGameTest implements FabricClientGameTest {
         } finally {
             GT.removeAllPlacements(context);
             context.runOnClient(c -> {
-                c.options.hideGui = false;
+                GT.setGuiHidden(c, false);
                 AleConfigs.Generic.RENDER_THROUGH_GLASS.setBooleanValue(true);
                 Configs.Visuals.ENABLE_SCHEMATIC_OVERLAY.setBooleanValue(true);
                 Configs.Visuals.ENABLE_SCHEMATIC_BLOCKS.setBooleanValue(true);
