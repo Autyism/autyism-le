@@ -1,4 +1,4 @@
-<p align="center"><img src="docs/icon3.png" width="156" alt="icon"></p>
+<p align="center"><img src="docs/icon_transparent.png" width="156" alt="icon"></p>
 <h1 align="center">Autyism's Litematica Enhancement</h1>
 <p align="center">Practical quality-of-life additions for building with Litematica.</p>
 <p align="center">Autyism's Litematica Enhancement（ALE）：让 Litematica 投影用起来更顺手的一组实用改进。</p>
