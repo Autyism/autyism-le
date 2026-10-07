@@ -24,6 +24,10 @@ stonecutter parameters {
             replace("""net\.minecraft\.world\.entity\.decoration\.painting\.Painting\b""" to """net.minecraft.world.entity.decoration.Painting""", """(?!)""" to """unused""")
             replace("""\bSheets\.translucentBlockItemSheet\(\)""" to """Sheets.translucentItemSheet()""", """(?!)""" to """unused""")
         }
+        // 1.21.5: MaLiLib draws GUI rectangles immediately, without the GuiGraphics (see gui/GuiRects). One way only.
+        regex(current.parsed < "1.21.6") {
+            replace("""\bRenderUtils\.(drawRect|drawOutlinedBox)\(ctx,""" to """com.autyism.ale.gui.GuiRects.$1(ctx,""", """(?!)""" to """unused""")
+        }
         // 26.2: screens moved from Minecraft to Gui; entity type and concrete constants moved (gametests use `c` / `client` for the Minecraft instance)
         regex(current.parsed >= "26.2") {
             replace("""\b(c|client)\.setScreen\(""" to """$1.gui.setScreen(""", """\b(c|client)\.gui\.setScreen\(""" to """$1.setScreen(""")

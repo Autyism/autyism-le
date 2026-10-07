@@ -197,11 +197,20 @@ public final class MaterialExtras {
                     if (inv != null) addContainer(inv, counts);
                 }
             }
-            //?} else {
+            //?} elif >=1.21.6 {
             /*Map<net.minecraft.core.BlockPos, CompoundTag> bes = schematic.getBlockEntityMapForRegion(region);
             if (bes != null) {
                 for (CompoundTag data : bes.values()) {
                     Container inv = fi.dy.masa.malilib.util.InventoryUtils.getNbtInventory(data, -1, registry);
+                    if (inv != null) addContainer(inv, counts);
+                }
+            }
+            *///?} else {
+            /*// 1.21.5 的 MaLiLib 不给格数时按物品条数建容器，空格后面的物品会丢掉：直接给它的上限 256 格
+            Map<net.minecraft.core.BlockPos, CompoundTag> bes = schematic.getBlockEntityMapForRegion(region);
+            if (bes != null) {
+                for (CompoundTag data : bes.values()) {
+                    Container inv = fi.dy.masa.malilib.util.InventoryUtils.getNbtInventory(data, 256, registry);
                     if (inv != null) addContainer(inv, counts);
                 }
             }
