@@ -5,7 +5,6 @@ import com.mojang.blaze3d.systems.RenderSystem;
 import com.mojang.blaze3d.textures.FilterMode;
 import com.mojang.blaze3d.textures.GpuTexture;
 import com.mojang.blaze3d.textures.GpuTextureView;
-import com.mojang.blaze3d.textures.TextureFormat;
 import net.minecraft.client.gui.GuiGraphics;
 import net.minecraft.client.gui.render.TextureSetup;
 import net.minecraft.client.gui.render.state.BlitRenderState;
@@ -18,6 +17,14 @@ import org.joml.Matrix3x2f;
  * 只在渲染线程使用；用完要 close。
  */
 public final class PreviewTarget implements AutoCloseable {
+    //? if >=26.2 {
+    /*private static final com.mojang.blaze3d.GpuFormat COLOR_FORMAT = com.mojang.blaze3d.GpuFormat.RGBA8_UNORM;
+    private static final com.mojang.blaze3d.GpuFormat DEPTH_FORMAT = com.mojang.blaze3d.GpuFormat.D32_FLOAT;
+    *///?} else {
+    private static final com.mojang.blaze3d.textures.TextureFormat COLOR_FORMAT = com.mojang.blaze3d.textures.TextureFormat.RGBA8;
+    private static final com.mojang.blaze3d.textures.TextureFormat DEPTH_FORMAT = com.mojang.blaze3d.textures.TextureFormat.DEPTH32;
+    //?}
+
     @Nullable
     private GpuTexture color;
     @Nullable
@@ -37,9 +44,9 @@ public final class PreviewTarget implements AutoCloseable {
         close();
         GpuDevice device = RenderSystem.getDevice();
         this.color = device.createTexture(() -> "ALE schematic preview", GpuTexture.USAGE_TEXTURE_BINDING | GpuTexture.USAGE_RENDER_ATTACHMENT | GpuTexture.USAGE_COPY_DST,
-                TextureFormat.RGBA8, width, height, 1, 1);
+                COLOR_FORMAT, width, height, 1, 1);
         this.colorView = device.createTextureView(this.color);
-        this.depth = device.createTexture(() -> "ALE schematic preview depth", GpuTexture.USAGE_RENDER_ATTACHMENT | GpuTexture.USAGE_COPY_DST, TextureFormat.DEPTH32, width, height, 1, 1);
+        this.depth = device.createTexture(() -> "ALE schematic preview depth", GpuTexture.USAGE_RENDER_ATTACHMENT | GpuTexture.USAGE_COPY_DST, DEPTH_FORMAT, width, height, 1, 1);
         this.depthView = device.createTextureView(this.depth);
         this.width = width;
         this.height = height;

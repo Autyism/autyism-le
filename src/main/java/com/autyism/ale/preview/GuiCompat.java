@@ -17,6 +17,24 @@ public final class GuiCompat {
         //?}
     }
 
+    /** 当前打开的界面 */
+    @org.jetbrains.annotations.Nullable
+    public static net.minecraft.client.gui.screens.Screen screen() {
+        //? if >=26.2 {
+        /*return net.minecraft.client.Minecraft.getInstance().gui.screen();
+        *///?} else {
+        return net.minecraft.client.Minecraft.getInstance().screen;
+        //?}
+    }
+
+    public static void setScreen(@org.jetbrains.annotations.Nullable net.minecraft.client.gui.screens.Screen screen) {
+        //? if >=26.2 {
+        /*net.minecraft.client.Minecraft.getInstance().gui.setScreen(screen);
+        *///?} else {
+        net.minecraft.client.Minecraft.getInstance().setScreen(screen);
+        //?}
+    }
+
     public static void item(GuiGraphics g, ItemStack stack, int x, int y) {
         //? if >=26.1 {
         /*g.item(stack, x, y);

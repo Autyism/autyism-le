@@ -45,7 +45,7 @@ public final class MaterialRefresh {
             AleMod.LOGGER.warn("Could not refresh the material list after replacing", t);
         }
         Minecraft mc = Minecraft.getInstance();
-        if (mc.screen instanceof GuiMaterialList gui && gui.getMaterialList() == list) gui.initGui();
+        if (com.autyism.ale.preview.GuiCompat.screen() instanceof GuiMaterialList gui && gui.getMaterialList() == list) gui.initGui();
     }
 
     /** 已经开始过的验证重新开始（换了方块以后旧的结果不再对） */

@@ -260,7 +260,14 @@ public final class PreviewCamera {
         float toCenter = (float) Math.sqrt(dx * dx + dy * dy + dz * dz);
         float far = toCenter + this.radius * 2.0F + 64.0F;
         float near = Math.max(0.05F, Math.min(1.0F, (toCenter - this.radius) * 0.5F));
-        return new Matrix4f().perspective((float) Math.toRadians(Math.max(5.0, Math.min(170.0, this.fov))), Math.max(0.01F, aspect), near, far);
+        float fovRad = (float) Math.toRadians(Math.max(5.0, Math.min(170.0, this.fov)));
+        //? if >=26.2 {
+        /*// 26.2 起深度反过来（近处大、清成 0），远近平面对调
+        boolean zeroToOne = com.mojang.blaze3d.systems.RenderSystem.getDevice().getDeviceInfo().isZZeroToOne();
+        return new Matrix4f().setPerspective(fovRad, Math.max(0.01F, aspect), far, near, zeroToOne);
+        *///?} else {
+        return new Matrix4f().perspective(fovRad, Math.max(0.01F, aspect), near, far);
+        //?}
     }
 
     private static Vector3f direction(float yaw, float pitch) {

@@ -11,6 +11,7 @@ import net.minecraft.nbt.CompoundTag;
 import net.minecraft.nbt.NbtIo;
 import net.minecraft.network.chat.Component;
 import net.minecraft.server.level.ServerLevel;
+import net.minecraft.world.entity.EntityType;
 import net.minecraft.world.level.block.BedBlock;
 import net.minecraft.world.level.block.Block;
 import net.minecraft.world.level.block.Blocks;
@@ -52,6 +53,29 @@ import static java.nio.file.StandardCopyOption.REPLACE_EXISTING;
  */
 @SuppressWarnings("UnstableApiUsage")
 public final class PreviewFixtures {
+    // 染色方块、铜避雷针在 26.2 改成了按颜色 / 氧化程度的集合
+    //? if >=26.2 {
+    /*private static final Block BLUE_GLASS = Blocks.STAINED_GLASS.blue();
+    private static final Block LIGHTNING_ROD = Blocks.LIGHTNING_ROD.weathering().unaffected();
+    private static final Block RED_BED = Blocks.BED.red();
+    private static final Block BLUE_BED = Blocks.BED.blue();
+    private static final Block RED_BANNER = Blocks.BANNER.red();
+    private static final Block YELLOW_BANNER = Blocks.BANNER.yellow();
+    private static final Block PURPLE_SHULKER = Blocks.DYED_SHULKER_BOX.purple();
+    private static final Block WHITE_CONCRETE = Blocks.CONCRETE.white();
+    private static final Block GRAY_CONCRETE = Blocks.CONCRETE.gray();
+    *///?} else {
+    private static final Block BLUE_GLASS = Blocks.BLUE_STAINED_GLASS;
+    private static final Block LIGHTNING_ROD = Blocks.LIGHTNING_ROD;
+    private static final Block RED_BED = Blocks.RED_BED;
+    private static final Block BLUE_BED = Blocks.BLUE_BED;
+    private static final Block RED_BANNER = Blocks.RED_BANNER;
+    private static final Block YELLOW_BANNER = Blocks.YELLOW_BANNER;
+    private static final Block PURPLE_SHULKER = Blocks.PURPLE_SHULKER_BOX;
+    private static final Block WHITE_CONCRETE = Blocks.WHITE_CONCRETE;
+    private static final Block GRAY_CONCRETE = Blocks.GRAY_CONCRETE;
+    //?}
+
     private PreviewFixtures() {
     }
 
@@ -127,7 +151,7 @@ public final class PreviewFixtures {
             BlockState s = edgeX && edgeZ ? Blocks.OAK_LOG.defaultBlockState() : Blocks.OAK_PLANKS.defaultBlockState();
             if ((y == 2 || y == 3) && !(edgeX && edgeZ)) {
                 if (edgeZ && (x == 3 || x == 7)) s = Blocks.GLASS.defaultBlockState();
-                if (edgeX && (z == 4 || z == 6)) s = Blocks.BLUE_STAINED_GLASS.defaultBlockState();
+                if (edgeX && (z == 4 || z == 6)) s = BLUE_GLASS.defaultBlockState();
             }
             m.put(new BlockPos(x, y, z), s);
         }
@@ -145,18 +169,18 @@ public final class PreviewFixtures {
                 if (x >= 2 && x <= 8 && z >= 2 && z <= 8) m.put(new BlockPos(x, 6, z), Blocks.DARK_OAK_SLAB.defaultBlockState());
             }
         }
-        m.put(new BlockPos(5, 7, 5), Blocks.LIGHTNING_ROD.defaultBlockState());
+        m.put(new BlockPos(5, 7, 5), LIGHTNING_ROD.defaultBlockState());
         // 屋里：双箱子（朝北，左半在西）、床、附魔台、灯笼、墙上火把、告示牌、旗帜、头颅
         m.put(new BlockPos(2, 1, 2), Blocks.CHEST.defaultBlockState().setValue(ChestBlock.FACING, Direction.SOUTH).setValue(ChestBlock.TYPE, ChestType.RIGHT));
         m.put(new BlockPos(3, 1, 2), Blocks.CHEST.defaultBlockState().setValue(ChestBlock.FACING, Direction.SOUTH).setValue(ChestBlock.TYPE, ChestType.LEFT));
-        m.put(new BlockPos(7, 1, 3), Blocks.RED_BED.defaultBlockState().setValue(BedBlock.FACING, Direction.NORTH).setValue(BedBlock.PART, BedPart.FOOT));
-        m.put(new BlockPos(7, 1, 2), Blocks.RED_BED.defaultBlockState().setValue(BedBlock.FACING, Direction.NORTH).setValue(BedBlock.PART, BedPart.HEAD));
+        m.put(new BlockPos(7, 1, 3), RED_BED.defaultBlockState().setValue(BedBlock.FACING, Direction.NORTH).setValue(BedBlock.PART, BedPart.FOOT));
+        m.put(new BlockPos(7, 1, 2), RED_BED.defaultBlockState().setValue(BedBlock.FACING, Direction.NORTH).setValue(BedBlock.PART, BedPart.HEAD));
         m.put(new BlockPos(5, 1, 5), Blocks.ENCHANTING_TABLE.defaultBlockState());
         m.put(new BlockPos(5, 4, 5), Blocks.LANTERN.defaultBlockState().setValue(LanternBlock.HANGING, true));
         m.put(new BlockPos(5, 3, 2), Blocks.WALL_TORCH.defaultBlockState().setValue(WallTorchBlock.FACING, Direction.SOUTH));
         m.put(new BlockPos(3, 1, 8), Blocks.OAK_SIGN.defaultBlockState().setValue(StandingSignBlock.ROTATION, 8));
         m.put(new BlockPos(8, 2, 5), Blocks.OAK_WALL_SIGN.defaultBlockState().setValue(WallSignBlock.FACING, Direction.WEST));
-        m.put(new BlockPos(2, 1, 6), Blocks.RED_BANNER.defaultBlockState());
+        m.put(new BlockPos(2, 1, 6), RED_BANNER.defaultBlockState());
         m.put(new BlockPos(8, 1, 8), Blocks.SKELETON_SKULL.defaultBlockState());
         // 外面：树叶丛、花、草、小水池、营火
         for (int y = 1; y <= 2; y++) for (int x = 0; x <= 1; x++) m.put(new BlockPos(x, y, 0), Blocks.OAK_LEAVES.defaultBlockState()
@@ -198,16 +222,16 @@ public final class PreviewFixtures {
             frame.setItem(new net.minecraft.world.item.ItemStack(net.minecraft.world.item.Items.DIAMOND_SWORD));
             level.addFreshEntity(frame);
             net.minecraft.world.entity.decoration.painting.Painting.create(level, ENT_MIN.offset(4, 2, 1), Direction.SOUTH).ifPresent(level::addFreshEntity);
-            net.minecraft.world.entity.decoration.ArmorStand stand = new net.minecraft.world.entity.decoration.ArmorStand(net.minecraft.world.entity.EntityType.ARMOR_STAND, level);
+            net.minecraft.world.entity.decoration.ArmorStand stand = new net.minecraft.world.entity.decoration.ArmorStand(EntityType.ARMOR_STAND, level);
             stand.setPos(ENT_MIN.getX() + 5.5, ENT_MIN.getY() + 1, ENT_MIN.getZ() + 3.5);
             stand.setYRot(150.0F);
             stand.setItemSlot(net.minecraft.world.entity.EquipmentSlot.HEAD, new net.minecraft.world.item.ItemStack(net.minecraft.world.item.Items.GOLDEN_HELMET));
             level.addFreshEntity(stand);
             level.setBlock(ENT_MIN.offset(1, 1, 3), Blocks.RAIL.defaultBlockState(), Block.UPDATE_CLIENTS);
-            var cart = net.minecraft.world.entity.EntityType.MINECART.create(level, net.minecraft.world.entity.EntitySpawnReason.COMMAND);
+            var cart = EntityType.MINECART.create(level, net.minecraft.world.entity.EntitySpawnReason.COMMAND);
             cart.setPos(ENT_MIN.getX() + 1.5, ENT_MIN.getY() + 1.0625, ENT_MIN.getZ() + 3.5);
             level.addFreshEntity(cart);
-            var boat = net.minecraft.world.entity.EntityType.OAK_BOAT.create(level, net.minecraft.world.entity.EntitySpawnReason.COMMAND);
+            var boat = EntityType.OAK_BOAT.create(level, net.minecraft.world.entity.EntitySpawnReason.COMMAND);
             boat.setPos(ENT_MIN.getX() + 3.5, ENT_MIN.getY() + 1, ENT_MIN.getZ() + 3.5);
             level.addFreshEntity(boat);
         });
@@ -221,14 +245,14 @@ public final class PreviewFixtures {
         for (int x = 0; x <= 10; x++) for (int z = 0; z <= 2; z++) m.put(new BlockPos(x, 0, z), Blocks.SMOOTH_STONE.defaultBlockState());
         m.put(new BlockPos(0, 1, 1), Blocks.CHEST.defaultBlockState().setValue(ChestBlock.FACING, Direction.SOUTH).setValue(ChestBlock.TYPE, ChestType.RIGHT));
         m.put(new BlockPos(1, 1, 1), Blocks.CHEST.defaultBlockState().setValue(ChestBlock.FACING, Direction.SOUTH).setValue(ChestBlock.TYPE, ChestType.LEFT));
-        m.put(new BlockPos(2, 1, 0), Blocks.BLUE_BED.defaultBlockState().setValue(BedBlock.FACING, Direction.NORTH).setValue(BedBlock.PART, BedPart.HEAD));
-        m.put(new BlockPos(2, 1, 1), Blocks.BLUE_BED.defaultBlockState().setValue(BedBlock.FACING, Direction.NORTH).setValue(BedBlock.PART, BedPart.FOOT));
+        m.put(new BlockPos(2, 1, 0), BLUE_BED.defaultBlockState().setValue(BedBlock.FACING, Direction.NORTH).setValue(BedBlock.PART, BedPart.HEAD));
+        m.put(new BlockPos(2, 1, 1), BLUE_BED.defaultBlockState().setValue(BedBlock.FACING, Direction.NORTH).setValue(BedBlock.PART, BedPart.FOOT));
         m.put(new BlockPos(3, 1, 1), Blocks.OAK_SIGN.defaultBlockState().setValue(StandingSignBlock.ROTATION, 0));
         m.put(new BlockPos(4, 1, 0), Blocks.STONE_BRICKS.defaultBlockState());
         m.put(new BlockPos(4, 1, 1), Blocks.BIRCH_WALL_SIGN.defaultBlockState().setValue(WallSignBlock.FACING, Direction.SOUTH));
-        m.put(new BlockPos(5, 1, 1), Blocks.YELLOW_BANNER.defaultBlockState());
+        m.put(new BlockPos(5, 1, 1), YELLOW_BANNER.defaultBlockState());
         m.put(new BlockPos(6, 1, 1), Blocks.CREEPER_HEAD.defaultBlockState());
-        m.put(new BlockPos(7, 1, 1), Blocks.PURPLE_SHULKER_BOX.defaultBlockState());
+        m.put(new BlockPos(7, 1, 1), PURPLE_SHULKER.defaultBlockState());
         m.put(new BlockPos(8, 1, 1), Blocks.ENCHANTING_TABLE.defaultBlockState());
         m.put(new BlockPos(9, 1, 1), Blocks.BELL.defaultBlockState());
         m.put(new BlockPos(10, 1, 1), Blocks.DECORATED_POT.defaultBlockState());
@@ -367,7 +391,7 @@ public final class PreviewFixtures {
 
     /** 很大但稀疏：只有地面一层和每 32 格一根柱子 */
     private static BlockState sparse(int x, int y, int z, int w, int h, int l) {
-        if (y == 0) return ((x / 16 + z / 16) % 2 == 0 ? Blocks.WHITE_CONCRETE : Blocks.GRAY_CONCRETE).defaultBlockState();
+        if (y == 0) return ((x / 16 + z / 16) % 2 == 0 ? WHITE_CONCRETE : GRAY_CONCRETE).defaultBlockState();
         if (x % 32 == 5 && z % 32 == 5) return Blocks.QUARTZ_PILLAR.defaultBlockState();
         return Blocks.AIR.defaultBlockState();
     }

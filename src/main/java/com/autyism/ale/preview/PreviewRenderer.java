@@ -72,6 +72,10 @@ public final class PreviewRenderer {
     //?}
     @Nullable
     private static GpuBuffer noFogBuffer;
+    //? if >=26.2 {
+    /*// 方块实体提交到这里（26.2 起提交存储不再挂在分发器上）
+    private static final net.minecraft.client.renderer.SubmitNodeStorage SUBMITS = new net.minecraft.client.renderer.SubmitNodeStorage();
+    *///?}
     @Nullable
     private static GpuBuffer lightsBuffer;
 
@@ -147,7 +151,11 @@ public final class PreviewRenderer {
         RenderSystem.assertOnRenderThread();
         GpuDevice device = RenderSystem.getDevice();
         CommandEncoder encoder = device.createCommandEncoder();
+        //? if >=26.2 {
+        /*encoder.clearColorAndDepthTextures(target.colorTexture(), new org.joml.Vector4f(0.0F, 0.0F, 0.0F, 0.0F), target.depthTexture(), 0.0);
+        *///?} else {
         encoder.clearColorAndDepthTextures(target.colorTexture(), 0, target.depthTexture(), 1.0);
+        //?}
         List<Page> pages = model.pages();
         if (pages.isEmpty() && model.blockEntityDraws().isEmpty()) return;
         ensureStaticBuffers();
@@ -174,10 +182,9 @@ public final class PreviewRenderer {
         int maxIndices = 0;
         for (Page p : pages) if (p.layer != MeshLayer.TRANSLUCENT) maxIndices = Math.max(maxIndices, p.quads * 6);
         if (maxIndices > 0) {
-            RenderSystem.AutoStorageIndexBuffer quadIndices = RenderSystem.getSequentialBuffer(VertexFormat.Mode.QUADS);
+            RenderSystem.AutoStorageIndexBuffer quadIndices = quadIndexBuffer();
             GpuBuffer indexBuffer = quadIndices.getBuffer(maxIndices);
-            try (RenderPass pass = encoder.createRenderPass(() -> "ALE schematic preview", target.colorView(), OptionalInt.empty(),
-                    target.depthView(), OptionalDouble.empty())) {
+            try (RenderPass pass = openPass(encoder, "ALE schematic preview", target)) {
                 pass.setPipeline(RenderPipelines.SOLID_BLOCK);
                 pass.setUniform("Projection", projectionSlice);
                 pass.setUniform("Fog", fogSlice);
@@ -189,8 +196,8 @@ public final class PreviewRenderer {
                     pass.setPipeline(pipeline(layer));
                     for (Page p : pages) {
                         if (p.layer != layer || p.quads == 0) continue;
-                        pass.setVertexBuffer(0, p.vertices);
-                        pass.drawIndexed(0, 0, p.quads * 6, 1);
+                        bindVertices(pass, p.vertices);
+                        drawQuads(pass, p.quads);
                     }
                 }
             }
@@ -211,10 +218,9 @@ public final class PreviewRenderer {
                 sortIfNeeded(encoder, p, eye, threshold);
                 if (p.sortedIndices == null) unsortedIndices = Math.max(unsortedIndices, p.quads * 6);
             }
-            RenderSystem.AutoStorageIndexBuffer quadIndices = RenderSystem.getSequentialBuffer(VertexFormat.Mode.QUADS);
+            RenderSystem.AutoStorageIndexBuffer quadIndices = quadIndexBuffer();
             GpuBuffer plainIndices = unsortedIndices > 0 ? quadIndices.getBuffer(unsortedIndices) : null;
-            try (RenderPass pass = encoder.createRenderPass(() -> "ALE schematic preview (translucent)", target.colorView(), OptionalInt.empty(),
-                    target.depthView(), OptionalDouble.empty())) {
+            try (RenderPass pass = openPass(encoder, "ALE schematic preview (translucent)", target)) {
                 pass.setPipeline(pipeline(MeshLayer.TRANSLUCENT));
                 pass.setUniform("Projection", projectionSlice);
                 pass.setUniform("Fog", fogSlice);
@@ -222,16 +228,56 @@ public final class PreviewRenderer {
                 pass.bindTexture("Sampler0", atlas, atlasSampler);
                 pass.bindTexture("Sampler2", lightmap, lightSampler);
                 for (Page p : translucent) {
-                    pass.setVertexBuffer(0, p.vertices);
+                    bindVertices(pass, p.vertices);
                     if (p.sortedIndices != null) {
+                        //? if >=26.2 {
+                        /*pass.setIndexBuffer(p.sortedIndices, com.mojang.blaze3d.IndexType.INT);
+                        *///?} else {
                         pass.setIndexBuffer(p.sortedIndices, VertexFormat.IndexType.INT);
+                        //?}
                     } else {
                         pass.setIndexBuffer(plainIndices, quadIndices.type());
                     }
-                    pass.drawIndexed(0, 0, p.quads * 6, 1);
+                    drawQuads(pass, p.quads);
                 }
             }
         }
+    }
+
+    private static RenderSystem.AutoStorageIndexBuffer quadIndexBuffer() {
+        //? if >=26.2 {
+        /*return RenderSystem.getSequentialBuffer(com.mojang.blaze3d.PrimitiveTopology.QUADS);
+        *///?} else {
+        return RenderSystem.getSequentialBuffer(VertexFormat.Mode.QUADS);
+        //?}
+    }
+
+    /** 画进目标纹理的绘制（不清空，清空在前面做过） */
+    private static RenderPass openPass(CommandEncoder encoder, String label, PreviewTarget target) {
+        //? if >=26.2 {
+        /*RenderPass pass = encoder.createRenderPass(() -> label, target.colorView(), java.util.Optional.empty(), target.depthView(), OptionalDouble.empty());
+        // 26.2 起方块着色器还要全局设置（Globals）；投影和雾下面再换成预览自己的
+        RenderSystem.bindDefaultUniforms(pass);
+        return pass;
+        *///?} else {
+        return encoder.createRenderPass(() -> label, target.colorView(), OptionalInt.empty(), target.depthView(), OptionalDouble.empty());
+        //?}
+    }
+
+    private static void bindVertices(RenderPass pass, GpuBuffer vertices) {
+        //? if >=26.2 {
+        /*pass.setVertexBuffer(0, vertices.slice());
+        *///?} else {
+        pass.setVertexBuffer(0, vertices);
+        //?}
+    }
+
+    private static void drawQuads(RenderPass pass, int quads) {
+        //? if >=26.2 {
+        /*pass.drawIndexed(quads * 6, 1, 0, 0, 0);
+        *///?} else {
+        pass.drawIndexed(0, 0, quads * 6, 1);
+        //?}
     }
 
     private static float dist2(Page p, Vector3f eye) {
@@ -279,7 +325,13 @@ public final class PreviewRenderer {
                                           Matrix4f view, Vector3f eye, PreviewCamera previewCamera) {
         Minecraft mc = Minecraft.getInstance();
         BlockEntityRenderDispatcher dispatcher = mc.getBlockEntityRenderDispatcher();
+        //? if >=26.2 {
+        /*FeatureRenderDispatcher features = mc.gameRenderer.featureRenderDispatcher();
+        net.minecraft.client.renderer.SubmitNodeStorage submits = SUBMITS;
+        *///?} else {
         FeatureRenderDispatcher features = mc.gameRenderer.getFeatureRenderDispatcher();
+        net.minecraft.client.renderer.SubmitNodeStorage submits = features.getSubmitNodeStorage();
+        //?}
         CameraRenderState camera = new CameraRenderState();
         camera.initialized = true;
         camera.pos = new Vec3(eye.x, eye.y, eye.z);
@@ -295,7 +347,7 @@ public final class PreviewRenderer {
             pose.pushPose();
             pose.translate(draw.x - eye.x, draw.y - eye.y, draw.z - eye.z);
             try {
-                dispatcher.submit(draw.state, pose, features.getSubmitNodeStorage(), camera);
+                dispatcher.submit(draw.state, pose, submits, camera);
                 submitted++;
             } catch (Throwable t) {
                 draw.failed = true;
@@ -322,8 +374,12 @@ public final class PreviewRenderer {
             modelView.set(view);
             RenderSystem.outputColorTextureOverride = target.colorView();
             RenderSystem.outputDepthTextureOverride = target.depthView();
+            //? if >=26.2 {
+            /*features.renderAllFeatures(submits);
+            *///?} else {
             features.renderAllFeatures();
             mc.renderBuffers().bufferSource().endBatch();
+            //?}
         } catch (Throwable t) {
             // 某个方块实体在绘制阶段出错：这个预览以后不再画方块实体，其余照常
             model.disableBlockEntities();

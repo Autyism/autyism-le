@@ -71,7 +71,7 @@ public final class Previews {
     /** 每个客户端 tick：不在浏览器相关的界面时释放所有缓存 */
     public static void tick(Minecraft mc) {
         if (THUMBNAILS.isEmpty() && PreviewSession.current() == null && FIRST_SCHEMATIC.isEmpty()) return;
-        if (!isPreviewScreen(mc.screen)) releaseAll();
+        if (!isPreviewScreen(GuiCompat.screen())) releaseAll();
         else THUMBNAILS.dropUnused();
     }
 
