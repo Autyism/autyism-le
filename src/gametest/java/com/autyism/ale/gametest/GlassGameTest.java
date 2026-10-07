@@ -46,29 +46,35 @@ public final class GlassGameTest implements FabricClientGameTest {
                 s.overworld().setBlockAndUpdate(MISSING, Blocks.AIR.defaultBlockState());
             });
 
-            for (Block glass : new Block[]{Blocks.GLASS, Blocks.RED_STAINED_GLASS}) {
-                sp.getServer().runOnServer(s -> {
-                    for (int x = 86; x <= 96; x++)
-                        for (int y = 64; y <= 67; y++) s.overworld().setBlockAndUpdate(new BlockPos(x, y, 3), glass.defaultBlockState());
-                });
+            // 经典透明和“改进的透明度”（26.3 起是顺序无关透明）两种模式都要看得到
+            for (boolean improved : new boolean[]{false, true}) {
+                context.runOnClient(c -> c.options.improvedTransparency().set(improved));
                 context.waitTicks(10);
-                String name = glass == Blocks.GLASS ? "glass" : "stained";
-                // 错误标记（只开标记，不画投影方块）
-                int overlayOff = visibleDiff(context, placement, false, true, false, name + "-overlay-off");
-                int overlayOn = visibleDiff(context, placement, true, true, false, name + "-overlay-on");
-                // 半透明投影方块（只画方块，不画标记）
-                int ghostOff = visibleDiff(context, placement, false, false, true, name + "-ghost-off");
-                int ghostOn = visibleDiff(context, placement, true, false, true, name + "-ghost-on");
-                GT.log("[glass] " + name + ": overlay diff off=" + overlayOff + " on=" + overlayOn + " | translucent ghost diff off=" + ghostOff + " on=" + ghostOn);
-                if (overlayOn < 2000) throw new AssertionError("[glass] " + name + ": overlay not visible through glass (diff " + overlayOn + ")");
-                if (ghostOn < 2000) throw new AssertionError("[glass] " + name + ": translucent ghost blocks not visible through glass (diff " + ghostOn + ")");
+                for (Block glass : new Block[]{Blocks.GLASS, Blocks.RED_STAINED_GLASS}) {
+                    sp.getServer().runOnServer(s -> {
+                        for (int x = 86; x <= 96; x++)
+                            for (int y = 64; y <= 67; y++) s.overworld().setBlockAndUpdate(new BlockPos(x, y, 3), glass.defaultBlockState());
+                    });
+                    context.waitTicks(10);
+                    String name = (improved ? "improved-" : "") + (glass == Blocks.GLASS ? "glass" : "stained");
+                    // 错误标记（只开标记，不画投影方块）
+                    int overlayOff = visibleDiff(context, placement, false, true, false, name + "-overlay-off");
+                    int overlayOn = visibleDiff(context, placement, true, true, false, name + "-overlay-on");
+                    // 半透明投影方块（只画方块，不画标记）
+                    int ghostOff = visibleDiff(context, placement, false, false, true, name + "-ghost-off");
+                    int ghostOn = visibleDiff(context, placement, true, false, true, name + "-ghost-on");
+                    GT.log("[glass] " + name + ": overlay diff off=" + overlayOff + " on=" + overlayOn + " | translucent ghost diff off=" + ghostOff + " on=" + ghostOn);
+                    if (overlayOn < 2000) throw new AssertionError("[glass] " + name + ": overlay not visible through glass (diff " + overlayOn + ")");
+                    if (ghostOn < 2000) throw new AssertionError("[glass] " + name + ": translucent ghost blocks not visible through glass (diff " + ghostOn + ")");
+                }
             }
-            GT.log("[glass] OK: overlays and translucent schematic blocks visible through glass and stained glass");
+            GT.log("[glass] OK: overlays and translucent schematic blocks visible through glass and stained glass, with classic and improved transparency");
         } finally {
             GT.removeAllPlacements(context);
             context.runOnClient(c -> {
                 GT.setGuiHidden(c, false);
                 AleConfigs.Generic.RENDER_THROUGH_GLASS.setBooleanValue(true);
+                c.options.improvedTransparency().set(false);
                 Configs.Visuals.ENABLE_SCHEMATIC_OVERLAY.setBooleanValue(true);
                 Configs.Visuals.ENABLE_SCHEMATIC_BLOCKS.setBooleanValue(true);
                 Configs.Visuals.RENDER_BLOCKS_AS_TRANSLUCENT.setBooleanValue(false);

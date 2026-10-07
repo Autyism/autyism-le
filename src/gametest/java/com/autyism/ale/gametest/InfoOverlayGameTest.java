@@ -122,12 +122,12 @@ public final class InfoOverlayGameTest implements FabricClientGameTest {
     private static int withKeyDiff(ClientGameTestContext context, List<Integer> keys, String name) {
         GT.log("[info] " + name + ": screenshot without key, keys=" + keys);
         Path without = GT.shot(context, "ale-info-" + name + "-nokey");
-        for (int k : keys) context.getInput().holdKey(k);
+        GT.setHotkeyHeld(context, Hotkeys.RENDER_INFO_OVERLAY.getKeybind(), true);
         GT.log("[info] " + name + ": keys held");
         context.waitTicks(3);
         Path with = GT.shot(context, "ale-info-" + name);
         GT.log("[info] " + name + ": screenshot with key");
-        for (int k : keys) context.getInput().releaseKey(k);
+        GT.setHotkeyHeld(context, Hotkeys.RENDER_INFO_OVERLAY.getKeybind(), false);
         context.waitTicks(2);
         return diff(without, with);
     }

@@ -19,10 +19,13 @@ public final class GlassRenderState {
     public static boolean translucentDrawnEarly;
     /** 本帧错误标记已提前绘制 */
     public static boolean overlaysDrawnEarly;
+    /** 本帧投影的半透明方块已经画过（不论是 ALE 还是 Litematica 画的）。26.3 顺序无关透明时 Litematica 自己就在玻璃之前画 */
+    public static boolean translucentDrawnThisFrame;
 
     public static void newFrame() {
         drawingEarly = false;
         translucentDrawnEarly = false;
         overlaysDrawnEarly = false;
+        translucentDrawnThisFrame = false;
     }
 }

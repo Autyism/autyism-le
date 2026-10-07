@@ -37,8 +37,8 @@ public abstract class LevelRendererMixin {
     }
 
     //? if >=26.3 {
-    /*// 26.3：主渲染拆成 executeSolid / executeClassicTransparency / executeOit，前两段在同一个渲染通道里，中间不能另开通道。
-    // 先挂在 executeOit 开头（顺序无关透明时 Litematica 也在这里画）；经典透明模式下的做法要实测后再定
+    /*// 26.3：主渲染拆成 executeSolid / executeClassicTransparency / executeOit。
+    // 顺序无关透明（改进的透明度）时挂在 executeOit 开头，Litematica 也在这里画；经典透明见下面的 ale$classicTransparency
     @Inject(method = "executeOit", at = @At("HEAD"))
     *///?} elif >=26.1 {
     /*// 26.1+：addMainPass 里的主渲染 lambda（不混淆，名字就是 lambda$addMainPass$0）
@@ -55,11 +55,44 @@ public abstract class LevelRendererMixin {
     //?}
     private void ale$drawSchematicBeforeTranslucent(CallbackInfo ci) {
         if (!AleConfigs.Generic.RENDER_THROUGH_GLASS.getBooleanValue()) return;
+        ale$drawEarly();
+    }
+
+    //? if >=26.3 {
+    /*// 26.3 经典透明：原版在同一个渲染通道里先画实心、再画半透明（玻璃），中间不能另开通道。
+    // 所以先结束这个通道，投影的半透明方块和标记用 Litematica 自己的通道画完，再照原版的设置开一个新通道，交给原版画半透明。
+    // 原版随后还会再关一次原来的通道，close 只生效一次，不会出错
+    @com.llamalad7.mixinextras.injector.wrapoperation.WrapOperation(method = "lambda$addMainPass$0", remap = false,
+            at = @At(value = "INVOKE",
+                    target = "Lnet/minecraft/client/renderer/LevelRenderer;executeClassicTransparency(Lnet/minecraft/client/renderer/chunk/ChunkSectionsToRender;Lnet/minecraft/client/renderer/feature/FeatureRenderDispatcher$PreparedFrame;Lcom/mojang/renderpearl/api/commands/RenderPass;)V"))
+    private void ale$classicTransparency(LevelRenderer self, net.minecraft.client.renderer.chunk.ChunkSectionsToRender chunks,
+                                         net.minecraft.client.renderer.feature.FeatureRenderDispatcher.PreparedFrame frame,
+                                         com.mojang.renderpearl.api.commands.RenderPass pass,
+                                         com.llamalad7.mixinextras.injector.wrapoperation.Operation<Void> original) {
+        if (!AleConfigs.Generic.RENDER_THROUGH_GLASS.getBooleanValue()) {
+            original.call(self, chunks, frame, pass);
+            return;
+        }
+        pass.close();
+        ale$drawEarly();
+        com.mojang.blaze3d.pipeline.RenderTarget target = this.targets.main.get();
+        try (com.mojang.renderpearl.api.commands.RenderPass translucent = com.mojang.blaze3d.systems.RenderSystem.getDevice().createCommandEncoder()
+                .createRenderPass(() -> "Main translucent", target.getColorTextureView(), java.util.Optional.empty(),
+                        target.getDepthTextureView(), java.util.OptionalDouble.empty())) {
+            com.mojang.blaze3d.systems.RenderSystem.bindDefaultUniforms(translucent);
+            original.call(self, chunks, frame, translucent);
+        }
+    }
+    *///?}
+
+    /** 投影的半透明方块和标记先画（之后原版才画玻璃），并记下来，让 Litematica 本帧稍后的同样绘制跳过 */
+    private void ale$drawEarly() {
         GlassRenderState.drawingEarly = true;
         try {
             var profiler = Profiler.get();
             profiler.push("ale_schematic_before_translucent");
-            ale$drawTranslucentLayer();
+            // 26.3 顺序无关透明时 Litematica 的钩子可能先跑，已经在玻璃之前画过了，不再画第二遍
+            if (!GlassRenderState.translucentDrawnThisFrame) ale$drawTranslucentLayer();
             GlassRenderState.translucentDrawnEarly = true;
             LitematicaRenderer.getInstance().renderSchematicOverlays(ale$camera(), profiler);
             GlassRenderState.overlaysDrawnEarly = true;
