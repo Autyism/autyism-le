@@ -103,22 +103,30 @@ public final class BrowserPreviewGameTest implements FabricClientGameTest {
             ui.hover(300, 340);
             ui.shot("panel-house");
             float[] c0 = camera(context);
+            // 拖过整个预览区的宽度转半圈（和原作一样，面板和全屏按各自的大小算）
+            int[][] area = context.computeOnClient(c -> ((com.autyism.ale.browser.SchematicBrowserWidget) GT.listWidget(c)).panel().layout());
             ui.drag(548, 260, 588, 260);
             float[] c1 = camera(context);
             ui.shot("panel-drag-right");
-            if (!(c1[0] - c0[0] > 30 && c1[0] - c0[0] < 60)) problems.add("drag right 40 px turned yaw by " + (c1[0] - c0[0]));
+            float wantYaw = 40.0F / area[2][2] * 180.0F;
+            if (Math.abs((c1[0] - c0[0]) - wantYaw) > 2.0F) problems.add("drag right 40 px turned yaw by " + (c1[0] - c0[0]) + ", expected " + wantYaw);
             ui.drag(548, 260, 548, 230);
             float[] c2 = camera(context);
             ui.shot("panel-drag-up");
-            if (!(c1[1] - c2[1] > 20)) problems.add("drag up 30 px changed pitch by " + (c2[1] - c1[1]));
+            float wantPitch = 30.0F / area[2][3] * 180.0F;
+            if (Math.abs((c1[1] - c2[1]) - wantPitch) > 2.0F) problems.add("drag up 30 px changed pitch by " + (c1[1] - c2[1]) + ", expected " + wantPitch);
             ui.scrollAt(548, 260, 1);
             float[] c3 = camera(context);
             ui.shot("panel-zoom-in");
             if (!(c3[2] < c2[2])) problems.add("scroll up did not move closer: " + c2[2] + " -> " + c3[2]);
+            // 每格移动开始距离的四分之一，一次滚多格就移动多格（和原作一样）
+            float step = c0[2] * 0.25F;
+            if (Math.abs((c2[2] - c3[2]) - step) > 0.05F * step) problems.add("one notch moved " + (c2[2] - c3[2]) + ", expected " + step);
             ui.scrollAt(548, 260, -2);
             float[] c4 = camera(context);
             ui.shot("panel-zoom-out");
             if (!(c4[2] > c3[2])) problems.add("scroll down did not move away");
+            if (Math.abs((c4[2] - c3[2]) - 2 * step) > 0.1F * step) problems.add("two notches moved " + (c4[2] - c3[2]) + ", expected " + 2 * step);
             int[][] panel = context.computeOnClient(c -> ((com.autyism.ale.browser.SchematicBrowserWidget) GT.listWidget(c)).panel().layout());
             double fx = panel[0][0] + 4, fy = panel[0][1] + 4, cx = panel[1][0] + 4, cy = panel[1][1] + 4;
             ui.hover(fx, fy);
@@ -128,11 +136,15 @@ public final class BrowserPreviewGameTest implements FabricClientGameTest {
             ui.click(fx, fy, 0);
             context.waitTicks(10);
             if (!context.computeOnClient(c -> c.screen instanceof FullscreenPreviewScreen)) problems.add("fullscreen button did not open the full screen preview");
+            // 全屏不重新取景：距离不变（模型占画面的比例和面板里一样）
+            float[] fs = camera(context);
+            if (Math.abs(fs[2] - c4[2]) > 0.01F) problems.add("full screen changed the zoom: " + c4[2] + " -> " + fs[2]);
             ui.shot("fullscreen");
             ui.drag(320, 180, 380, 180);
             float[] f1 = camera(context);
             ui.shot("fullscreen-drag");
-            if (Math.abs(f1[0] - c4[0]) < 20) problems.add("drag in full screen did not turn the preview");
+            float wantFull = 60.0F / context.computeOnClient(c -> c.screen.width) * 180.0F;
+            if (Math.abs(Math.abs(f1[0] - c4[0]) - wantFull) > 2.0F) problems.add("drag 60 px in full screen turned " + (f1[0] - c4[0]) + ", expected " + wantFull);
             ui.scrollAt(320, 180, 1);
             ui.shot("fullscreen-zoom");
             context.getInput().pressKey(GLFW.GLFW_KEY_ESCAPE);

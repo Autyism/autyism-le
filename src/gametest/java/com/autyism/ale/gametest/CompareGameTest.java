@@ -73,8 +73,15 @@ public final class CompareGameTest implements FabricClientGameTest {
             ui.click(full[0], full[1], 0);
             context.waitTicks(20);
             ui.shot("12-fullscreen");
+            boolean calib = !original && System.getProperty("ale.gt", "").contains("calib");
+            if (calib) calibrate(context, ui, "yaw", new float[]{10, 13, 15, 17, 19, 21, 24, 30}, true);
             ui.drag(320, 180, 380, 180);
             ui.shot("13-fullscreen-drag");
+            if (calib) calibrate(context, ui, "pitch", new float[]{25, 30, 35, 40, 45, 50, 55, 60}, false);
+            ui.drag(320, 180, 320, 120);
+            ui.shot("13b-fullscreen-drag-up");
+            ui.scrollAt(320, 180, 1);
+            ui.shot("13c-fullscreen-scroll-in");
             context.getInput().pressKey(GLFW.GLFW_KEY_ESCAPE);
             context.waitTicks(10);
             ui.hover(300, 345);
@@ -153,6 +160,24 @@ public final class CompareGameTest implements FabricClientGameTest {
             ui.shot("30-replace-result");
             context.waitTicks(40);
             ui.shot("31-replace-result-later");
+
+            // 带实体（盔甲架、展示框、画、矿车、船）的投影：网格缩略图、信息面板、带预览的列表
+            context.runOnClient(c -> c.setScreen(new GuiSchematicLoad()));
+            context.waitTicks(80);
+            ui.hover(300, 345);
+            ui.shot("32-entities-grid");
+            for (int i = 0; i < 3; i++) {
+                ui.click(21, 35, 0);
+                context.waitTicks(10);
+            }
+            BrowserPreviewGameTest.clickEntry(context, ui, "ale_entities.litematic", 0);
+            context.waitTicks(80);
+            ui.hover(300, 345);
+            ui.shot("33-entities-panel");
+            ui.click(21, 35, 0);
+            context.waitTicks(60);
+            ui.hover(300, 345);
+            ui.shot("34-entities-preview-list");
             GT.log("[compare] done (" + (original ? "Schematic Preview" : "ALE") + ")");
         } finally {
             GT.removeAllPlacements(context);
@@ -162,6 +187,31 @@ public final class CompareGameTest implements FabricClientGameTest {
             });
             ui.normalWindow(oldScale);
         }
+    }
+
+    /**
+     * 只在 ALE 这一边、-Pgt 里带 calib 时用：把全屏预览分别转若干个已知角度拍下来，
+     * 和原作同一步的截图比对，找出原作拖动对应的角度。拍完相机恢复原样。
+     */
+    private static void calibrate(ClientGameTestContext context, UiDriver ui, String name, float[] degrees, boolean yaw) {
+        com.autyism.ale.preview.PreviewCamera saved = context.computeOnClient(c -> {
+            com.autyism.ale.preview.PreviewCamera copy = new com.autyism.ale.preview.PreviewCamera();
+            copy.copyFrom(PreviewSession.current().camera());
+            return copy;
+        });
+        for (float deg : degrees) {
+            context.runOnClient(c -> {
+                com.autyism.ale.preview.PreviewCamera cam = PreviewSession.current().camera();
+                cam.copyFrom(saved);
+                double w = c.screen.width, h = c.screen.height;
+                if (yaw) cam.drag(deg / 180.0 * w, 0, w, h);
+                else cam.drag(0, -deg / 180.0 * h, w, h);
+            });
+            context.waitTicks(2);
+            ui.shot("calib-" + name + "-" + (int) deg);
+        }
+        context.runOnClient(c -> PreviewSession.current().camera().copyFrom(saved));
+        context.waitTicks(2);
     }
 
     private static double[] button(ClientGameTestContext context, int index) {

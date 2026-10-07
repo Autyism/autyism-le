@@ -36,19 +36,20 @@ public final class PreviewPanel {
         this.fullY = textBottom + 2;
         this.camX = this.fullX + BUTTON + 1;
         this.camY = this.fullY;
+        // 预览区从信息文字下面一直到面板底部，两个按钮画在预览上面（预览区的高度决定了换到全屏时模型放大多少）
         this.px = infoX + 2;
-        this.py = this.fullY + BUTTON + 3;
+        this.py = textBottom + 1;
         this.pw = infoW - 4;
         this.ph = infoY + infoH - 2 - this.py;
         this.visible = this.ph >= 16 && this.pw >= 16;
+        if (this.visible) {
+            PreviewSession session = PreviewSession.forFile(file);
+            followDrag(session);
+            if (session.camera().isFree() && (isOverPreview(mouseX, mouseY) || this.dragging)) session.applyMovementKeys();
+            session.drawPanel(g, this.px, this.py, this.px + this.pw, this.py + this.ph);
+            drawStatus(g, session.model(), this.px, this.py, this.pw, this.ph);
+        }
         drawButtons(g, mouseX, mouseY);
-        if (!this.visible) return;
-
-        PreviewSession session = PreviewSession.forFile(file);
-        followDrag(session);
-        if (session.camera().isFree() && (isOverPreview(mouseX, mouseY) || this.dragging)) session.applyMovementKeys();
-        session.drawPanel(g, this.px, this.py, this.px + this.pw, this.py + this.ph);
-        drawStatus(g, session.model(), this.px, this.py, this.pw, this.ph);
     }
 
     private void drawButtons(GuiGraphics g, int mouseX, int mouseY) {
@@ -125,7 +126,7 @@ public final class PreviewPanel {
         if (!this.dragging) return;
         Minecraft mc = Minecraft.getInstance();
         double x = mc.mouseHandler.getScaledXPos(mc.getWindow()), y = mc.mouseHandler.getScaledYPos(mc.getWindow());
-        session.camera().drag(x - this.lastX, y - this.lastY);
+        session.camera().drag(x - this.lastX, y - this.lastY, this.pw, this.ph);
         this.lastX = x;
         this.lastY = y;
     }
@@ -163,7 +164,7 @@ public final class PreviewPanel {
     public boolean mouseScrolled(double mouseX, double mouseY, double amount) {
         if (this.file == null || amount == 0 || !isOverPreview(mouseX, mouseY)) return false;
         PreviewSession session = PreviewSession.current();
-        if (session != null && session.file.equals(this.file)) session.camera().scroll(Math.signum(amount));
+        if (session != null && session.file.equals(this.file)) session.camera().scroll(amount);
         return true;
     }
 

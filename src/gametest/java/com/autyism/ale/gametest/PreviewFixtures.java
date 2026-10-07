@@ -68,7 +68,7 @@ public final class PreviewFixtures {
     /** 建好所有测试文件；many = 放进 many/ 文件夹的房子副本数量 */
     public static void createAll(ClientGameTestContext context, TestSingleplayerContext sp, int many) {
         Path dir = dir(context);
-        GT.clearArena(sp, HOUSE_MIN.getX() - 2, HOUSE_MIN.getZ() - 2, BE_MAX.getX() + 2, HOUSE_MAX.getZ() + 2, 100);
+        GT.clearArena(sp, HOUSE_MIN.getX() - 2, HOUSE_MIN.getZ() - 2, ENT_MAX.getX() + 2, HOUSE_MAX.getZ() + 2, 100);
         buildHouse(sp);
         buildTower(sp);
         context.waitTicks(5);
@@ -77,6 +77,18 @@ public final class PreviewFixtures {
         buildBlockEntities(sp);
         context.waitTicks(3);
         capture(sp, dir, BE_MIN, BE_MAX, "ale_block_entities");
+        buildEntities(sp);
+        context.waitTicks(10);
+        capture(sp, dir, ENT_MIN, ENT_MAX, "ale_entities");
+        var withEntities = fi.dy.masa.litematica.schematic.LitematicaSchematic.createFromFile(dir, "ale_entities.litematic");
+        int entityCount = 0;
+        if (withEntities != null) {
+            for (String region : withEntities.getAreas().keySet()) {
+                var list = withEntities.getEntityListForRegion(region);
+                if (list != null) entityCount += list.size();
+            }
+        }
+        GT.log("[fixtures] ale_entities.litematic holds " + entityCount + " entities");
         saveStructure(sp, dir.resolve("ale_house_struct.nbt"), HOUSE_MIN, HOUSE_MAX);
         try {
             writeSponge(dir.resolve("ale_terrain.schem"), 160, 24, 160, PreviewFixtures::terrain);
@@ -170,6 +182,37 @@ public final class PreviewFixtures {
     }
 
     /** 方块实体一字排开（没有墙挡着）：双箱子、床、告示牌（立式 / 挂墙）、旗帜、头颅、潜影盒、附魔台、钟、讲台、营火、饰纹陶罐 */
+    // ------------------------------------------------------------------ 实体：盔甲架、物品展示框、画、矿车、船
+
+    public static final BlockPos ENT_MIN = new BlockPos(248, 64, 0);
+    public static final BlockPos ENT_MAX = ENT_MIN.offset(6, 3, 4);
+
+    private static void buildEntities(TestSingleplayerContext sp) {
+        sp.getServer().runOnServer(s -> {
+            ServerLevel level = s.overworld();
+            for (int x = 0; x <= 6; x++) {
+                for (int z = 0; z <= 4; z++) level.setBlock(ENT_MIN.offset(x, 0, z), Blocks.SMOOTH_STONE.defaultBlockState(), Block.UPDATE_CLIENTS);
+                for (int y = 1; y <= 3; y++) level.setBlock(ENT_MIN.offset(x, y, 0), Blocks.OAK_PLANKS.defaultBlockState(), Block.UPDATE_CLIENTS);
+            }
+            net.minecraft.world.entity.decoration.ItemFrame frame = new net.minecraft.world.entity.decoration.ItemFrame(level, ENT_MIN.offset(1, 2, 1), Direction.SOUTH);
+            frame.setItem(new net.minecraft.world.item.ItemStack(net.minecraft.world.item.Items.DIAMOND_SWORD));
+            level.addFreshEntity(frame);
+            net.minecraft.world.entity.decoration.painting.Painting.create(level, ENT_MIN.offset(4, 2, 1), Direction.SOUTH).ifPresent(level::addFreshEntity);
+            net.minecraft.world.entity.decoration.ArmorStand stand = new net.minecraft.world.entity.decoration.ArmorStand(net.minecraft.world.entity.EntityType.ARMOR_STAND, level);
+            stand.setPos(ENT_MIN.getX() + 5.5, ENT_MIN.getY() + 1, ENT_MIN.getZ() + 3.5);
+            stand.setYRot(150.0F);
+            stand.setItemSlot(net.minecraft.world.entity.EquipmentSlot.HEAD, new net.minecraft.world.item.ItemStack(net.minecraft.world.item.Items.GOLDEN_HELMET));
+            level.addFreshEntity(stand);
+            level.setBlock(ENT_MIN.offset(1, 1, 3), Blocks.RAIL.defaultBlockState(), Block.UPDATE_CLIENTS);
+            var cart = net.minecraft.world.entity.EntityType.MINECART.create(level, net.minecraft.world.entity.EntitySpawnReason.COMMAND);
+            cart.setPos(ENT_MIN.getX() + 1.5, ENT_MIN.getY() + 1.0625, ENT_MIN.getZ() + 3.5);
+            level.addFreshEntity(cart);
+            var boat = net.minecraft.world.entity.EntityType.OAK_BOAT.create(level, net.minecraft.world.entity.EntitySpawnReason.COMMAND);
+            boat.setPos(ENT_MIN.getX() + 3.5, ENT_MIN.getY() + 1, ENT_MIN.getZ() + 3.5);
+            level.addFreshEntity(boat);
+        });
+    }
+
     public static final BlockPos BE_MIN = new BlockPos(232, 64, 0);
     public static final BlockPos BE_MAX = BE_MIN.offset(10, 2, 2);
 

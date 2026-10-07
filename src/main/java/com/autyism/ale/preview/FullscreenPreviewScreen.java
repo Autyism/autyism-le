@@ -32,7 +32,7 @@ public final class FullscreenPreviewScreen extends Screen implements Previews.Pr
         if (this.dragging) {
             Minecraft mc = Minecraft.getInstance();
             double x = mc.mouseHandler.getScaledXPos(mc.getWindow()), y = mc.mouseHandler.getScaledYPos(mc.getWindow());
-            this.session.camera().drag(x - this.lastX, y - this.lastY);
+            this.session.camera().drag(x - this.lastX, y - this.lastY, this.width, this.height);
             this.lastX = x;
             this.lastY = y;
         }
@@ -70,7 +70,7 @@ public final class FullscreenPreviewScreen extends Screen implements Previews.Pr
 
     @Override
     public boolean mouseScrolled(double mouseX, double mouseY, double horizontal, double vertical) {
-        if (vertical != 0) this.session.camera().scroll(Math.signum(vertical));
+        if (vertical != 0) this.session.camera().scroll(vertical);
         return true;
     }
 
