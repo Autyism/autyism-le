@@ -18,7 +18,13 @@ final class InfoTextBounds {
         int[] bottom = {-1};
         Vector2f p = new Vector2f();
         g.guiRenderState.forEachText(text -> {
+            //? if >=26.2 {
+            /*var box = text.bounds();
+            if (box == null) return;
+            p.set(box.left(), box.top());
+            *///?} else {
             text.pose.transformPosition(text.x, text.y, p);
+            //?}
             if (p.x >= x && p.x < x + w && p.y >= y && p.y < y + h) bottom[0] = Math.max(bottom[0], (int) p.y + lineHeight);
         });
         return bottom[0];

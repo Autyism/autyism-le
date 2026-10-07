@@ -71,7 +71,7 @@ java {
 }
 
 // Schematic browser previews, icons and Replace are written for 1.21.11 first; until a version is ported its build leaves them out
-if (sc.current.parsed >= "26.2") {
+if (sc.current.parsed >= "26.3") {
     sourceSets.named("main") {
         java.exclude(
             "com/autyism/ale/preview/**", "com/autyism/ale/replace/**", "com/autyism/ale/mixin/without/**",
@@ -107,7 +107,7 @@ tasks.processResources {
         if (sc.current.parsed < "26.1") addAll(listOf("render.RenderTypeAccessor", "render.RenderSetupAccessor"))
         if (sc.current.parsed < "26.2") add("render.GameRendererCameraAccessor")
         // Schematic browser previews, icons and Replace: 1.21.11 first, the other versions follow
-        if (sc.current.parsed >= "26.2") addAll(listOf("malilib.WidgetContainerAccess", "malilib.GuiListBaseAccess", "without.schematicpreview."))
+        if (sc.current.parsed >= "26.3") addAll(listOf("malilib.WidgetContainerAccess", "malilib.GuiListBaseAccess", "without.schematicpreview."))
         // Dev only: -PaleNoMixins=a.B,c.D leaves those mixins out (to find which one breaks something)
         providers.gradleProperty("aleNoMixins").orNull?.split(",")?.filter { it.isNotBlank() }?.let { addAll(it) }
     }

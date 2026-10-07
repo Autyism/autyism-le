@@ -245,7 +245,7 @@ public class SchematicBrowserWidget extends WidgetSchematicBrowser {
             cycleLayout();
             return true;
         }
-        if (this.panel.mouseClicked(click.x(), click.y(), click.button(), Minecraft.getInstance().screen)) return true;
+        if (this.panel.mouseClicked(click.x(), click.y(), click.button(), com.autyism.ale.preview.GuiCompat.screen())) return true;
         return super.onMouseClicked(click, doubleClick);
     }
 

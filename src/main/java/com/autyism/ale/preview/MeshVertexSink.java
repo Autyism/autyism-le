@@ -18,12 +18,20 @@ import java.nio.ByteBuffer;
 final class MeshVertexSink implements VertexConsumer {
     static final VertexFormat FORMAT = DefaultVertexFormat.BLOCK;
     static final int STRIDE = FORMAT.getVertexSize();
+    //? if >=26.2 {
+    /*private static final int POS = FORMAT.getElement("Position").offset();
+    private static final int COLOR = FORMAT.getElement("Color").offset();
+    private static final int UV0 = FORMAT.getElement("UV0").offset();
+    private static final int UV2 = FORMAT.getElement("UV2").offset();
+    private static final int NORMAL = FORMAT.contains("Normal") ? FORMAT.getElement("Normal").offset() : -1;
+    *///?} else {
     private static final int POS = FORMAT.getOffset(VertexFormatElement.POSITION);
     private static final int COLOR = FORMAT.getOffset(VertexFormatElement.COLOR);
     private static final int UV0 = FORMAT.getOffset(VertexFormatElement.UV0);
     private static final int UV2 = FORMAT.getOffset(VertexFormatElement.UV2);
     /** 26.1 起方块格式没有法线（面的明暗已经算进颜色里）：-1 */
     private static final int NORMAL = FORMAT.contains(VertexFormatElement.NORMAL) ? FORMAT.getOffset(VertexFormatElement.NORMAL) : -1;
+    //?}
     private static final short FULL_BRIGHT = 240;
 
     private long address;

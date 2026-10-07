@@ -49,6 +49,6 @@ public abstract class MaterialEntryReplaceMixin {
         replace.setHoverStrings(StringUtils.translate("autyism-le.gui.button.replace.hover"));
         MaterialListBase list = this.materialList;
         ItemStack stack = this.entry.getStack().copy();
-        self.ale$addButton(replace, (b, mouseButton) -> GuiBase.openGui(new ReplaceBlockScreen(list, stack, Minecraft.getInstance().screen)));
+        self.ale$addButton(replace, (b, mouseButton) -> GuiBase.openGui(new ReplaceBlockScreen(list, stack, com.autyism.ale.preview.GuiCompat.screen())));
     }
 }

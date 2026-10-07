@@ -246,7 +246,7 @@ public class BrowserEntryWidget extends WidgetDirectoryEntry {
     @Override
     protected boolean onMouseClickedImpl(MouseButtonEvent click, boolean doubleClick) {
         if (click.button() == 1 && isOverIcon(click.x(), click.y())) {
-            GuiBase.openGui(new FolderIconScreen(path(), this.entry.getDisplayName(), isDirectory(), Minecraft.getInstance().screen));
+            GuiBase.openGui(new FolderIconScreen(path(), this.entry.getDisplayName(), isDirectory(), com.autyism.ale.preview.GuiCompat.screen()));
             return true;
         }
         return super.onMouseClickedImpl(click, doubleClick);

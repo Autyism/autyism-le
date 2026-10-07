@@ -99,7 +99,7 @@ public final class FullscreenPreviewScreen extends Screen implements Previews.Pr
 
     @Override
     public void onClose() {
-        Minecraft.getInstance().setScreen(this.parent);
+        GuiCompat.setScreen(this.parent);
     }
 
     @Override
