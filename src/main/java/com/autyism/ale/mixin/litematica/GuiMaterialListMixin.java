@@ -4,6 +4,7 @@ import com.autyism.ale.config.AleConfigs;
 import com.autyism.ale.materials.MaterialExtras;
 import fi.dy.masa.litematica.gui.GuiMaterialList;
 import fi.dy.masa.litematica.materials.MaterialListBase;
+//? if >=1.21.9
 import fi.dy.masa.litematica.materials.MaterialListCustom;
 import fi.dy.masa.litematica.materials.MaterialListPlacement;
 import fi.dy.masa.litematica.materials.MaterialListSchematic;
@@ -47,7 +48,11 @@ public abstract class GuiMaterialListMixin {
         gui.addButton(button, (b, mouseButton) -> {
             var items = MaterialExtras.containerContents(schematic, regions);
             String name = StringUtils.translate("autyism-le.gui.title.container_contents", list.getName());
+            // 1.21.8 及更早的 Litematica 没有自定义材料列表，用 ALE 自己的列表
+            //? if >=1.21.9 {
             MaterialListCustom contents = new MaterialListCustom(name, items, null);
+            //?} else
+            //com.autyism.ale.materials.ContainerContentsList contents = new com.autyism.ale.materials.ContainerContentsList(name, items);
             GuiMaterialList contentsGui = new GuiMaterialList(contents);
             contentsGui.setParent(gui);
             GuiBase.openGui(contentsGui);
