@@ -54,6 +54,9 @@ public abstract class OverlayRendererMixin {
         if (placement == null || !placement.hasVerifier()) return;
         Set<BlockPos> positions = ContainerVerifier.getMismatches(placement.getSchematicVerifier());
         if (positions.isEmpty()) return;
+        //? if >=26.2 {
+        /*RenderContext ctx = new RenderContext(() -> "autyism-le:container_mismatches", MaLiLibPipelines.DEBUG_LINES_MASA_SIMPLE_NO_DEPTH_NO_CULL, 0);
+        *///?} else
         RenderContext ctx = new RenderContext(() -> "autyism-le:container_mismatches", MaLiLibPipelines.DEBUG_LINES_MASA_SIMPLE_NO_DEPTH_NO_CULL);
         BufferBuilder buffer = ctx.getBuilder();
         for (BlockPos pos : positions) {

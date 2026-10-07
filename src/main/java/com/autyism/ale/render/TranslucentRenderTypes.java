@@ -23,9 +23,12 @@ public final class TranslucentRenderTypes {
     }
 
     private static RenderType map(RenderType t) {
-        //? if >=26.1 {
-        /*// 26.1 起箱子、告示牌、床、潜影盒等不再有提前缓存的图集类型：提交时由 RenderTypesMixin 当场换成半透明。只剩方块和物品图集
-        if (t == Sheets.cutoutBlockSheet() || t == Sheets.cutoutBlockItemSheet()) return Sheets.translucentBlockItemSheet();
+        // 26.1 起箱子、告示牌、床、潜影盒等不再有提前缓存的图集类型：提交时由 RenderTypesMixin 当场换成半透明。只剩方块和物品图集
+        //? if >=26.2 {
+        /*if (t == Sheets.cutoutBlockItemSheet()) return Sheets.translucentBlockItemSheet();
+        if (t == Sheets.cutoutItemSheet()) return Sheets.translucentItemSheet();
+        *///?} elif >=26.1 {
+        /*if (t == Sheets.cutoutBlockSheet() || t == Sheets.cutoutBlockItemSheet()) return Sheets.translucentBlockItemSheet();
         if (t == Sheets.cutoutItemSheet()) return Sheets.translucentItemSheet();
         *///?} else {
         if (t == Sheets.solidBlockSheet() || t == Sheets.cutoutBlockSheet()) return Sheets.translucentItemSheet();

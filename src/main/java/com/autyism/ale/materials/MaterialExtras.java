@@ -65,6 +65,9 @@ public final class MaterialExtras {
         Identifier id = BuiltInRegistries.ENTITY_TYPE.getKey(entity.getType());
         Optional<Item> item = BuiltInRegistries.ITEM.getOptional(id);
         if (item.isPresent() && item.get() != Items.AIR) return item.get();
+        //? if >=26.2 {
+        /*if (entity.getType() == net.minecraft.world.entity.EntityTypes.LEASH_KNOT) return Items.LEAD;
+        *///?} else
         if (entity.getType() == net.minecraft.world.entity.EntityType.LEASH_KNOT) return Items.LEAD;
         return null;
     }
