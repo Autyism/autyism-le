@@ -116,6 +116,12 @@ public final class PreviewModel implements AutoCloseable {
         this.blockEntitiesDisabled = true;
     }
 
+    /** 测试用：生成进度的详细情况 */
+    public String debugState() {
+        return "status=" + this.status + " meshDone=" + this.meshDone + " pending=" + this.ready.size() + " sections=" + this.sectionsDone + "/"
+                + this.sectionsTotal + " cancelled=" + this.cancelled.get() + " pages=" + this.pages.size();
+    }
+
     /** 测试用：会画出来的方块实体个数 */
     public int blockEntityCount() {
         int n = 0;
