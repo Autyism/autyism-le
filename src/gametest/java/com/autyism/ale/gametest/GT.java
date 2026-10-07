@@ -185,4 +185,12 @@ public final class GT {
         context.getInput().pressMouse(org.lwjgl.glfw.GLFW.GLFW_MOUSE_BUTTON_LEFT);
         context.waitTick();
     }
+
+    /** 隐藏或显示界面（F1）。26.2 起由 Hud 管理，只能切换 */
+    public static void setGuiHidden(net.minecraft.client.Minecraft client, boolean hidden) {
+        //? if >=26.2 {
+        /*if (client.gui.hud.isHidden() != hidden) client.gui.hud.toggle();
+        *///?} else
+        client.options.hideGui = hidden;
+    }
 }

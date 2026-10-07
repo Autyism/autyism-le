@@ -34,7 +34,7 @@ public final class RenderGameTest implements FabricClientGameTest {
             sp.getServer().runCommand("tp @a 71.5 64 4.5 180 25");
             context.waitFor(c -> c.player != null && Math.abs(c.player.getX() - 71.5) < 0.01, 200);
             context.runOnClient(c -> {
-                c.options.hideGui = true;
+                GT.setGuiHidden(c, true);
                 Configs.Visuals.ENABLE_SCHEMATIC_OVERLAY.setBooleanValue(true);
                 Configs.Visuals.SCHEMATIC_OVERLAY_TYPE_WRONG_STATE.setBooleanValue(true);
             });
@@ -81,7 +81,7 @@ public final class RenderGameTest implements FabricClientGameTest {
             GT.log("[render] orientation D marker OK");
         } finally {
             GT.removeAllPlacements(context);
-            context.runOnClient(c -> c.options.hideGui = false);
+            context.runOnClient(c -> GT.setGuiHidden(c, false));
         }
     }
 
