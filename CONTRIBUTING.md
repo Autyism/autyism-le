@@ -1,4 +1,4 @@
-# Contributing to Litematica Printer Autyism Edition
+# Contributing to Autyism's Litematica Enhancement
 
 **Please report any bugs so we can fix it accordingly!**
 
@@ -31,7 +31,7 @@ git checkout -b my_branch
 **Also report typos and grammatical errors!**
 
 
-# 参与 Litematica Printer Autyism Edition 项目贡献
+# 参与 Autyism's Litematica Enhancement 项目贡献
 
 **如果发现任何程序缺陷（Bug），请及时向我们反馈，以便我们进行针对性的修复！**
 
