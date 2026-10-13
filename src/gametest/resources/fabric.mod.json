@@ -8,6 +8,8 @@
     "fabric-client-gametest": [
       "com.autyism.ale.gametest.OverlayVisibilityGameTest",
       "com.autyism.ale.gametest.VerifierContentsGameTest",
+      "com.autyism.ale.gametest.FillMarkerGameTest",
+      "com.autyism.ale.gametest.ReplaceUiGameTest",
       "com.autyism.ale.gametest.MarkerGameTest",
       "com.autyism.ale.gametest.SpBlackBoxGameTest",
       "com.autyism.ale.gametest.BrowserPreviewGameTest",

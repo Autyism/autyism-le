@@ -45,6 +45,9 @@ public class GuiBlockPicker extends GuiBase {
     private final IConfigStringList config;
     private final String modId;
     private final Mode mode;
+    /** 打开 MaLiLib 原来的列表编辑框要用（为 null 时不显示“原来的编辑框”按钮） */
+    @Nullable
+    private final fi.dy.masa.malilib.gui.interfaces.IConfigGui configGui;
     private final List<Entry> allEntries = new ArrayList<>();
     private List<Entry> filtered = new ArrayList<>();
     private GuiTextFieldGeneric searchField;
@@ -56,14 +59,30 @@ public class GuiBlockPicker extends GuiBase {
     // 布局
     private int panelX, panelY, panelW, panelH, colW, listTop, listHeight;
 
-    /** 一个可选项：物品图标 + 名称 + 写进列表的 ID */
-    public record Entry(String id, ItemStack icon, String name) {
+    /**
+     * 一个可选项：物品图标 + 名称 + 写进列表的 ID。同一个物品的几种方块形态（告示牌 / 墙上的告示牌、火把 / 墙上的火把……）
+     * 合成一条，ids 是这几种形态的 ID，加入 / 移除时一起处理
+     */
+    public record Entry(String id, ItemStack icon, String name, List<String> ids) {
+        Entry(String id, ItemStack icon, String name) {
+            this(id, icon, name, List.of(id));
+        }
+    }
+
+    /** 左边当前列表里的一行：显示的条目 + 它在配置列表里占的位置（合并的一行占几个位置） */
+    private record Row(Entry entry, List<Integer> indices) {
     }
 
     public GuiBlockPicker(IConfigStringList config, String modId, Mode mode, @Nullable Screen parent) {
+        this(config, modId, mode, parent, null);
+    }
+
+    public GuiBlockPicker(IConfigStringList config, String modId, Mode mode, @Nullable Screen parent,
+                          @Nullable fi.dy.masa.malilib.gui.interfaces.IConfigGui configGui) {
         this.config = config;
         this.modId = modId;
         this.mode = mode;
+        this.configGui = configGui;
         this.title = StringUtils.translate(mode == Mode.BLOCK ? "autyism-le.gui.title.block_picker" : "autyism-le.gui.title.item_picker",
                 config.getConfigGuiDisplayName());
         this.setParent(parent);
@@ -76,8 +95,9 @@ public class GuiBlockPicker extends GuiBase {
         if (mode == Mode.BLOCK) {
             for (Block block : BuiltInRegistries.BLOCK) {
                 if (block == Blocks.AIR || block == Blocks.CAVE_AIR || block == Blocks.VOID_AIR) continue;
-                Identifier id = BuiltInRegistries.BLOCK.getKey(block);
-                allEntries.add(new Entry(id.toString(), iconFor(block), StringUtils.translate(block.getDescriptionId())));
+                // 立式 / 挂墙等几种形态只列一条（物品默认放出来的那种）
+                if (BlockForms.primary(block) != block) continue;
+                allEntries.add(entryFor(block));
             }
         } else {
             for (Item item : BuiltInRegistries.ITEM) {
@@ -87,6 +107,17 @@ public class GuiBlockPicker extends GuiBase {
             }
         }
         allEntries.sort((a, b) -> a.name().compareToIgnoreCase(b.name()));
+    }
+
+    /** 一个方块（连同它的其他形态）的条目 */
+    private static Entry entryFor(Block block) {
+        Identifier id = BuiltInRegistries.BLOCK.getKey(block);
+        List<Block> forms = BlockForms.formsOf(block);
+        if (forms.size() <= 1) return new Entry(id.toString(), iconFor(block), StringUtils.translate(block.getDescriptionId()));
+        List<String> ids = new ArrayList<>();
+        for (Block f : forms) ids.add(BuiltInRegistries.BLOCK.getKey(f).toString());
+        ItemStack icon = iconFor(block);
+        return new Entry(id.toString(), icon, icon.getHoverName().getString(), ids);
     }
 
     private static ItemStack iconFor(Block block) {
@@ -154,6 +185,52 @@ public class GuiBlockPicker extends GuiBase {
         this.addButton(clear, (b, mb) -> {
             if (GuiBase.isShiftDown()) setStrings(new ArrayList<>());
         });
+        // 右上角：换成 MaLiLib 原来的列表编辑框（手动输入 ID、调整顺序时用）
+        if (configGui != null) {
+            ButtonGeneric original = new ButtonGeneric(0, 0, -1, 16, StringUtils.translate("autyism-le.gui.button.original_list"));
+            original.setPosition(panelX + panelW - original.getWidth() - 6, panelY + 3);
+            original.setHoverStrings(StringUtils.translate("autyism-le.gui.button.original_list.hover"));
+            this.addButton(original, (b, mb) -> openOriginal());
+        }
+    }
+
+    /** 打开 MaLiLib 原来的列表编辑框，代替这个界面（关掉它回到原来的上一层界面） */
+    private void openOriginal() {
+        if (configGui == null) return;
+        if (modified) {
+            ConfigManager.getInstance().onConfigsChanged(modId);
+            modified = false;
+        }
+        GuiBase.openGui(new fi.dy.masa.malilib.gui.GuiStringListEdit(config, configGui, null, this.getParent()));
+    }
+
+    /** 测试用：这一条（连同所有形态）加进列表 */
+    public void addForTest(Block block) {
+        add(entryFor(BlockForms.primary(block)));
+    }
+
+    /** 测试用：左边显示的行（名称） */
+    public List<String> shownRows() {
+        List<String> out = new ArrayList<>();
+        for (Row r : rows()) out.add(r.entry().name());
+        return out;
+    }
+
+    /** 测试用：移除左边第 index 行 */
+    public void removeRowForTest(int index) {
+        List<Row> curRows = rows();
+        List<String> list = current();
+        List<Integer> indices = new ArrayList<>(curRows.get(index).indices());
+        indices.sort(java.util.Collections.reverseOrder());
+        for (int i : indices) list.remove(i);
+        setStrings(list);
+    }
+
+    /** 测试用：右边列表里有没有这个方块的单独一条 */
+    public boolean listsSeparately(Block block) {
+        String id = BuiltInRegistries.BLOCK.getKey(block).toString();
+        for (Entry e : allEntries) if (e.id().equals(id)) return true;
+        return false;
     }
 
     private void applyFilter() {
@@ -187,6 +264,83 @@ public class GuiBlockPicker extends GuiBase {
         return false;
     }
 
+    /** 这一条的所有形态都已经在列表里 */
+    private boolean containsAll(Entry e) {
+        for (String id : e.ids()) if (!contains(id)) return false;
+        return true;
+    }
+
+    /** 把这一条（所有形态）加进列表，已经有的不重复加 */
+    private void add(Entry e) {
+        List<String> list = current();
+        boolean changed = false;
+        for (String id : e.ids()) {
+            if (!contains(id)) {
+                list.add(id);
+                changed = true;
+            }
+        }
+        if (changed) setStrings(list);
+    }
+
+    /**
+     * 左边当前列表的显示行：一个方块的所有形态都在列表里时合成一行（显示在第一个形态的位置）；
+     * 只有部分形态（例如手动只填了墙上的火把）时按原样一个个显示
+     */
+    /** 左边的显示行按列表内容缓存（列表没变时每帧不重新算） */
+    private List<String> rowsKey = List.of();
+    private List<Row> rowsCache = List.of();
+
+    private List<Row> rows() {
+        List<String> cur = current();
+        if (cur.equals(rowsKey)) return rowsCache;
+        rowsCache = computeRows(cur);
+        rowsKey = cur;
+        return rowsCache;
+    }
+
+    private List<Row> computeRows(List<String> cur) {
+        List<Row> rows = new ArrayList<>();
+        boolean[] used = new boolean[cur.size()];
+        for (int i = 0; i < cur.size(); i++) {
+            if (used[i]) continue;
+            if (mode == Mode.BLOCK) {
+                Entry merged = mergedEntryOf(cur.get(i));
+                if (merged != null) {
+                    List<Integer> indices = new ArrayList<>();
+                    for (String id : merged.ids()) {
+                        for (int j = 0; j < cur.size(); j++) {
+                            String t = cur.get(j).trim();
+                            if (!used[j] && (t.equals(id) || ("minecraft:" + t).equals(id))) {
+                                indices.add(j);
+                                break;
+                            }
+                        }
+                    }
+                    if (indices.size() == merged.ids().size()) {
+                        for (int j : indices) used[j] = true;
+                        rows.add(new Row(merged, indices));
+                        continue;
+                    }
+                }
+            }
+            used[i] = true;
+            rows.add(new Row(describe(cur.get(i)), List.of(i)));
+        }
+        return rows;
+    }
+
+    /** 列表里这一条是有几种形态的方块时，它所属的合并条目；否则 null */
+    @Nullable
+    private Entry mergedEntryOf(String raw) {
+        String s = raw.trim();
+        Identifier id = Identifier.tryParse(s.contains(":") ? s : "minecraft:" + s);
+        if (id == null) return null;
+        var block = BuiltInRegistries.BLOCK.getOptional(id);
+        if (block.isEmpty() || !BlockForms.hasSeveralForms(block.get())) return null;
+        return entryFor(BlockForms.primary(block.get()));
+    }
+
     private int visibleRows() {
         return Math.max(1, listHeight / ROW_HEIGHT);
     }
@@ -217,9 +371,10 @@ public class GuiBlockPicker extends GuiBase {
         RenderUtils.drawOutlinedBox(ctx, rightX - 2, listTop - 2, colW + 4, listHeight + 4, 0x40000000, 0xFF555555);
 
         int rows = visibleRows();
-        scrollLeft = clamp(scrollLeft, Math.max(0, cur.size() - rows));
-        for (int i = 0; i < rows && scrollLeft + i < cur.size(); i++) {
-            Entry e = describe(cur.get(scrollLeft + i));
+        List<Row> curRows = rows();
+        scrollLeft = clamp(scrollLeft, Math.max(0, curRows.size() - rows));
+        for (int i = 0; i < rows && scrollLeft + i < curRows.size(); i++) {
+            Entry e = curRows.get(scrollLeft + i).entry();
             drawRow(ctx, e, leftX, listTop + i * ROW_HEIGHT, mouseX, mouseY, false, false);
         }
         if (cur.isEmpty()) {
@@ -228,9 +383,9 @@ public class GuiBlockPicker extends GuiBase {
         scrollRight = clamp(scrollRight, Math.max(0, filtered.size() - rows));
         for (int i = 0; i < rows && scrollRight + i < filtered.size(); i++) {
             Entry e = filtered.get(scrollRight + i);
-            drawRow(ctx, e, rightX, listTop + i * ROW_HEIGHT, mouseX, mouseY, true, contains(e.id()));
+            drawRow(ctx, e, rightX, listTop + i * ROW_HEIGHT, mouseX, mouseY, true, containsAll(e));
         }
-        drawScrollbar(ctx, leftX + colW - 3, cur.size(), scrollLeft, rows);
+        drawScrollbar(ctx, leftX + colW - 3, curRows.size(), scrollLeft, rows);
         drawScrollbar(ctx, rightX + colW - 3, filtered.size(), scrollRight, rows);
     }
 
@@ -270,6 +425,13 @@ public class GuiBlockPicker extends GuiBase {
     //? if >=1.21.9 {
     @Override
     public boolean onMouseClicked(MouseButtonEvent click, boolean doubleClick) {
+        //? if >=1.21.11 <26.1 {
+        // 选取方块（鼠标中键）：指着右边的一条时加入它；在界面外时加入鼠标所指的世界里的方块；其他地方取准星对着的方块
+        if (WorldPick.isPickButton(click)) {
+            pickAt(click.x(), click.y());
+            return true;
+        }
+        //?}
         if (click.button() == InputConstants.MOUSE_BUTTON_LEFT) {
             int mx = (int) click.x(), my = (int) click.y();
     //?} else {
@@ -287,21 +449,19 @@ public class GuiBlockPicker extends GuiBase {
                 if (mx >= rightX && mx < rightX + colW) {
                     int idx = scrollRight + row;
                     if (idx < filtered.size()) {
-                        Entry e = filtered.get(idx);
-                        if (!contains(e.id())) {
-                            List<String> list = current();
-                            list.add(e.id());
-                            setStrings(list);
-                        }
+                        add(filtered.get(idx));
                         return true;
                     }
                 }
                 // 左边：只有点 − 才移除（避免误删）
                 if (mx >= leftX + colW - 20 && mx < leftX + colW - 4) {
                     int idx = scrollLeft + row;
-                    List<String> list = current();
-                    if (idx < list.size()) {
-                        list.remove(idx);
+                    List<Row> curRows = rows();
+                    if (idx < curRows.size()) {
+                        List<String> list = current();
+                        List<Integer> indices = new ArrayList<>(curRows.get(idx).indices());
+                        indices.sort(java.util.Collections.reverseOrder());
+                        for (int i : indices) list.remove(i);
                         setStrings(list);
                         return true;
                     }
@@ -324,6 +484,40 @@ public class GuiBlockPicker extends GuiBase {
         else scrollRight += step;
         return true;
     }
+
+    //? if >=1.21.11 <26.1 {
+    private void pickAt(double mx, double my) {
+        int rightX = panelX + 10 + colW + 10;
+        int rows = visibleRows();
+        if (mx >= rightX && mx < rightX + colW && my >= listTop && my < listTop + rows * ROW_HEIGHT) {
+            int idx = scrollRight + (int) ((my - listTop) / ROW_HEIGHT);
+            if (idx < filtered.size()) add(filtered.get(idx));
+            return;
+        }
+        boolean outside = mx < panelX || mx >= panelX + panelW || my < panelY || my >= panelY + panelH;
+        net.minecraft.world.level.block.state.BlockState state = WorldPick.pick(mx, my, outside);
+        if (state == null) {
+            this.addMessage(fi.dy.masa.malilib.gui.Message.MessageType.WARNING, "autyism-le.message.replace.pick_nothing");
+            return;
+        }
+        Block block = state.getBlock();
+        if (mode == Mode.BLOCK) {
+            add(entryFor(BlockForms.primary(block)));
+        } else {
+            Item item = block.asItem();
+            if (item == Items.AIR) {
+                this.addMessage(fi.dy.masa.malilib.gui.Message.MessageType.WARNING, "autyism-le.message.replace.pick_nothing");
+                return;
+            }
+            String id = BuiltInRegistries.ITEM.getKey(item).toString();
+            if (!contains(id)) {
+                List<String> list = current();
+                list.add(id);
+                setStrings(list);
+            }
+        }
+    }
+    //?}
 
     @Override
     public void removed() {

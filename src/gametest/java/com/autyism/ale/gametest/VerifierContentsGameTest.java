@@ -78,7 +78,8 @@ public final class VerifierContentsGameTest implements FabricClientGameTest {
             });
             context.waitTicks(5);
 
-            SchematicVerifier verifier = placement.getSchematicVerifier();
+            // 验证器要在客户端线程上取（第一次取时会新建，构造时用到 Minecraft 实例）
+            SchematicVerifier verifier = context.computeOnClient(c -> placement.getSchematicVerifier());
             context.runOnClient(c -> verifier.startVerification(c.level, SchematicWorldHandler.getSchematicWorld(), placement, () -> {
             }));
             context.waitFor(c -> verifier.isFinished(), 400);
@@ -183,17 +184,50 @@ public final class VerifierContentsGameTest implements FabricClientGameTest {
         c.setChanged();
     }
 
-    /** 当前结果列表的行：Litematica 的类别标题 “litematica:类型”，ALE 的标题 “category”，ALE 的条目 “方块名 xN” */
+    /** 当前结果列表的所有行（含翻页才看得到的）：Litematica 的类别标题 “litematica:类型”，ALE 的标题 “category”，ALE 的条目 “方块名 xN” */
     private static List<String> describeRows(net.minecraft.client.Minecraft client) {
         List<String> out = new ArrayList<>();
-        for (Object o : entryWidgets(client)) {
-            BlockMismatchEntry e = ((WidgetListEntryBase<?>) o).getEntry() instanceof BlockMismatchEntry b ? b : null;
-            if (e == null) continue;
+        for (Object o : listContents(client)) {
+            if (!(o instanceof BlockMismatchEntry e)) continue;
             if (e instanceof ContainerVerifierGui.CategoryEntry) out.add("category");
             else if (e instanceof ContainerVerifierGui.DataEntry d) out.add(d.mismatch.block.getName().getString() + " x" + d.mismatch.count);
             else if (e.type == BlockMismatchEntry.Type.CATEGORY_TITLE) out.add("litematica:" + e.mismatchType);
         }
         return out;
+    }
+
+    private static List<?> listContents(net.minecraft.client.Minecraft client) {
+        try {
+            java.lang.reflect.Field f = WidgetListBase.class.getDeclaredField("listContents");
+            f.setAccessible(true);
+            return new ArrayList<>((List<?>) f.get(GT.listWidget(client)));
+        } catch (ReflectiveOperationException e) {
+            throw new AssertionError(e);
+        }
+    }
+
+    /** 把结果列表翻到这一行（列表只为看得到的行建部件） */
+    private static void scrollTo(net.minecraft.client.Minecraft client, Predicate<BlockMismatchEntry> which) {
+        Object list = GT.listWidget(client);
+        List<?> contents = listContents(client);
+        int index = -1;
+        for (int i = 0; i < contents.size(); i++) {
+            if (contents.get(i) instanceof BlockMismatchEntry e && which.test(e)) {
+                index = i;
+                break;
+            }
+        }
+        if (index < 0) throw new AssertionError("row not in the list: " + describeRows(client));
+        try {
+            java.lang.reflect.Field bar = WidgetListBase.class.getDeclaredField("scrollBar");
+            bar.setAccessible(true);
+            ((fi.dy.masa.malilib.gui.GuiScrollBar) bar.get(list)).setValue(index);
+            java.lang.reflect.Method m = WidgetListBase.class.getDeclaredMethod("reCreateListEntryWidgets");
+            m.setAccessible(true);
+            m.invoke(list);
+        } catch (ReflectiveOperationException e) {
+            throw new AssertionError(e);
+        }
     }
 
     private static List<?> entryWidgets(net.minecraft.client.Minecraft client) {
@@ -209,6 +243,8 @@ public final class VerifierContentsGameTest implements FabricClientGameTest {
 
     /** 像真人一样点结果列表里的一行（点在行的左边，避开“忽略”按钮） */
     private static void clickRow(ClientGameTestContext context, Predicate<BlockMismatchEntry> which) {
+        context.runOnClient(c -> scrollTo(c, which));
+        context.waitTick();
         double[] pos = context.computeOnClient(c -> {
             for (Object o : entryWidgets(c)) {
                 var w = (WidgetListEntryBase<?>) o;

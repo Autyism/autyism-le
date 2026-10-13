@@ -13,6 +13,7 @@
     "litematica.MaterialListSchematicAccessor",
     "litematica.MaterialListPlacementAccessor",
     "compat.schematicpreview.GuiBlockSelectMixin",
+    "compat.schematicpreview.OpenReplaceDialogMixin",
     "litematica.SchematicVerifierMixin",
     "litematica.OverlayRendererMixin",
     "litematica.MaterialListBaseMixin",
@@ -37,6 +38,8 @@
     "litematica.VerifierResultListMixin",
     "litematica.GuiSchematicVerifierMixin",
     "litematica.VerificationResultWidgetMixin",
+    "malilib.ConfigButtonStringListMixin",
+    "client.MultiPlayerGameModeMixin",
     "litematica.WorldRendererSchematicMixin"
   ],
   "injectors": {

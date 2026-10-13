@@ -19,6 +19,11 @@ public class AleMod implements ClientModInitializer {
         InitializationHandler.getInstance().registerInitializationHandler(AleConfigs::init);
         net.fabricmc.fabric.api.client.event.lifecycle.v1.ClientTickEvents.END_CLIENT_TICK.register(
                 client -> com.autyism.ale.verifier.ContainerVerifier.tick());
+        //? if >=1.21.11 <26.1 {
+        // 打开着的容器和投影比一比（“需要填充”标记用）
+        net.fabricmc.fabric.api.client.event.lifecycle.v1.ClientTickEvents.END_CLIENT_TICK.register(
+                com.autyism.ale.verifier.OpenedContainers::tick);
+        //?}
         // 投影浏览器预览：离开浏览器时释放缓存；材料列表替换后的延迟刷新（1.21.10 及更早以后再移植）
         //? if >=1.21.11 {
         net.fabricmc.fabric.api.client.event.lifecycle.v1.ClientTickEvents.END_CLIENT_TICK.register(client -> {

@@ -40,6 +40,8 @@ deps.modmenu = "16.0.1"
 deps.schematicpreview = "0.0.15+1.21.10"
 
 ["1.21.11"]
+# 1.2.0 so far only for 1.21.11; the other versions stay at 1.1.0 until they are ported
+mod.version = "1.2.0"
 mod.mc_compat = "1.21.11"
 mod.malilib_compat = ">=0.27.0"
 mod.litematica_compat = ">=0.26.0"

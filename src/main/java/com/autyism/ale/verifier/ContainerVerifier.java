@@ -35,6 +35,16 @@ public final class ContainerVerifier {
     private static final Minecraft mc = Minecraft.getInstance();
     private static final Map<SchematicVerifier, Results> RESULTS = new WeakHashMap<>();
     private static final Map<BlockPos, CompletableFuture<List<ItemStack>>> FETCHES = new HashMap<>();
+    /**
+     * 验证器确认过“世界里的内容和投影一样”的容器（BlockPos.asLong）。“需要填充”标记不画在这些容器上；
+     * 区块重建线程会读，所以用并发集合。验证器重置、换世界时清空
+     */
+    private static final Set<Long> KNOWN_MATCH = java.util.concurrent.ConcurrentHashMap.newKeySet();
+    /** 已知结果变了、要重建渲染数据的区块（每 tick 处理几个，不一次全部重建） */
+    private static final Set<Long> REBUILD_CHUNKS = new LinkedHashSet<>();
+    private static final int REBUILDS_PER_TICK = 8;
+    @Nullable
+    private static Level knownLevel;
     private static final int RECHECK_PER_TICK = 64;
     private static int tickCounter;
 
@@ -94,6 +104,7 @@ public final class ContainerVerifier {
 
     /** 验证器清空数据（开始、重置）时：结果和选择清空，忽略的种类保留 */
     public static void reset(SchematicVerifier verifier) {
+        clearKnown();
         Results r = RESULTS.get(verifier);
         if (r == null) return;
         r.mismatches.clear();
@@ -164,6 +175,13 @@ public final class ContainerVerifier {
         r.renderPositions = null;
     }
 
+    private static void clearKnown() {
+        for (long p : KNOWN_MATCH) {
+            REBUILD_CHUNKS.add(net.minecraft.world.level.ChunkPos.asLong(BlockPos.getX(p) >> 4, BlockPos.getZ(p) >> 4));
+        }
+        KNOWN_MATCH.clear();
+    }
+
     /** 下次画框时按玩家现在的位置重新排（验证器整理自己的位置列表时调用） */
     public static void invalidateRender(SchematicVerifier verifier) {
         Results r = RESULTS.get(verifier);
@@ -230,7 +248,8 @@ public final class ContainerVerifier {
         }
         r.pending.remove(pos);
         Detail old = r.mismatches.get(pos);
-        if (sameContents(wanted, actual)) {
+        boolean same = sameContents(wanted, actual);
+        if (same) {
             if (old != null) {
                 r.mismatches.remove(pos);
                 r.renderPositions = null;
@@ -239,13 +258,43 @@ public final class ContainerVerifier {
             r.mismatches.put(pos, new Detail(state, wanted, actual));
             if (old == null) r.renderPositions = null;
         }
+        setKnownMatch(pos, same);
+    }
+
+    /** 世界里这个容器的内容已经确认和投影一样（验证器查过） */
+    public static boolean isKnownToMatch(BlockPos pos) {
+        return !KNOWN_MATCH.isEmpty() && KNOWN_MATCH.contains(pos.asLong());
+    }
+
+    /** 别的途径（例如玩家打开了这个容器）知道了世界里这个容器的内容和投影是否一样 */
+    public static void noteWorldContents(BlockPos pos, boolean same) {
+        setKnownMatch(pos.immutable(), same);
+    }
+
+    private static void setKnownMatch(BlockPos pos, boolean same) {
+        boolean changed = same ? KNOWN_MATCH.add(pos.asLong()) : KNOWN_MATCH.remove(pos.asLong());
+        if (changed) REBUILD_CHUNKS.add(net.minecraft.world.level.ChunkPos.asLong(pos.getX() >> 4, pos.getZ() >> 4));
     }
 
     /** 每 tick：处理挂起的位置、复查已标记的位置（玩家补好内容物后标记自动消失） */
     public static void tick() {
+        if (mc.level != knownLevel) {
+            knownLevel = mc.level;
+            KNOWN_MATCH.clear();
+            REBUILD_CHUNKS.clear();
+        }
         if (mc.level == null) {
             FETCHES.clear();
             return;
+        }
+        if (!REBUILD_CHUNKS.isEmpty()) {
+            var it = REBUILD_CHUNKS.iterator();
+            for (int i = 0; i < REBUILDS_PER_TICK && it.hasNext(); i++) {
+                long chunk = it.next();
+                it.remove();
+                fi.dy.masa.litematica.util.SchematicWorldRefresher.INSTANCE.markSchematicChunksForRenderUpdate(
+                        net.minecraft.world.level.ChunkPos.getX(chunk), net.minecraft.world.level.ChunkPos.getZ(chunk));
+            }
         }
         tickCounter++;
         int budget = RECHECK_PER_TICK;

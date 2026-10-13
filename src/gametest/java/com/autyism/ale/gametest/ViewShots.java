@@ -24,8 +24,9 @@ public final class ViewShots {
     private ViewShots() {
     }
 
-    /** 不触发方块更新、不调用 onPlace（流体不流、铁轨不自动连接） */
-    public static final int QUIET = Block.UPDATE_CLIENTS | Block.UPDATE_KNOWN_SHAPE | Block.UPDATE_SKIP_ON_PLACE;
+    /** 不触发方块更新、不调用 onPlace（流体不流、铁轨不自动连接），拆掉的容器不掉东西 */
+    public static final int QUIET = Block.UPDATE_CLIENTS | Block.UPDATE_KNOWN_SHAPE | Block.UPDATE_SKIP_ON_PLACE
+            | Block.UPDATE_SKIP_BLOCK_ENTITY_SIDEEFFECTS;
 
     public static void set(ServerLevel level, BlockPos pos, BlockState state) {
         level.setBlock(pos, state, QUIET);
@@ -43,7 +44,10 @@ public final class ViewShots {
         GTFilter.stillFrames = true;
     }
 
-    /** 恢复客户端的设置（世界暂停随测试世界一起关掉） */
+    /**
+     * 恢复客户端的设置。世界暂停不用解除：测试世界马上关掉，新世界本来就不暂停
+     * （关世界时再发“解除暂停”的提示消息，会在连接关闭时出错，影响下一个测试）
+     */
     public static void end(ClientGameTestContext context) {
         GTFilter.stillFrames = false;
         context.runOnClient(c -> {

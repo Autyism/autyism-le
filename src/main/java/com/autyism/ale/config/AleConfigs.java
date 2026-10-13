@@ -14,6 +14,7 @@ import fi.dy.masa.malilib.config.options.ConfigDouble;
 import fi.dy.masa.malilib.config.options.ConfigHotkey;
 import fi.dy.masa.malilib.config.options.ConfigInteger;
 import fi.dy.masa.malilib.config.options.ConfigOptionList;
+import fi.dy.masa.malilib.config.options.ConfigStringList;
 //? if >=1.21.11 {
 import fi.dy.masa.malilib.util.data.json.JsonUtils;
 //?} else {
@@ -43,6 +44,12 @@ public class AleConfigs implements IConfigHandler {
         // 朝向错误：红色 D
         public static final ConfigBoolean ORIENTATION_MARKER = new ConfigBoolean("orientationMarker", true).apply(PREFIX);
         public static final ConfigColor ORIENTATION_MARKER_COLOR = new ConfigColor("orientationMarkerColor", "#FFFF2020").apply(PREFIX);
+        // 需要填充：投影里装着东西的容器画绿色 F；可以跳过只装着列表里物品的容器（默认列表是各色潜影盒）
+        public static final ConfigBoolean FILL_MARKER = new ConfigBoolean("fillMarker", true).apply(PREFIX);
+        public static final ConfigColor FILL_MARKER_COLOR = new ConfigColor("fillMarkerColor", "#FF2BD96B").apply(PREFIX);
+        public static final ConfigBoolean FILL_MARKER_SKIP = new ConfigBoolean("fillMarkerSkip", false).apply(PREFIX);
+        public static final ConfigStringList FILL_MARKER_SKIP_ITEMS = new ConfigStringList("fillMarkerSkipItems",
+                ImmutableList.copyOf(com.autyism.ale.render.FillMarker.DEFAULT_SKIP)).apply(PREFIX);
         // 需求 9：材料列表中的容器内容物、实体；验证器检查容器内容物
         public static final ConfigBoolean MATERIAL_LIST_ENTITIES = new ConfigBoolean("materialListEntities", true).apply(PREFIX);
         public static final ConfigBoolean VERIFIER_CONTAINERS = new ConfigBoolean("verifierContainerContents", true).apply(PREFIX);
@@ -69,6 +76,12 @@ public class AleConfigs implements IConfigHandler {
                 WATERLOGGED_MARKER_COLOR,
                 ORIENTATION_MARKER,
                 ORIENTATION_MARKER_COLOR,
+                //? if >=1.21.11 <26.1 {
+                FILL_MARKER,
+                FILL_MARKER_COLOR,
+                FILL_MARKER_SKIP,
+                FILL_MARKER_SKIP_ITEMS,
+                //?}
                 MATERIAL_LIST_ENTITIES,
                 VERIFIER_CONTAINERS,
                 SIGN_REPLACE_FIX,
@@ -129,6 +142,17 @@ public class AleConfigs implements IConfigHandler {
 
     public static void init() {
         INSTANCE.load();
+        //? if >=1.21.11 <26.1 {
+        // 标记的设置改了以后，投影的渲染数据马上重建，不用等方块变化
+        Generic.WATERLOGGED_MARKER.setValueChangeCallback(c -> refreshSchematicRender());
+        Generic.WATERLOGGED_MARKER_COLOR.setValueChangeCallback(c -> refreshSchematicRender());
+        Generic.ORIENTATION_MARKER.setValueChangeCallback(c -> refreshSchematicRender());
+        Generic.ORIENTATION_MARKER_COLOR.setValueChangeCallback(c -> refreshSchematicRender());
+        Generic.FILL_MARKER.setValueChangeCallback(c -> refreshSchematicRender());
+        Generic.FILL_MARKER_COLOR.setValueChangeCallback(c -> refreshSchematicRender());
+        Generic.FILL_MARKER_SKIP.setValueChangeCallback(c -> refreshSchematicRender());
+        Generic.FILL_MARKER_SKIP_ITEMS.setValueChangeCallback(c -> refreshSchematicRender());
+        //?}
         ConfigManager.getInstance().registerConfigHandler(AleMod.MOD_ID, INSTANCE);
         fi.dy.masa.malilib.registry.Registry.CONFIG_SCREEN.registerConfigScreenFactory(
                 new fi.dy.masa.malilib.util.data.ModInfo(AleMod.MOD_ID, AleMod.MOD_NAME, AleConfigGui::new));
@@ -140,6 +164,12 @@ public class AleConfigs implements IConfigHandler {
     /** 立刻保存（例如改了文件夹图标） */
     public static void saveNow() {
         INSTANCE.save();
+    }
+    //?}
+
+    //? if >=1.21.11 <26.1 {
+    private static void refreshSchematicRender() {
+        fi.dy.masa.litematica.util.SchematicWorldRefresher.INSTANCE.updateAll();
     }
     //?}
 

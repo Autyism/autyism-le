@@ -91,10 +91,14 @@ val onlyOn12111 = listOf(
     "com/autyism/ale/render/OverlayDepth.java", "com/autyism/ale/verifier/ContainerVerifierGui.java",
     "com/autyism/ale/mixin/litematica/SchematicVerifierInvoker.java", "com/autyism/ale/mixin/litematica/TaskBaseAccessor.java",
     "com/autyism/ale/mixin/litematica/SchematicVerifierSelectMixin.java", "com/autyism/ale/mixin/litematica/VerifierResultListMixin.java",
-    "com/autyism/ale/mixin/litematica/GuiSchematicVerifierMixin.java", "com/autyism/ale/mixin/litematica/VerificationResultWidgetMixin.java"
+    "com/autyism/ale/mixin/litematica/GuiSchematicVerifierMixin.java", "com/autyism/ale/mixin/litematica/VerificationResultWidgetMixin.java",
+    "com/autyism/ale/mixin/malilib/ConfigButtonStringListMixin.java", "com/autyism/ale/gui/WorldPick.java",
+    "com/autyism/ale/mixin/compat/schematicpreview/OpenReplaceDialogMixin.java", "com/autyism/ale/replace/ReplaceDialogs.java",
+    "com/autyism/ale/verifier/OpenedContainers.java", "com/autyism/ale/mixin/client/MultiPlayerGameModeMixin.java"
 )
 val onlyOn12111Mixins = listOf("litematica.SchematicVerifierInvoker", "litematica.TaskBaseAccessor", "litematica.SchematicVerifierSelectMixin",
-    "litematica.VerifierResultListMixin", "litematica.GuiSchematicVerifierMixin", "litematica.VerificationResultWidgetMixin")
+    "litematica.VerifierResultListMixin", "litematica.GuiSchematicVerifierMixin", "litematica.VerificationResultWidgetMixin",
+    "malilib.ConfigButtonStringListMixin", "compat.schematicpreview.OpenReplaceDialogMixin", "client.MultiPlayerGameModeMixin")
 if (mc != "1.21.11") {
     sourceSets.named("main") { java.exclude(onlyOn12111) }
 }
@@ -187,7 +191,7 @@ if (providers.gradleProperty("aleGameTest").isPresent) {
     }
     // The 1.2.0 tests run on 1.21.11 only for now
     if (mc != "1.21.11") {
-        val newTests = listOf("OverlayVisibilityGameTest", "MarkerGameTest", "VerifierContentsGameTest", "StillFramesMixin", "NoParticlesMixin")
+        val newTests = listOf("OverlayVisibilityGameTest", "MarkerGameTest", "VerifierContentsGameTest", "FillMarkerGameTest", "ReplaceUiGameTest", "StillFramesMixin", "NoParticlesMixin")
         sourceSets.matching { it.name == "gametest" }.configureEach {
             java.exclude(newTests.map { "com/autyism/ale/gametest/**/$it.java" } + "com/autyism/ale/gametest/ViewShots.java")
         }

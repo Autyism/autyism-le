@@ -92,11 +92,22 @@ public final class ContainerVerifierGui {
         }
         Map<Block, Integer> overview = ContainerVerifier.overview(verifier);
         if (overview.isEmpty() && !contentsMode) return;
-        list.add(new CategoryEntry());
+        List<BlockMismatchEntry> ours = new ArrayList<>();
+        ours.add(new CategoryEntry());
         List<BlockMismatch> rows = new ArrayList<>();
         for (var e : overview.entrySet()) rows.add(new ContainerMismatch(e.getKey(), e.getValue()));
         rows.sort(new VerifierResultSorter(verifier));
-        for (BlockMismatch m : rows) list.add(new DataEntry((ContainerMismatch) m));
+        for (BlockMismatch m : rows) ours.add(new DataEntry((ContainerMismatch) m));
+        // “全部”里排在“错误状态”后面（“多余方块”、“缺失方块”往往很长，放在它们后面要翻很久）
+        int at = list.size();
+        for (int i = 0; i < list.size(); i++) {
+            BlockMismatchEntry e = list.get(i);
+            if (e.type == BlockMismatchEntry.Type.CATEGORY_TITLE && (e.mismatchType == MismatchType.EXTRA || e.mismatchType == MismatchType.MISSING)) {
+                at = i;
+                break;
+            }
+        }
+        list.addAll(at, ours);
     }
 
     /** 列表里点了一条。是这一类的条目时处理并返回 true（Litematica 不再处理） */

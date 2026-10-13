@@ -98,7 +98,7 @@ public final class SignReplaceGameTest implements FabricClientGameTest {
             clickReplaceFor(context, Items.OAK_SIGN);
 
             // 2) 搜索 spruce_wall_sign（故意选“挂墙”形态，必须仍按每块原来的形态替换），点第一个结果，再点“完成”
-            pickInDialog(context, "spruce_wall_sign", "ale-sign-block-select");
+            pickInDialog(context, "spruce_wall_sign", "ale-sign-block-select", false);
 
             // 3) 检查投影容器
             List<String> problems = context.computeOnClient(c -> {
@@ -132,7 +132,7 @@ public final class SignReplaceGameTest implements FabricClientGameTest {
             });
             context.waitTicks(10);
             clickReplaceFor(context, Items.OAK_HANGING_SIGN);
-            pickInDialog(context, "cherry_hanging_sign", null);
+            pickInDialog(context, "cherry_hanging_sign", null, true);
             List<String> problems2 = context.computeOnClient(c -> {
                 List<String> out = new ArrayList<>();
                 LitematicaSchematic schematic = placement.getSchematic();
@@ -214,9 +214,21 @@ public final class SignReplaceGameTest implements FabricClientGameTest {
         return to.hasProperty(p) ? to.setValue(p, from.getValue(p)) : to;
     }
 
-    /** 在“替换”对话框里搜索并点第一个结果，再确定（Schematic Preview 的或 ALE 自己的对话框） */
-    private static void pickInDialog(ClientGameTestContext context, String search, @org.jetbrains.annotations.Nullable String shot) {
-        if (FabricLoader.getInstance().isModLoaded("schematicpreview")) {
+    /**
+     * 在“替换”对话框里搜索并点第一个结果，再确定。装了 Schematic Preview 时它的“替换”按钮默认也打开 ALE 的对话框；
+     * useOriginal 时点右上角的按钮换成 Schematic Preview 自己的对话框
+     */
+    private static void pickInDialog(ClientGameTestContext context, String search, @org.jetbrains.annotations.Nullable String shot, boolean useOriginal) {
+        boolean sp = FabricLoader.getInstance().isModLoaded("schematicpreview");
+        //? if >=1.21.11 {
+        if (sp) {
+            context.waitFor(c -> c.screen instanceof com.autyism.ale.replace.ReplaceBlockScreen, 40);
+            GT.log("[signreplace] Schematic Preview's Replace opened ALE's dialog");
+            if (useOriginal) GT.clickButton(context, "Schematic Preview's dialog");
+        }
+        if (sp && useOriginal) {
+        //?} else
+        //if (sp) {
             context.waitFor(c -> c.screen != null && c.screen.getClass().getSimpleName().equals("GuiBlockSelect"), 40);
             context.runOnClient(c -> {
                 try {
@@ -244,6 +256,7 @@ public final class SignReplaceGameTest implements FabricClientGameTest {
         //? if >=1.21.11 {
         else {
             context.waitFor(c -> c.screen instanceof com.autyism.ale.replace.ReplaceBlockScreen, 40);
+            GT.log("[signreplace] using ALE's Replace dialog");
             context.getInput().typeChars(search);
             context.waitTicks(3);
             double[] cell = context.computeOnClient(c -> {

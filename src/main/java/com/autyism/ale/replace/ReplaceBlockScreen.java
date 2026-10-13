@@ -34,11 +34,12 @@ public class ReplaceBlockScreen extends GuiBase {
     private static final int COLUMNS = 10;
     private static final int ROWS = 9;
     private static final int W = COLUMNS * CELL + 20;
-    private static final int H = 22 + 22 + ROWS * CELL + 8 + 26;
+    private static final int H = 22 + 22 + ROWS * CELL + 8 + 12 + 26;
     private static final int COLOR_BG = 0xF0101010;
     private static final int COLOR_BORDER = 0xFF999999;
 
-    private record Option(Block block, ItemStack icon, String id, String name) {
+    /** 一条可选的方块；同一个物品的几种形态（立式 / 挂墙……）合成一条，search 里有所有形态的 ID */
+    private record Option(Block block, ItemStack icon, String id, String name, String search) {
     }
 
     private static List<Option> allOptions;
@@ -53,10 +54,20 @@ public class ReplaceBlockScreen extends GuiBase {
     private int left, top, gridX, gridY;
     private boolean draggingBar;
 
+    /** 打开原来的（Schematic Preview 的）替换对话框；没有时为 null */
+    @Nullable
+    private final Runnable openOriginal;
+
     public ReplaceBlockScreen(MaterialListBase list, ItemStack material, @Nullable Screen parent) {
+        this(list, material, parent, null);
+    }
+
+    public ReplaceBlockScreen(MaterialListBase list, ItemStack material, @Nullable Screen parent, @Nullable Runnable openOriginal) {
+        this.openOriginal = openOriginal;
         this.list = list;
         this.material = material.copy();
-        this.selected = MaterialReplacer.blockOf(material);
+        Block current = MaterialReplacer.blockOf(material);
+        this.selected = current != null ? com.autyism.ale.gui.BlockForms.primary(current) : null;
         this.title = StringUtils.translate("autyism-le.gui.title.replace_block", material.getHoverName().getString());
         this.useTitleHierarchy = false;
         this.setParent(parent);
@@ -64,15 +75,23 @@ public class ReplaceBlockScreen extends GuiBase {
         scrollToSelected();
     }
 
-    /** 所有有物品图标的方块，按 ID 排序 */
+    /**
+     * 所有有物品图标的方块，按 ID 排序。告示牌 / 墙上的告示牌、火把 / 墙上的火把这类同一个物品的几种形态只列一条
+     * （物品默认放出来的那种，名字用物品的名字）；替换时每个方块会换成对应的形态。
+     */
     private static List<Option> options() {
         if (allOptions == null) {
             List<Option> out = new ArrayList<>();
             for (Block block : BuiltInRegistries.BLOCK) {
                 Item item = block.asItem();
-                if (item == Items.AIR) continue;
+                if (item == Items.AIR || com.autyism.ale.gui.BlockForms.primary(block) != block) continue;
                 String id = BuiltInRegistries.BLOCK.getKey(block).toString();
-                out.add(new Option(block, new ItemStack(item), id, StringUtils.translate(block.getDescriptionId())));
+                ItemStack icon = new ItemStack(item);
+                StringBuilder search = new StringBuilder();
+                for (Block form : com.autyism.ale.gui.BlockForms.formsOf(block)) {
+                    search.append(BuiltInRegistries.BLOCK.getKey(form)).append(' ');
+                }
+                out.add(new Option(block, icon, id, icon.getHoverName().getString(), search.toString()));
             }
             out.sort((a, b) -> a.id().compareTo(b.id()));
             allOptions = out;
@@ -87,7 +106,7 @@ public class ReplaceBlockScreen extends GuiBase {
         } else {
             List<Option> out = new ArrayList<>();
             for (Option o : options()) {
-                if (o.id().contains(q) || o.name().toLowerCase(Locale.ROOT).contains(q)) out.add(o);
+                if (o.search().contains(q) || o.name().toLowerCase(Locale.ROOT).contains(q)) out.add(o);
             }
             this.filtered = out;
         }
@@ -130,11 +149,18 @@ public class ReplaceBlockScreen extends GuiBase {
             applyFilter();
             return true;
         });
-        int by = this.gridY + ROWS * CELL + 6;
+        int by = this.gridY + ROWS * CELL + 6 + 12;
         int bw = (W - 24) / 2;
         this.addButton(new ButtonGeneric(this.left + 10, by, bw, 20, StringUtils.translate("autyism-le.gui.button.ok")), (b, mb) -> confirm());
         this.addButton(new ButtonGeneric(this.left + 14 + bw, by, bw, 20, StringUtils.translate("autyism-le.gui.button.cancel")),
                 (b, mb) -> this.closeGui(true));
+        // 右上角：换成原来的（Schematic Preview 的）替换对话框
+        if (this.openOriginal != null) {
+            ButtonGeneric original = new ButtonGeneric(0, 4, -1, 16, StringUtils.translate("autyism-le.gui.button.original_replace"));
+            original.setPosition(this.width - original.getWidth() - 4, 4);
+            original.setHoverStrings(StringUtils.translate("autyism-le.gui.button.original_replace.hover"));
+            this.addButton(original, (b, mb) -> this.openOriginal.run());
+        }
     }
 
     private void confirm() {
@@ -216,6 +242,11 @@ public class ReplaceBlockScreen extends GuiBase {
         if (this.filtered.isEmpty()) {
             this.drawString(ctx, StringUtils.translate("autyism-le.gui.label.no_match"), this.gridX + 4, this.gridY + 4, 0xFF777777);
         }
+        // 选取方块的提示（键名跟着玩家的按键设置）
+        String hint = StringUtils.translate("autyism-le.gui.label.replace.pick_hint",
+                net.minecraft.client.Minecraft.getInstance().options.keyPickItem.getTranslatedKeyMessage().getString());
+        if (this.font.width(hint) > W - 20) hint = this.font.plainSubstrByWidth(hint, W - 26) + "...";
+        this.drawString(ctx, hint, this.gridX, this.gridY + ROWS * CELL + 6, 0xFF8A8A8A);
         // 滚动条
         int max = maxScroll();
         if (max > 0) {
@@ -232,6 +263,10 @@ public class ReplaceBlockScreen extends GuiBase {
     @Override
     public boolean onMouseClicked(MouseButtonEvent click, boolean doubleClick) {
         double mx = click.x(), my = click.y();
+        if (com.autyism.ale.gui.WorldPick.isPickButton(click)) {
+            pickAt(mx, my);
+            return true;
+        }
         if (click.button() == com.mojang.blaze3d.platform.InputConstants.MOUSE_BUTTON_LEFT && mx >= this.gridX && mx < this.gridX + COLUMNS * CELL && my >= this.gridY && my < this.gridY + ROWS * CELL) {
             int c = (int) ((mx - this.gridX) / CELL), r = (int) ((my - this.gridY) / CELL);
             int i = (this.scroll + r) * COLUMNS + c;
@@ -277,13 +312,75 @@ public class ReplaceBlockScreen extends GuiBase {
             confirm();
             return true;
         }
+        // 选取方块键绑在键盘上时：搜索框没在打字才算
+        if (com.autyism.ale.gui.WorldPick.isPickKey(event) && !this.searchFocused()) {
+            double scale = net.minecraft.client.Minecraft.getInstance().getWindow().getGuiScale();
+            pickAt(net.minecraft.client.Minecraft.getInstance().mouseHandler.xpos() / scale, net.minecraft.client.Minecraft.getInstance().mouseHandler.ypos() / scale);
+            return true;
+        }
         return super.onKeyTyped(event);
+    }
+
+    private boolean searchFocused() {
+        for (var tf : ((com.autyism.ale.mixin.malilib.GuiBaseAccessor) this).ale$getTextFields()) {
+            if (tf.isFocused()) return true;
+        }
+        return false;
+    }
+
+    /**
+     * 选取方块：鼠标在网格里时选那一格；在对话框外时选鼠标所指的世界（或投影）里的方块；在对话框上其他地方时选准星对着的方块。
+     */
+    private void pickAt(double mx, double my) {
+        if (mx >= this.gridX && mx < this.gridX + COLUMNS * CELL && my >= this.gridY && my < this.gridY + ROWS * CELL) {
+            int i = (this.scroll + (int) ((my - this.gridY) / CELL)) * COLUMNS + (int) ((mx - this.gridX) / CELL);
+            if (i < this.filtered.size()) this.selected = this.filtered.get(i).block();
+            return;
+        }
+        boolean outside = mx < this.left || mx >= this.left + W || my < this.top || my >= this.top + H;
+        net.minecraft.world.level.block.state.BlockState state = com.autyism.ale.gui.WorldPick.pick(mx, my, outside);
+        if (state == null || state.getBlock().asItem() == Items.AIR) {
+            this.addMessage(Message.MessageType.WARNING, "autyism-le.message.replace.pick_nothing");
+            return;
+        }
+        pick(state.getBlock());
+    }
+
+    /** 选中某个方块（同一组形态的用代表的那个），必要时清掉搜索、滚到它 */
+    public void pick(Block block) {
+        Block primary = com.autyism.ale.gui.BlockForms.primary(block);
+        boolean visible = false;
+        for (Option o : this.filtered) visible |= o.block() == primary;
+        if (!visible) {
+            this.search = "";
+            for (var tf : ((com.autyism.ale.mixin.malilib.GuiBaseAccessor) this).ale$getTextFields()) tf.textField().setValue("");
+            applyFilter();
+        }
+        this.selected = primary;
+        scrollToSelected();
+    }
+
+    @Nullable
+    public Block selected() {
+        return this.selected;
     }
 
     /** 测试用：选中某个方块 */
     public void select(Block block) {
         this.selected = block;
         scrollToSelected();
+    }
+
+    /** 测试用：所有可选的方块（每组形态一条） */
+    public List<Block> optionBlocksForTest() {
+        List<Block> out = new ArrayList<>();
+        for (Option o : options()) out.add(o.block());
+        return out;
+    }
+
+    /** 测试用：对话框的范围 {左, 上, 宽, 高} */
+    public int[] panelForTest() {
+        return new int[]{this.left, this.top, W, H};
     }
 
     /** 测试用：网格左上角和格子大小 */

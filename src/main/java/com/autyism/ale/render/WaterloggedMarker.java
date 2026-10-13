@@ -8,7 +8,7 @@ import net.minecraft.world.level.block.state.properties.BlockStateProperties;
 
 /**
  * 需求 6：方块的含水状态和投影不同时，在黄色“状态错误”标记之上，在方块每一面画一个蓝色的 “W”。
- * 其他属性同时也不对时照样画（朝向也不对时和红色 D 一起画，各占半边）。
+ * 其他属性同时也不对时照样画（朝向也不对、或者需要填充时，几个字母并排画）。
  */
 public final class WaterloggedMarker {
     private WaterloggedMarker() {
@@ -34,12 +34,6 @@ public final class WaterloggedMarker {
             {0.69f, 0.16f, 0.86f, 0.84f},
     };
     private static final float HALF_WIDTH = 0.05f;
-    /** 两个字母并排时的缩放、笔画半宽和各自的位置（左边 D，右边 W） */
-    public static final float PAIR_SCALE = 0.55f;
-    private static final float PAIR_HALF_WIDTH = 0.034f;
-    public static final float PAIR_LEFT_U = -0.038f;
-    public static final float PAIR_RIGHT_U = 0.422f;
-    public static final float PAIR_V = 0.225f;
     /** 浮在面外侧的距离，保证盖在黄色标记上面 */
     private static final float LIFT = 0.008f;
 
@@ -57,9 +51,24 @@ public final class WaterloggedMarker {
         emit(buffer, rel, argb, strokes, 0f, 0f, 1f, HALF_WIDTH);
     }
 
-    /** 两个字母并排时的一个：left 为 true 画在左半边，否则画在右半边 */
-    public static void emitHalf(BufferBuilder buffer, BlockPos rel, int argb, float[][] strokes, boolean left) {
-        emit(buffer, rel, argb, strokes, left ? PAIR_LEFT_U : PAIR_RIGHT_U, PAIR_V, PAIR_SCALE, PAIR_HALF_WIDTH);
+    /**
+     * 一个面上并排画几个字母（例如 D、W、F）：一个时占满整面，两个时各占半边，三个时各占三分之一。
+     * glyphs[i] 用 colors[i] 的颜色
+     */
+    public static void emitRow(BufferBuilder buffer, BlockPos rel, java.util.List<float[][]> glyphs, int[] colors) {
+        int n = glyphs.size();
+        if (n == 0) return;
+        if (n == 1) {
+            emit(buffer, rel, colors[0], glyphs.get(0));
+            return;
+        }
+        // 每个字母缩小后，字母框（0..1）的中心依次放在 centers 上
+        float scale = n == 2 ? 0.55f : 0.36f;
+        float halfWidth = n == 2 ? 0.034f : 0.025f;
+        float[] centers = n == 2 ? new float[]{0.25f, 0.75f} : new float[]{0.18f, 0.5f, 0.82f};
+        for (int i = 0; i < Math.min(n, centers.length); i++) {
+            emit(buffer, rel, colors[i], glyphs.get(i), centers[i] - 0.5f * scale, 0.5f - 0.5f * scale, scale, halfWidth);
+        }
     }
 
     /** 字母缩放 scale 后平移到 (u0, v0) */

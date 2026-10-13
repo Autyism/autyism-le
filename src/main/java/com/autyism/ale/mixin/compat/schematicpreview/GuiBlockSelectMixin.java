@@ -28,7 +28,27 @@ import java.util.function.Consumer;
  * 只在“被替换的是告示牌、选的也是告示牌”时接管，其他方块仍走 Schematic Preview 原来的逻辑。
  */
 @Mixin(value = GuiBlockSelect.class, remap = false)
-public abstract class GuiBlockSelectMixin {
+//? if >=1.21.11 <26.1 {
+public abstract class GuiBlockSelectMixin implements com.autyism.ale.replace.ReplaceDialogs.Original {
+    /** 打开时要替换的方块（ALE 的替换对话框代替它时用） */
+    @org.spongepowered.asm.mixin.Unique
+    @Nullable
+    private Block ale$initialBlock;
+
+    @org.spongepowered.asm.mixin.injection.Inject(method = "<init>", at = @At("RETURN"))
+    private void ale$rememberBlock(@Nullable Screen parent, String title, @Nullable Block initialBlock, Consumer<Block> consumer,
+                                   org.spongepowered.asm.mixin.injection.callback.CallbackInfo ci) {
+        this.ale$initialBlock = initialBlock;
+    }
+
+    @Override
+    @Nullable
+    public Block ale$initialBlock() {
+        return this.ale$initialBlock;
+    }
+//?} else
+//public abstract class GuiBlockSelectMixin {
+
     @ModifyVariable(method = "<init>", at = @At("HEAD"), argsOnly = true, ordinal = 0)
     private static Consumer<Block> ale$wrapSignReplace(Consumer<Block> original, @Nullable Screen parent, String title, @Nullable Block initialBlock) {
         if (!AleConfigs.Generic.SIGN_REPLACE_FIX.getBooleanValue()) return original;

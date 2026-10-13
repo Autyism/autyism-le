@@ -175,7 +175,8 @@ public final class OverlayVisibilityGameTest implements FabricClientGameTest {
                 throw new AssertionError("[overlayvis] overlay much fainter than on a normal block (render through glass on): " + failures);
             }
             GT.log("[overlayvis] " + (failures.isEmpty() ? "OK: every overlay is about as visible as on a normal block" : "measured only, too faint: " + failures));
-            sp.getServer().runCommand("tick unfreeze");
+            // 世界关掉之前恢复（渲染层等设置会存进同名世界的数据）
+            ViewShots.end(context);
         } finally {
             ViewShots.end(context);
             GT.removeAllPlacements(context);

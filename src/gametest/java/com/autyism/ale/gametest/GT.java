@@ -36,6 +36,8 @@ public final class GT {
         *///?}
         // Litematica 会把上一个同名测试世界的投影放置读回来：每个测试开始时清空，避免互相影响
         removeAllPlacements(context);
+        // 渲染层（只显示某一层）也存在同名世界的数据里：每个测试从“全部显示”开始
+        context.runOnClient(c -> DataManager.getRenderLayerRange().setLayerMode(LayerMode.ALL));
         //? if >=1.21.11 {
         sp.getServer().runCommand("gamerule advance_time false");
         sp.getServer().runCommand("gamerule spawn_mobs false");

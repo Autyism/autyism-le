@@ -12,7 +12,7 @@ import java.util.List;
 
 /**
  * 需求 3：方块列表的选择界面。以 Litematica 的“可忽略的已存在方块”列表为例：
- * 列表编辑框 → “选择方块…” → 搜索 → 点击加入 → 完成，列表里出现 minecraft:cobblestone；再点 − 移除。
+ * 列表编辑框 → “选择方块…” → 搜索 → 点击加入 → 完成（回到设置界面），列表里出现 minecraft:cobblestone；再点 − 移除。
  */
 @SuppressWarnings("UnstableApiUsage")
 public final class BlockPickerGameTest implements FabricClientGameTest {
@@ -38,12 +38,16 @@ public final class BlockPickerGameTest implements FabricClientGameTest {
             GT.shot(context, "ale-picker-added");
             List<String> after = context.computeOnClient(c -> List.copyOf(Configs.Visuals.IGNORABLE_EXISTING_BLOCKS.getStrings()));
             if (!after.equals(List.of("minecraft:cobblestone"))) throw new AssertionError("[picker] list after adding: " + after);
+            // 选择界面代替了原来的编辑框：“完成”回到设置界面
             GT.clickButton(context, "Done");
-            context.waitFor(c -> c.screen instanceof GuiStringListEdit, 40);
+            context.waitFor(c -> c.screen instanceof fi.dy.masa.litematica.gui.GuiConfigs, 40);
             GT.shot(context, "ale-picker-back");
             GT.log("[picker] add OK: " + after);
 
-            // 再打开，点左边的 − 移除
+            // 再从原来的编辑框打开，点左边的 − 移除
+            context.runOnClient(c -> c.setScreen(new GuiStringListEdit(Configs.Visuals.IGNORABLE_EXISTING_BLOCKS,
+                    (fi.dy.masa.litematica.gui.GuiConfigs) c.screen, null, c.screen)));
+            context.waitTicks(3);
             GT.clickButton(context, "Pick blocks");
             context.waitFor(c -> c.screen instanceof GuiBlockPicker, 40);
             clickRow(context, false, 0);

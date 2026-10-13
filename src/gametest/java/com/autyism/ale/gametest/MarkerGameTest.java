@@ -120,7 +120,8 @@ public final class MarkerGameTest implements FabricClientGameTest {
             }
             if (!failures.isEmpty() && !GTFilter.measureOnly()) throw new AssertionError("[markers] wrong W / D markers: " + failures);
             GT.log("[markers] " + (failures.isEmpty() ? "OK: W and D shown for every wrong property, also together" : "measured only, wrong: " + failures));
-            sp.getServer().runCommand("tick unfreeze");
+            // 世界关掉之前恢复（渲染层等设置会存进同名世界的数据）
+            ViewShots.end(context);
         } finally {
             ViewShots.end(context);
             GT.removeAllPlacements(context);
