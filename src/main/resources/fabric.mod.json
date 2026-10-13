@@ -3,7 +3,7 @@
   "id": "${mod_id}",
   "version": "${mod_version}",
   "name": "${mod_name}",
-  "description": "Quality-of-life additions for Litematica: searchable block and item pickers for MaLiLib block lists, Save edits / Save as buttons for schematic placements, and W/D markers for blocks that are only wrong in waterlogging or orientation. Also adds an info overlay for schematic entities and fluids, translucent schematic entities, entities and container contents in material lists, container checks in the Schematic Verifier, sign wood replacement that keeps the text, and schematic overlays that stay visible through glass.${preview_description}",
+  "description": "Quality-of-life additions for Litematica: searchable block and item pickers for MaLiLib block lists, Save edits / Save as buttons for schematic placements, and W/D markers for wrong waterlogging or orientation. Also adds an info overlay for schematic entities and fluids, translucent schematic entities, entities and container contents in material lists, container checks in the Schematic Verifier, sign wood replacement that keeps the text, and schematic overlays that stay visible through glass.${preview_description}${v12_description}",
   "authors": [
     "Autyism"
   ],
@@ -14,8 +14,9 @@
   },
   "license": "AGPL-3.0-only",
   "icon": "assets/autyism-le/icon.png",
-  "environment": "client",
+  "environment": "${environment}",
   "entrypoints": {
+    "main": [ "com.autyism.ale.AleCommon" ],
     "client": [
       "com.autyism.ale.AleMod"
     ],
@@ -24,14 +25,15 @@
     ]
   },
   "mixins": [
+    "autyism-le.common.mixins.json",
     "autyism-le.mixins.json"
   ],
   "depends": {
+    "malilib": "${malilib_compat}",
+    "litematica": "${litematica_compat}",
     "fabricloader": "${loader_compat}",
     "minecraft": "${minecraft_version}",
-    "fabric-api": "*",
-    "malilib": "${malilib_compat}",
-    "litematica": "${litematica_compat}"
+    "fabric-api": "*"
   },
   "suggests": {
     "schematicpreview": "*",

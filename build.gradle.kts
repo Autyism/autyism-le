@@ -94,14 +94,21 @@ val onlyOn12111 = listOf(
     "com/autyism/ale/mixin/litematica/GuiSchematicVerifierMixin.java", "com/autyism/ale/mixin/litematica/VerificationResultWidgetMixin.java",
     "com/autyism/ale/mixin/malilib/ConfigButtonStringListMixin.java", "com/autyism/ale/gui/WorldPick.java",
     "com/autyism/ale/mixin/compat/schematicpreview/OpenReplaceDialogMixin.java", "com/autyism/ale/replace/ReplaceDialogs.java",
-    "com/autyism/ale/verifier/OpenedContainers.java", "com/autyism/ale/mixin/client/MultiPlayerGameModeMixin.java"
+    "com/autyism/ale/verifier/OpenedContainers.java", "com/autyism/ale/mixin/client/MultiPlayerGameModeMixin.java",
+    // Exact rail placement: the server part (ALE runs on a server too) and Easy Place / the API on the client
+    "com/autyism/ale/AleCommon.java", "com/autyism/ale/rail/**", "com/autyism/ale/api/**", "com/autyism/ale/mixin/common/**",
+    "com/autyism/ale/mixin/litematica/EasyPlaceRailMixin.java", "com/autyism/ale/mixin/litematica/LegacyEasyPlaceRailMixin.java"
 )
 val onlyOn12111Mixins = listOf("litematica.SchematicVerifierInvoker", "litematica.TaskBaseAccessor", "litematica.SchematicVerifierSelectMixin",
     "litematica.VerifierResultListMixin", "litematica.GuiSchematicVerifierMixin", "litematica.VerificationResultWidgetMixin",
-    "malilib.ConfigButtonStringListMixin", "compat.schematicpreview.OpenReplaceDialogMixin", "client.MultiPlayerGameModeMixin")
+    "malilib.ConfigButtonStringListMixin", "compat.schematicpreview.OpenReplaceDialogMixin", "client.MultiPlayerGameModeMixin",
+    "litematica.EasyPlaceRailMixin", "litematica.LegacyEasyPlaceRailMixin")
 if (mc != "1.21.11") {
     sourceSets.named("main") { java.exclude(onlyOn12111) }
 }
+// 1.21.11 also runs on servers (exact rail placement needs the server). Litematica and MaLiLib are only needed on the
+// client: those dependencies sit in a small nested mod that only loads on clients
+val runsOnServer = mc == "1.21.11"
 
 // Without a Schematic Preview build (1.21.5) its compat mixin is not compiled either; its line is left out of the mixin config below
 if (schematicPreview.isEmpty()) {
@@ -120,8 +127,18 @@ tasks.processResources {
         "mixin_java" to "JAVA_${requiredJava.majorVersion}",
         // the schematic browser previews are only in 1.21.11 and 26.x so far
         "preview_description" to if (sc.current.parsed >= "1.21.11") " The schematic browser gets layouts with 3D thumbnails, a rotatable 3D preview with full screen and free camera, and folder icons, and material lists get a Replace button; these follow DimasKama's Schematic Preview and step aside when it is installed." else "",
+        "v12_description" to if (runsOnServer) " Containers that still need filling get an F marker, and with ALE on the server too, Easy Place puts rails down in the schematic's exact shape." else "",
+        "environment" to if (runsOnServer) "*" else "client",
     )
     inputs.properties(props)
+    inputs.property("runs_on_server", runsOnServer)
+    // fabric.mod.json lists everything; each version drops what does not apply to it: client-only versions have no
+    // server part, and the version that runs on servers moves the Litematica / MaLiLib requirements into the nested
+    // client part (clientRequirementsJar below)
+    val dropLines = if (runsOnServer) listOf("\"malilib\": \"", "\"litematica\": \"")
+        else listOf("\"com.autyism.ale.AleCommon\"", "\"autyism-le.common.mixins.json\"")
+    filesMatching("fabric.mod.json") { filter { line -> if (dropLines.any { line.contains(it) }) "" else line } }
+    if (!runsOnServer) exclude("autyism-le.common.mixins.json")
     inputs.property("schematic_preview", schematicPreview)
     filesMatching(listOf("fabric.mod.json", "*.mixins.json")) { expand(props) }
     // Mixins that only exist on some versions (their classes are compiled only there): leave them out of the config elsewhere
@@ -144,6 +161,21 @@ tasks.processResources {
 tasks.withType<Jar>().configureEach {
     val baseName = prop("mod.archives_base_name")
     from(rootProject.file("LICENSE.md")) { rename { "${it}_$baseName" } }
+}
+
+// The client part of a mod that also runs on servers (see runsOnServer): a mod of its own that only loads on clients
+// and requires Litematica and MaLiLib there. Nested into the release jar; a server skips it with its requirements
+if (runsOnServer) {
+    val clientRequirementsJar = tasks.register<Jar>("clientRequirementsJar") {
+        archiveBaseName.set("autyism-le-client-requirements")
+        archiveVersion.set("${prop("mod.version")}+$mc")
+        destinationDirectory.set(layout.buildDirectory.dir("client-requirements"))
+        val props = mapOf("mod_id" to prop("mod.id"), "mod_name" to prop("mod.name"), "mod_version" to prop("mod.version"),
+            "malilib_compat" to prop("mod.malilib_compat"), "litematica_compat" to prop("mod.litematica_compat"))
+        inputs.properties(props)
+        from(rootProject.file("src/client-requirements")) { expand(props) }
+    }
+    tasks.named<net.fabricmc.loom.task.RemapJarTask>("remapJar") { nestedJars.from(clientRequirementsJar) }
 }
 
 loom {
@@ -191,7 +223,8 @@ if (providers.gradleProperty("aleGameTest").isPresent) {
     }
     // The 1.2.0 tests run on 1.21.11 only for now
     if (mc != "1.21.11") {
-        val newTests = listOf("OverlayVisibilityGameTest", "MarkerGameTest", "VerifierContentsGameTest", "FillMarkerGameTest", "ReplaceUiGameTest", "StillFramesMixin", "NoParticlesMixin")
+        val newTests = listOf("OverlayVisibilityGameTest", "MarkerGameTest", "VerifierContentsGameTest", "FillMarkerGameTest", "ReplaceUiGameTest", "StillFramesMixin", "NoParticlesMixin",
+            "RailGameTest", "RailPacketCounterMixin", "GuiOverlayAccessor")
         sourceSets.matching { it.name == "gametest" }.configureEach {
             java.exclude(newTests.map { "com/autyism/ale/gametest/**/$it.java" } + "com/autyism/ale/gametest/ViewShots.java")
         }

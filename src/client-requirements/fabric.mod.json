@@ -1,0 +1,24 @@
+{
+  "schemaVersion": 1,
+  "id": "autyism-le-client",
+  "version": "${mod_version}",
+  "name": "${mod_name} (client requirements)",
+  "description": "Part of ${mod_name}: on the client it needs Litematica and MaLiLib. Servers skip this part, so ALE runs on a server without them.",
+  "authors": [
+    "Autyism"
+  ],
+  "license": "AGPL-3.0-only",
+  "environment": "client",
+  "depends": {
+    "malilib": "${malilib_compat}",
+    "litematica": "${litematica_compat}"
+  },
+  "custom": {
+    "modmenu": {
+      "badges": [
+        "library"
+      ],
+      "parent": "${mod_id}"
+    }
+  }
+}

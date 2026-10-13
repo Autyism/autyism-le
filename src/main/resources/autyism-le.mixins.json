@@ -40,6 +40,8 @@
     "litematica.VerificationResultWidgetMixin",
     "malilib.ConfigButtonStringListMixin",
     "client.MultiPlayerGameModeMixin",
+    "litematica.EasyPlaceRailMixin",
+    "litematica.LegacyEasyPlaceRailMixin",
     "litematica.WorldRendererSchematicMixin"
   ],
   "injectors": {

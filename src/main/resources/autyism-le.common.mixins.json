@@ -1,0 +1,17 @@
+{
+  "required": true,
+  "minVersion": "0.8",
+  "package": "com.autyism.ale.mixin.common",
+  "compatibilityLevel": "${mixin_java}",
+  "mixins": [
+    "BaseRailBlockMixin",
+    "BlockItemMixin",
+    "ServerGamePacketListenerImplMixin"
+  ],
+  "client": [
+    "ClientPacketSendMixin"
+  ],
+  "injectors": {
+    "defaultRequire": 1
+  }
+}

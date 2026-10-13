@@ -50,6 +50,8 @@ public class AleConfigs implements IConfigHandler {
         public static final ConfigBoolean FILL_MARKER_SKIP = new ConfigBoolean("fillMarkerSkip", false).apply(PREFIX);
         public static final ConfigStringList FILL_MARKER_SKIP_ITEMS = new ConfigStringList("fillMarkerSkipItems",
                 ImmutableList.copyOf(com.autyism.ale.render.FillMarker.DEFAULT_SKIP)).apply(PREFIX);
+        // 轻松放置铁轨直接是投影里的形状（服务端也装了 ALE 时）
+        public static final ConfigBoolean EASY_PLACE_EXACT_RAILS = new ConfigBoolean("easyPlaceExactRails", true).apply(PREFIX);
         // 需求 9：材料列表中的容器内容物、实体；验证器检查容器内容物
         public static final ConfigBoolean MATERIAL_LIST_ENTITIES = new ConfigBoolean("materialListEntities", true).apply(PREFIX);
         public static final ConfigBoolean VERIFIER_CONTAINERS = new ConfigBoolean("verifierContainerContents", true).apply(PREFIX);
@@ -81,6 +83,7 @@ public class AleConfigs implements IConfigHandler {
                 FILL_MARKER_COLOR,
                 FILL_MARKER_SKIP,
                 FILL_MARKER_SKIP_ITEMS,
+                EASY_PLACE_EXACT_RAILS,
                 //?}
                 MATERIAL_LIST_ENTITIES,
                 VERIFIER_CONTAINERS,
