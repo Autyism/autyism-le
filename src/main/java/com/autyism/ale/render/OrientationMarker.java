@@ -12,7 +12,7 @@ import net.minecraft.world.level.block.state.properties.RailShape;
 
 /**
  * 方块对、但朝向和投影不同时，在黄色“状态错误”标记之上，在方块每一面画一个红色的 “D”（Direction）。
- * 打印出来的东西不应该有朝向错误，这个标记让它一眼能看出来。
+ * 打印出来的东西不应该有朝向错误，这个标记让它一眼能看出来。含水也不对时和蓝色 W 各占半边一起画。
  */
 public final class OrientationMarker {
     private OrientationMarker() {
@@ -30,11 +30,10 @@ public final class OrientationMarker {
             {0.52f, 0.14f, 0.26f, 0.14f},
     };
 
-    /** 同一种方块，且至少有一个“朝向类”属性和投影不同 */
+    /** 至少有一个“朝向类”属性和投影不同（不管别的属性是否也不同；不同但同组的方块比较它们都有的属性） */
     public static boolean orientationDiffers(BlockState schematic, BlockState client) {
-        if (schematic.getBlock() != client.getBlock()) return false;
         for (Property<?> p : schematic.getProperties()) {
-            if (isOrientation(p) && !schematic.getValue(p).equals(client.getValue(p))) return true;
+            if (isOrientation(p) && client.hasProperty(p) && !schematic.getValue(p).equals(client.getValue(p))) return true;
         }
         return false;
     }

@@ -4,6 +4,8 @@
   "package": "com.autyism.ale.gametest.mixin",
   "compatibilityLevel": "JAVA_21",
   "client": [
+    "StillFramesMixin",
+    "NoParticlesMixin",
     "FrameCounterMixin",
     "BestWorldMixin",
     "HeldKeysMixin"

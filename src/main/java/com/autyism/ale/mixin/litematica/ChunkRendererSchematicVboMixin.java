@@ -24,7 +24,7 @@ import org.spongepowered.asm.mixin.injection.Inject;
 import org.spongepowered.asm.mixin.injection.callback.CallbackInfo;
 
 /**
- * 需求 6：只差含水时，在黄色错误状态标记上再画蓝色的 W。
+ * 需求 6：含水不对时在黄色错误状态标记上再画蓝色的 W，朝向不对时画红色的 D；两个都不对时并排画，别的属性也不对时照样画。
  */
 @Mixin(value = ChunkRendererSchematicVbo.class, remap = false)
 public abstract class ChunkRendererSchematicVboMixin {
@@ -53,18 +53,10 @@ public abstract class ChunkRendererSchematicVboMixin {
     *///?}
         if (type != OverlayType.WRONG_STATE) return;
         BlockState client = this.clientWorldView.getBlockState(pos);
-        int color;
-        float[][] letter;
-        if (AleConfigs.Generic.ORIENTATION_MARKER.getBooleanValue() && OrientationMarker.orientationDiffers(stateSchematic, client)) {
-            // 朝向不对：红色 D（比只差含水更重要，两者都有时画 D）
-            color = AleConfigs.Generic.ORIENTATION_MARKER_COLOR.getIntegerValue();
-            letter = OrientationMarker.STROKES;
-        } else if (AleConfigs.Generic.WATERLOGGED_MARKER.getBooleanValue() && WaterloggedMarker.onlyWaterloggedDiffers(stateSchematic, client)) {
-            color = AleConfigs.Generic.WATERLOGGED_MARKER_COLOR.getIntegerValue();
-            letter = WaterloggedMarker.STROKES;
-        } else {
-            return;
-        }
+        // 每个不对的属性各自判断，别的属性也不对时照样画：朝向不对画红色 D，含水不对画蓝色 W，两个都不对时并排画
+        boolean wrongFacing = AleConfigs.Generic.ORIENTATION_MARKER.getBooleanValue() && OrientationMarker.orientationDiffers(stateSchematic, client);
+        boolean wrongWater = AleConfigs.Generic.WATERLOGGED_MARKER.getBooleanValue() && WaterloggedMarker.waterloggedDiffers(stateSchematic, client);
+        if (!wrongFacing && !wrongWater) return;
         //? if >=1.21.11 {
         BufferBuilder buffer = this.preRenderOverlay(pack, OverlayRenderType.QUAD);
         //?} else
@@ -72,6 +64,16 @@ public abstract class ChunkRendererSchematicVboMixin {
         if (!data.isOverlayTypeStarted(OverlayRenderType.QUAD)) {
             ((ChunkRenderDataSchematicInvoker) data).ale$setOverlayTypeStarted(OverlayRenderType.QUAD);
         }
-        WaterloggedMarker.emit(buffer, this.getChunkRelativePosition(pos).immutable(), color, letter);
+        BlockPos rel = this.getChunkRelativePosition(pos).immutable();
+        int facingColor = AleConfigs.Generic.ORIENTATION_MARKER_COLOR.getIntegerValue();
+        int waterColor = AleConfigs.Generic.WATERLOGGED_MARKER_COLOR.getIntegerValue();
+        if (wrongFacing && wrongWater) {
+            WaterloggedMarker.emitHalf(buffer, rel, facingColor, OrientationMarker.STROKES, true);
+            WaterloggedMarker.emitHalf(buffer, rel, waterColor, WaterloggedMarker.STROKES, false);
+        } else if (wrongFacing) {
+            WaterloggedMarker.emit(buffer, rel, facingColor, OrientationMarker.STROKES);
+        } else {
+            WaterloggedMarker.emit(buffer, rel, waterColor, WaterloggedMarker.STROKES);
+        }
     }
 }

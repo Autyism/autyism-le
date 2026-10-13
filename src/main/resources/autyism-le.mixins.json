@@ -31,6 +31,12 @@
     "malilib.GuiListBaseAccess",
     "without.schematicpreview.SchematicBrowserListMixin",
     "without.schematicpreview.MaterialEntryReplaceMixin",
+    "litematica.SchematicVerifierInvoker",
+    "litematica.TaskBaseAccessor",
+    "litematica.SchematicVerifierSelectMixin",
+    "litematica.VerifierResultListMixin",
+    "litematica.GuiSchematicVerifierMixin",
+    "litematica.VerificationResultWidgetMixin",
     "litematica.WorldRendererSchematicMixin"
   ],
   "injectors": {

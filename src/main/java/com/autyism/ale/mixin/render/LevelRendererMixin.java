@@ -122,8 +122,17 @@ public abstract class LevelRendererMixin {
             // 26.3 顺序无关透明时 Litematica 的钩子可能先跑，已经在玻璃之前画过了，不再画第二遍
             if (!GlassRenderState.translucentDrawnThisFrame) ale$drawTranslucentLayer();
             GlassRenderState.translucentDrawnEarly = true;
-            LitematicaRenderer.getInstance().renderSchematicOverlays(ale$camera(), profiler);
+            //? if >=1.21.11 <26.1 {
+            // 错误标记留到整帧最后照常画，但只和这一刻（半透明层之前）的深度比较，水和半透明方块不会再把它冲淡（见 OverlayDepth）。
+            // 复制不了深度时（例如开着光影包）照以前的做法提前画
+            if (!com.autyism.ale.render.OverlayDepth.capture()) {
+                LitematicaRenderer.getInstance().renderSchematicOverlays(ale$camera(), profiler);
+                GlassRenderState.overlaysDrawnEarly = true;
+            }
+            //?} else {
+            /*LitematicaRenderer.getInstance().renderSchematicOverlays(ale$camera(), profiler);
             GlassRenderState.overlaysDrawnEarly = true;
+            *///?}
             profiler.pop();
         } finally {
             GlassRenderState.drawingEarly = false;

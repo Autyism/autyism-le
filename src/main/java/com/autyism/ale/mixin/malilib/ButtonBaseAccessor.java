@@ -8,4 +8,7 @@ import org.spongepowered.asm.mixin.gen.Accessor;
 public interface ButtonBaseAccessor {
     @Accessor("visible")
     boolean ale$isVisible();
+
+    @Accessor("displayString")
+    String ale$getDisplayString();
 }

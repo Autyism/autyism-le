@@ -6,6 +6,9 @@
   "environment": "client",
   "entrypoints": {
     "fabric-client-gametest": [
+      "com.autyism.ale.gametest.OverlayVisibilityGameTest",
+      "com.autyism.ale.gametest.VerifierContentsGameTest",
+      "com.autyism.ale.gametest.MarkerGameTest",
       "com.autyism.ale.gametest.SpBlackBoxGameTest",
       "com.autyism.ale.gametest.BrowserPreviewGameTest",
       "com.autyism.ale.gametest.FolderIconGameTest",

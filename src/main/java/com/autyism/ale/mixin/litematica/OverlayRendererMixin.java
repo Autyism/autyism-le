@@ -17,7 +17,7 @@ import org.spongepowered.asm.mixin.injection.At;
 import org.spongepowered.asm.mixin.injection.Inject;
 import org.spongepowered.asm.mixin.injection.callback.CallbackInfo;
 
-import java.util.Set;
+import java.util.List;
 
 /**
  * 需求 9b：用洋红色框标出容器内容不一致的位置（与验证器的错误标记一起显示）。
@@ -63,8 +63,17 @@ public abstract class OverlayRendererMixin {
     private void ale$renderContainerMismatches(Matrix4f posMatrix, Matrix4f projMatrix, ProfilerFiller profiler, CallbackInfo ci) {
         SchematicPlacement placement = DataManager.getSchematicPlacementManager().getSelectedSchematicPlacement();
         if (placement == null || !placement.hasVerifier()) return;
-        Set<BlockPos> positions = ContainerVerifier.getMismatches(placement.getSchematicVerifier());
+        // 选中的（1.21.11 起在验证器结果列表里选；更早的版本暂时是全部），缓存好的、离玩家近的在前
+        List<BlockPos> positions = ContainerVerifier.renderPositions(placement.getSchematicVerifier(),
+                fi.dy.masa.litematica.config.Configs.InfoOverlays.VERIFIER_ERROR_HILIGHT_MAX_POSITIONS.getIntegerValue());
         if (positions.isEmpty()) return;
+        Color4f color = ContainerVerifier.SELECT_IN_VERIFIER ? Color4f.fromColor(ContainerVerifier.BOX_COLOR, 1f) : ALE_CONTAINER_COLOR;
+        //? if >=1.21.11 {
+        // 和 Litematica 自己的验证器标记一样：看着的那个框加粗，按设置画半透明的面
+        net.minecraft.world.phys.BlockHitResult trace = fi.dy.masa.litematica.util.RayTraceUtils.traceToPositions(positions,
+                fi.dy.masa.malilib.util.EntityUtils.getCameraEntity(), 128);
+        BlockPos lookPos = trace != null && trace.getType() == net.minecraft.world.phys.HitResult.Type.BLOCK ? trace.getBlockPos() : null;
+        //?}
         //? if >=26.2 {
         /*RenderContext ctx = new RenderContext(() -> "autyism-le:container_mismatches", MaLiLibPipelines.DEBUG_LINES_MASA_SIMPLE_NO_DEPTH_NO_CULL, 0);
         *///?} elif >=1.21.6 {
@@ -76,9 +85,9 @@ public abstract class OverlayRendererMixin {
         for (BlockPos pos : positions) {
             // 1.21.11 起线宽写在顶点里；之前是绘制时统一设置（见下面的 lineWidth）
             //? if >=1.21.11 {
-            fi.dy.masa.malilib.render.RenderUtils.drawBlockBoundingBoxOutlinesBatchedLinesSimple(pos, ALE_CONTAINER_COLOR, 0.004, 3.0f, buffer);
+            fi.dy.masa.malilib.render.RenderUtils.drawBlockBoundingBoxOutlinesBatchedLinesSimple(pos, color, 0.004, pos.equals(lookPos) ? 6.0f : 2.0f, buffer);
             //?} else
-            //fi.dy.masa.malilib.render.RenderUtils.drawBlockBoundingBoxOutlinesBatchedLinesSimple(pos, ALE_CONTAINER_COLOR, 0.004, buffer);
+            //fi.dy.masa.malilib.render.RenderUtils.drawBlockBoundingBoxOutlinesBatchedLinesSimple(pos, color, 0.004, buffer);
         }
         try {
             MeshData meshData = buffer.build();
@@ -89,6 +98,20 @@ public abstract class OverlayRendererMixin {
                 meshData.close();
             }
             ctx.reset();
+            //? if >=1.21.11 {
+            if (fi.dy.masa.litematica.config.Configs.Visuals.RENDER_ERROR_MARKER_SIDES.getBooleanValue()) {
+                float alpha = (float) fi.dy.masa.litematica.config.Configs.InfoOverlays.VERIFIER_ERROR_HILIGHT_ALPHA.getDoubleValue();
+                Color4f side = new Color4f(color.r, color.g, color.b, alpha);
+                buffer = ctx.start(() -> "autyism-le:container_mismatches/sides", MaLiLibPipelines.POSITION_COLOR_TRANSLUCENT_NO_DEPTH_NO_CULL);
+                for (BlockPos pos : positions) fi.dy.masa.malilib.render.RenderUtils.renderAreaSidesBatched(pos, pos, side, 0.002, buffer);
+                MeshData sides = buffer.build();
+                if (sides != null) {
+                    ctx.draw(sides, false, false);
+                    sides.close();
+                }
+                ctx.reset();
+            }
+            //?}
             ctx.close();
         } catch (Exception ignored) {
         }

@@ -86,6 +86,19 @@ tasks.withType<JavaCompile>().configureEach {
     options.release.set(requiredJava.majorVersion.toInt())
 }
 
+// 1.2.0 features are only on 1.21.11 so far: the other versions leave these classes (and their mixins, below) out
+val onlyOn12111 = listOf(
+    "com/autyism/ale/render/OverlayDepth.java", "com/autyism/ale/verifier/ContainerVerifierGui.java",
+    "com/autyism/ale/mixin/litematica/SchematicVerifierInvoker.java", "com/autyism/ale/mixin/litematica/TaskBaseAccessor.java",
+    "com/autyism/ale/mixin/litematica/SchematicVerifierSelectMixin.java", "com/autyism/ale/mixin/litematica/VerifierResultListMixin.java",
+    "com/autyism/ale/mixin/litematica/GuiSchematicVerifierMixin.java", "com/autyism/ale/mixin/litematica/VerificationResultWidgetMixin.java"
+)
+val onlyOn12111Mixins = listOf("litematica.SchematicVerifierInvoker", "litematica.TaskBaseAccessor", "litematica.SchematicVerifierSelectMixin",
+    "litematica.VerifierResultListMixin", "litematica.GuiSchematicVerifierMixin", "litematica.VerificationResultWidgetMixin")
+if (mc != "1.21.11") {
+    sourceSets.named("main") { java.exclude(onlyOn12111) }
+}
+
 // Without a Schematic Preview build (1.21.5) its compat mixin is not compiled either; its line is left out of the mixin config below
 if (schematicPreview.isEmpty()) {
     sourceSets.named("main") { java.exclude("com/autyism/ale/mixin/compat/schematicpreview/**") }
@@ -114,6 +127,7 @@ tasks.processResources {
         if (sc.current.parsed < "26.2") add("render.GameRendererCameraAccessor")
         // Schematic browser previews, icons and Replace: 1.21.11 and 26.x; 1.21.10 and older follow later
         if (sc.current.parsed < "1.21.11") addAll(listOf("malilib.WidgetContainerAccess", "malilib.GuiListBaseAccess", "without.schematicpreview."))
+        if (mc != "1.21.11") addAll(onlyOn12111Mixins)
         // Dev only: -PaleNoMixins=a.B,c.D leaves those mixins out (to find which one breaks something)
         providers.gradleProperty("aleNoMixins").orNull?.split(",")?.filter { it.isNotBlank() }?.let { addAll(it) }
     }
@@ -171,9 +185,39 @@ if (providers.gradleProperty("aleGameTest").isPresent) {
             }
         }
     }
+    // The 1.2.0 tests run on 1.21.11 only for now
+    if (mc != "1.21.11") {
+        val newTests = listOf("OverlayVisibilityGameTest", "MarkerGameTest", "VerifierContentsGameTest", "StillFramesMixin", "NoParticlesMixin")
+        sourceSets.matching { it.name == "gametest" }.configureEach {
+            java.exclude(newTests.map { "com/autyism/ale/gametest/**/$it.java" } + "com/autyism/ale/gametest/ViewShots.java")
+        }
+        tasks.matching { it.name == "processGametestResources" }.configureEach {
+            (this as ProcessResources).filesMatching(listOf("fabric.mod.json", "autyism-le-gametest.mixins.json")) {
+                filter { line -> if (newTests.any { line.contains("\"$it\"") || line.contains(".$it\"") }) "" else line }
+            }
+        }
+    }
     tasks.matching { it.name == "runClientGameTest" }.configureEach {
         (this as JavaExec).systemProperty("ale.gt", (project.findProperty("gt") ?: "").toString())
         (this as JavaExec).systemProperty("ale.debugrail", (project.findProperty("debugrail") ?: "false").toString())
         (this as JavaExec).systemProperty("ale.frameshot", (project.findProperty("frameShot") != null).toString())
+        // -PmeasureOnly: tests only log their measurements (for before/after comparisons)
+        (this as JavaExec).systemProperty("ale.measureonly", (project.findProperty("measureOnly") != null).toString())
+        // -PtestMods=a.jar;b.jar: extra mod jars for this run, copied into the run directory's mods folder
+        // (after the run directory is cleared, before the game starts)
+        val extraMods = (project.findProperty("testMods") ?: "").toString().split(";").filter { it.isNotBlank() }.map { File(it) }
+        if (extraMods.isNotEmpty()) {
+            // Loom's client gametest run directory (the task's working directory is only set when it starts)
+            val mods = project.file("build/run/clientGameTest/mods")
+            doFirst {
+                mods.mkdirs()
+                extraMods.forEach { jar ->
+                    val target = mods.resolve(jar.name)
+                    jar.copyTo(target, overwrite = true)
+                    if (!target.isFile) throw GradleException("test mod was not copied: $target")
+                    logger.lifecycle("Test mod added: $target")
+                }
+            }
+        }
     }
 }

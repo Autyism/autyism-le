@@ -40,7 +40,9 @@ public abstract class SchematicVerifierMixin {
     private void ale$onFinished(net.minecraft.util.profiling.ProfilerFiller profiler, CallbackInfoReturnable<Boolean> cir) {
         int n = ContainerVerifier.countMismatches((SchematicVerifier) (Object) this);
         if (n > 0) {
-            InfoUtils.showGuiAndInGameMessage(Message.MessageType.WARNING, 8000, "autyism-le.message.verifier.container_mismatch", n);
+            // 1.21.11 起不一致的容器在结果列表里单独一类，选中才框出来
+            String key = ContainerVerifier.SELECT_IN_VERIFIER ? "autyism-le.message.verifier.container_mismatch_list" : "autyism-le.message.verifier.container_mismatch";
+            InfoUtils.showGuiAndInGameMessage(Message.MessageType.WARNING, 8000, key, n);
         }
     }
 }

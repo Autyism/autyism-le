@@ -66,4 +66,17 @@ public abstract class WorldRendererSchematicMixin {
     private void ale$endBlockEntities(CallbackInfo ci) {
         TranslucentEntityRender.ACTIVE.set(false);
     }
+
+    //? if >=1.21.11 <26.1 {
+    /** 透过玻璃显示投影时：错误标记的渲染通道用原版画半透明层之前的深度（见 OverlayDepth），水和半透明方块挡不住它 */
+    @com.llamalad7.mixinextras.injector.wrapoperation.WrapOperation(method = "drawOverlayInternal",
+            at = @At(value = "INVOKE", remap = true,
+                    target = "Lcom/mojang/blaze3d/systems/CommandEncoder;createRenderPass(Ljava/util/function/Supplier;Lcom/mojang/blaze3d/textures/GpuTextureView;Ljava/util/OptionalInt;Lcom/mojang/blaze3d/textures/GpuTextureView;Ljava/util/OptionalDouble;)Lcom/mojang/blaze3d/systems/RenderPass;"))
+    private com.mojang.blaze3d.systems.RenderPass ale$overlayDepth(com.mojang.blaze3d.systems.CommandEncoder encoder,
+            java.util.function.Supplier<String> label, com.mojang.blaze3d.textures.GpuTextureView color, java.util.OptionalInt clearColor,
+            @org.jetbrains.annotations.Nullable com.mojang.blaze3d.textures.GpuTextureView depth, java.util.OptionalDouble clearDepth,
+            com.llamalad7.mixinextras.injector.wrapoperation.Operation<com.mojang.blaze3d.systems.RenderPass> original) {
+        return original.call(encoder, label, color, clearColor, com.autyism.ale.render.OverlayDepth.depthFor(depth), clearDepth);
+    }
+    //?}
 }
