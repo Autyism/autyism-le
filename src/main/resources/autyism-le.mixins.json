@@ -42,6 +42,8 @@
     "client.MultiPlayerGameModeMixin",
     "litematica.EasyPlaceRailMixin",
     "litematica.LegacyEasyPlaceRailMixin",
+    "litematica.EntityDataReceivedMixin",
+    "compat.sodium.SodiumGlassPassMixin",
     "litematica.WorldRendererSchematicMixin"
   ],
   "injectors": {

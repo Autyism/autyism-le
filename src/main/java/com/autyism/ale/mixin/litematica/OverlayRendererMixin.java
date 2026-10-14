@@ -55,6 +55,43 @@ public abstract class OverlayRendererMixin {
         ci.cancel();
     }
 
+    //? if >=1.21.11 <26.1 {
+    /** 验证器界面打开了“高亮告示牌”：有字的告示牌透墙画框（已放置亮绿、未放置深绿） */
+    @Inject(method = "renderSchematicVerifierMismatches", at = @At("TAIL"))
+    private void ale$renderSigns(Matrix4f posMatrix, Matrix4f projMatrix, ProfilerFiller profiler, CallbackInfo ci) {
+        if (!com.autyism.ale.verifier.SignHighlight.enabled) return;
+        List<BlockPos> placed = com.autyism.ale.verifier.SignHighlight.placed();
+        List<BlockPos> missing = com.autyism.ale.verifier.SignHighlight.missing();
+        if (placed.isEmpty() && missing.isEmpty()) return;
+        RenderContext ctx = new RenderContext(() -> "autyism-le:sign_highlight", MaLiLibPipelines.DEBUG_LINES_MASA_SIMPLE_NO_DEPTH_NO_CULL);
+        BufferBuilder buffer = ctx.getBuilder();
+        Color4f placedColor = Color4f.fromColor(com.autyism.ale.verifier.SignHighlight.placedColor(), 1f);
+        Color4f missingColor = Color4f.fromColor(com.autyism.ale.verifier.SignHighlight.missingColor(), 1f);
+        for (BlockPos pos : placed) fi.dy.masa.malilib.render.RenderUtils.drawBlockBoundingBoxOutlinesBatchedLinesSimple(pos, placedColor, 0.004, 3.0f, buffer);
+        for (BlockPos pos : missing) fi.dy.masa.malilib.render.RenderUtils.drawBlockBoundingBoxOutlinesBatchedLinesSimple(pos, missingColor, 0.004, 3.0f, buffer);
+        try {
+            MeshData meshData = buffer.build();
+            if (meshData != null) {
+                ctx.draw(meshData, false, true);
+                meshData.close();
+            }
+            ctx.reset();
+            // 半透明的面，隔着墙也一眼能看到
+            buffer = ctx.start(() -> "autyism-le:sign_highlight/sides", MaLiLibPipelines.POSITION_COLOR_TRANSLUCENT_NO_DEPTH_NO_CULL);
+            for (BlockPos pos : placed) fi.dy.masa.malilib.render.RenderUtils.renderAreaSidesBatched(pos, pos, new Color4f(placedColor.r, placedColor.g, placedColor.b, 0.3f), 0.002, buffer);
+            for (BlockPos pos : missing) fi.dy.masa.malilib.render.RenderUtils.renderAreaSidesBatched(pos, pos, new Color4f(missingColor.r, missingColor.g, missingColor.b, 0.3f), 0.002, buffer);
+            MeshData sides = buffer.build();
+            if (sides != null) {
+                ctx.draw(sides, false, false);
+                sides.close();
+            }
+            ctx.reset();
+            ctx.close();
+        } catch (Exception ignored) {
+        }
+    }
+    //?}
+
     @Inject(method = "renderSchematicVerifierMismatches", at = @At("TAIL"))
     // 26.1 起 Litematica 的这个方法只剩 ProfilerFiller 参数（两个矩阵本来也没用到）
     //? if >=26.1 {

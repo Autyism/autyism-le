@@ -69,6 +69,7 @@ public final class FillMarkerGameTest implements FabricClientGameTest {
                 AleConfigs.Generic.FILL_MARKER_SKIP.setBooleanValue(false);
                 AleConfigs.Generic.WATERLOGGED_MARKER.setBooleanValue(true);
                 AleConfigs.Generic.ORIENTATION_MARKER.setBooleanValue(true);
+                AleConfigs.Generic.MARKER_PRIORITY.setBooleanValue(false);
             });
             sp.getServer().runOnServer(s -> {
                 ServerLevel level = s.overworld();
@@ -106,6 +107,13 @@ public final class FillMarkerGameTest implements FabricClientGameTest {
                         cs.name, px[0], wantF ? "yes" : "no", px[1], px[2], ok ? "ok" : "WRONG"));
                 if (!ok) failures.add(cs.name);
             }
+
+            // “标记只显示一个”（默认开）：朝向、含水、填充都不对的箱子只画 D
+            context.runOnClient(c -> AleConfigs.Generic.MARKER_PRIORITY.setBooleanValue(true));
+            int[] one = shoot(context, sp, placement, indexOf(cases, "chest-facing+water+items"), "chest-facing+water+items-one");
+            GT.log("[fillmarker] one marker per block: D=" + one[1] + " px, W=" + one[2] + " px, F=" + one[0] + " px");
+            if (one[1] < MIN_PIXELS || one[2] >= MIN_PIXELS || one[0] >= MIN_PIXELS) failures.add("one-marker");
+            context.runOnClient(c -> AleConfigs.Generic.MARKER_PRIORITY.setBooleanValue(false));
 
             // 跳过列表：只装着潜影盒的漏斗不再画，装着别的东西的照画
             context.runOnClient(c -> AleConfigs.Generic.FILL_MARKER_SKIP.setBooleanValue(true));
@@ -155,6 +163,39 @@ public final class FillMarkerGameTest implements FabricClientGameTest {
             GT.log("[fillmarker] dropper opened and filled like the schematic: F=" + opened[0] + " px");
             if (opened[0] >= MIN_PIXELS) failures.add("opened-container");
 
+            // 不用打开、不用验证：世界里的熔炉直接放好投影要的东西，F 自己消失（单人游戏读得到世界里的内容）
+            int furnaceIndex = indexOf(cases, "furnace-fuel");
+            BlockPos furnace = new BlockPos(X0 + STEP * furnaceIndex, Y, Z);
+            List<ItemStack> furnaceItems = cases.get(furnaceIndex).schematicItems;
+            sp.getServer().runOnServer(s -> {
+                if (s.overworld().getBlockEntity(furnace) instanceof Container c) {
+                    for (int j = 0; j < furnaceItems.size(); j++) c.setItem(j, furnaceItems.get(j).copy());
+                }
+            });
+            context.waitTicks(60);
+            int[] auto = shoot(context, sp, placement, furnaceIndex, "furnace-filled-unopened");
+            GT.log("[fillmarker] furnace filled without opening it: F=" + auto[0] + " px");
+            if (auto[0] >= MIN_PIXELS) failures.add("auto-check");
+
+            // 过期：确认过的漏斗被拿空了，F 回来
+            sp.getServer().runOnServer(s -> {
+                if (s.overworld().getBlockEntity(new BlockPos(X0 + STEP * hopperIndex, Y, Z)) instanceof Container c) c.clearContent();
+            });
+            context.waitTicks(80);
+            int[] emptied = shoot(context, sp, placement, hopperIndex, "hopper-emptied-again");
+            GT.log("[fillmarker] confirmed hopper emptied again: F=" + emptied[0] + " px");
+            if (emptied[0] < MIN_PIXELS) failures.add("stale-emptied");
+
+            // 过期：确认过的投掷器被敲掉换了一个新的（空的），F 回来
+            BlockState dropperState = sp.getServer().computeOnServer(s -> s.overworld().getBlockState(dropper));
+            sp.getServer().runOnServer(s -> s.overworld().setBlock(dropper, Blocks.AIR.defaultBlockState(), ViewShots.QUIET));
+            context.waitTicks(5);
+            sp.getServer().runOnServer(s -> s.overworld().setBlock(dropper, dropperState, ViewShots.QUIET));
+            context.waitTicks(20);
+            int[] replaced = shoot(context, sp, placement, dropperIndex, "dropper-replaced");
+            GT.log("[fillmarker] confirmed dropper broken and replaced: F=" + replaced[0] + " px");
+            if (replaced[0] < MIN_PIXELS) failures.add("stale-replaced");
+
             // 关掉设置：不画
             context.runOnClient(c -> AleConfigs.Generic.FILL_MARKER.setBooleanValue(false));
             int[] off = shoot(context, sp, placement, indexOf(cases, "dropper-items"), "dropper-items-off");
@@ -163,10 +204,11 @@ public final class FillMarkerGameTest implements FabricClientGameTest {
 
             if (!failures.isEmpty()) throw new AssertionError("[fillmarker] wrong: " + failures);
             GT.log("[fillmarker] OK: F on containers with items in the schematic (also missing ones), not on empty ones, skip list, "
-                    + "side by side with D and W, gone after the verifier confirmed the contents, option off");
+                    + "side by side with D and W or only D, gone after the verifier / opening / filling it, back when emptied or replaced, option off");
             // 世界关掉之前恢复（渲染层等设置会存进同名世界的数据）
             ViewShots.end(context);
         } finally {
+            context.runOnClient(c -> AleConfigs.Generic.MARKER_PRIORITY.setBooleanValue(true));
             ViewShots.end(context);
             GT.removeAllPlacements(context);
             context.runOnClient(c -> {

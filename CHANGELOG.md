@@ -6,7 +6,10 @@ For Minecraft 1.21.11; the other jars stay at 1.1.0.
 
 - Mismatch colours stay clear on water, bubble columns, ice, slime and other see-through blocks, and W and D show up for every wrong property.
 - Container contents are a category in the Schematic Verifier and only get highlighted when you select them.
-- A green F on containers that still need filling.
+- A green F on containers that still need filling. It disappears by itself once the container is filled right (single player, or Servux with Litematica's Entity Data Sync) and comes back when it no longer matches.
+- **One Marker per Block** (on by default): only the most important letter is drawn, D before W before F.
+- **Highlight Signs** button in the Schematic Verifier: signs with text are marked through walls, bright green when placed, dark green when still missing.
+- With Sodium, Render Through Glass works behind clear glass too.
 - Easy Place puts rails down in the schematic's shape, ascending rails and curves included, when ALE is on the server too (or in single player).
 - Pick block in the Replace dialog and the block picker; wall and standing forms are one entry, and ALE's screens open first.
 
@@ -15,12 +18,12 @@ More: open "Details" below.
 <details><summary>Details</summary>
 
 - **Overlays on see-through blocks**: with Render Through Glass on, water, bubble columns, ice, stained glass, slime, honey, kelp and waterlogged blocks no longer wash out Litematica's colours. With a shader pack on, the overlays are drawn as before.
-- **W and D**: a block that is wrong in waterlogging and in other properties (a rail with the wrong shape and water, for example) shows W, and also D when it faces the wrong way; the letters sit side by side.
+- **W and D**: a block that is wrong in waterlogging and in other properties (a rail with the wrong shape and water, for example) shows W, and also D when it faces the wrong way; with One Marker per Block off the letters sit side by side, F always last.
 - **Container contents in the verifier**: **Wrong Contents** is listed next to Litematica's categories, with one entry per container type and the missing and extra items in the tooltip. Select the category or an entry to highlight those containers; Ignore and Reset ignored work too.
-- **Needs filling (F)**: containers whose schematic block holds items get an F, without opening each one. It goes away once the verifier or opening the container shows the right contents. A skip list (off by default; all shulker boxes in it) leaves out containers that hold only those items, for example the hoppers full of empty shulker boxes under a box loader.
+- **Needs filling (F)**: containers whose schematic block holds items get an F, without opening each one. It goes away once the verifier, opening the container, or (in single player, or with Servux and Litematica's Entity Data Sync on) an automatic check of containers near you shows the right contents, and comes back when the container is emptied, broken or replaced. A skip list (off by default; all shulker boxes in it) leaves out containers that hold only those items, for example the hoppers full of empty shulker boxes under a box loader.
 - **Exact rails**: put the same ALE jar on the server too. The server needs Fabric API but not Litematica or MaLiLib. The server checks each placement like a normal one and places the rail in the schematic's shape, without bending rails that are already there. An ascending rail waits until the block on its high side is there. Without ALE on the server, Easy Place works as before. Other mods (such as a printer) can use the same placement.
 - **Replace and block lists**: middle click (or your pick block key) picks the block under the mouse or crosshair, in the world or the schematic. Signs, hanging signs, torches, banners, heads and coral fans are one entry each, and every replaced block keeps its own form. Block lists and Schematic Preview's **Replace** open ALE's screen; a button at the top right opens the original one.
-- New settings: **Needs Filling Marker** (with colour, skip switch and skip list) and **Easy Place: Exact Rail Shapes**.
+- New settings: **Needs Filling Marker** (with colour, skip switch and skip list), **One Marker per Block**, **Sign Highlight** colours and **Easy Place: Exact Rail Shapes**.
 
 </details>
 
@@ -30,7 +33,10 @@ More: open "Details" below.
 
 - 水、气泡柱、冰、粘液块等半透明方块上的错误颜色清楚了；W 和 D 在多个属性不对时也都会显示。
 - 容器内容物在投影验证器里是一个分类，只有选中时才高亮。
-- 还需要往里放东西的容器显示绿色的 F。
+- 还需要往里放东西的容器显示绿色的 F；填对了自己消失（单人游戏，或者服务器有 Servux 并打开了投影的“实体数据同步”），之后又不对了会重新出现。
+- **标记只显示一个**（默认开）：一个方块只画最重要的字母，朝向 D 优先，其次含水 W，最后填充 F。
+- 投影验证器界面新增 **高亮告示牌** 按钮：有字的告示牌透墙标出来，已放置亮绿色，还没放深绿色。
+- 装了 Sodium 时，“透过玻璃显示投影”对普通玻璃也有效了。
 - 服务端也装了 ALE 时（单人游戏也算），轻松放置直接把铁轨放成投影里的形状，上坡、弯道都一次放好。
 - “替换”界面和方块选择界面可以用选取方块键；挂墙和立着的形态合成一项，默认打开 ALE 的界面。
 
@@ -39,12 +45,12 @@ More: open "Details" below.
 <details><summary>详细说明</summary>
 
 - **半透明方块上的标记**：开着“透过玻璃显示投影”时，水、气泡柱、冰、染色玻璃、粘液块、蜂蜜块、海带和含水方块不再把 Litematica 的颜色冲淡。开着光影包时照以前的方式画。
-- **W 和 D**：含水不对、同时别的属性也不对的方块（比如形状和含水都不对的铁轨）也显示 W，朝向不对时同时显示 D，几个字母并排。
+- **W 和 D**：含水不对、同时别的属性也不对的方块（比如形状和含水都不对的铁轨）也显示 W，朝向不对时同时显示 D；关掉“标记只显示一个”时几个字母并排，F 总在最后。
 - **验证器里的容器内容物**：Litematica 的分类旁边多了 **错误内容物**，每种容器一项，鼠标停在上面能看到缺少和多出的物品。选中分类或某一项才高亮这些容器；忽略和“重置忽略”也能用。
-- **需要填充（F）**：投影里装着东西的容器显示 F，不用一个个打开看。验证器或者打开容器确认内容物对了以后，F 就不显示了。跳过列表（默认关闭，列表里是各色潜影盒）可以不标只装着这些物品的容器，比如打包机下面装满空潜影盒的一排漏斗。
+- **需要填充（F）**：投影里装着东西的容器显示 F，不用一个个打开看。验证器、打开容器、或者自动检查（单人游戏；或者服务器有 Servux 并打开了投影的“实体数据同步”时，查玩家附近的容器）确认内容物对了以后，F 就不显示了；之后被拿空、敲掉或换掉会重新显示。跳过列表（默认关闭，列表里是各色潜影盒）可以不标只装着这些物品的容器，比如打包机下面装满空潜影盒的一排漏斗。
 - **铁轨按投影形状放**：把同一个 ALE jar 也放进服务端。服务端需要 Fabric API，不需要 Litematica 和 MaLiLib。服务端像普通放置一样检查每一次放置，按投影的形状放下铁轨，也不会把已经放好的铁轨拉歪。上坡铁轨等高的那一侧的方块放好再放。服务端没装 ALE 时，轻松放置照旧。别的模组（比如打印机）也能用同样的放置方式。
 - **替换和方块列表**：鼠标中键（或者你的选取方块键）选鼠标或准星指着的方块，世界里的和投影里的都可以。告示牌、悬挂式告示牌、火把、旗帜、头颅和珊瑚扇各算一项，替换后每个方块保留自己的形态。方块列表和 Schematic Preview 的“替换”默认打开 ALE 的界面，右上角的按钮打开原来的界面。
-- 新设置：**需要填充标记**（含颜色、跳过开关和跳过列表）和 **轻松放置：铁轨按投影形状**。
+- 新设置：**需要填充标记**（含颜色、跳过开关和跳过列表）、**标记只显示一个**、**高亮告示牌** 的两种颜色和 **轻松放置：铁轨按投影形状**。
 
 </details>
 

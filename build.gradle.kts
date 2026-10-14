@@ -40,6 +40,8 @@ dependencies {
 
     // 可选联动：Schematic Preview（编译期可见，运行时按需检测）
     if (schematicPreview.isNotEmpty()) modCompileOnly("maven.modrinth:schematicpreview:$schematicPreview")
+    // 可选联动：Sodium（1.21.11 的玻璃兼容 mixin 编译用，不打包，运行时装了才应用）
+    if (mc == "1.21.11") modCompileOnly("maven.modrinth:sodium:mc1.21.11-0.8.7-fabric")
 
     // gametest 运行时：加载 Schematic Preview 与本作者的打印机，测试联动
     // -PnoSchematicPreview：不加载 Schematic Preview，测试 ALE 自己的预览、图标和替换
@@ -97,12 +99,17 @@ val onlyOn12111 = listOf(
     "com/autyism/ale/verifier/OpenedContainers.java", "com/autyism/ale/mixin/client/MultiPlayerGameModeMixin.java",
     // Exact rail placement: the server part (ALE runs on a server too) and Easy Place / the API on the client
     "com/autyism/ale/AleCommon.java", "com/autyism/ale/rail/**", "com/autyism/ale/api/**", "com/autyism/ale/mixin/common/**",
-    "com/autyism/ale/mixin/litematica/EasyPlaceRailMixin.java", "com/autyism/ale/mixin/litematica/LegacyEasyPlaceRailMixin.java"
+    "com/autyism/ale/mixin/litematica/EasyPlaceRailMixin.java", "com/autyism/ale/mixin/litematica/LegacyEasyPlaceRailMixin.java",
+    // Container contents in multiplayer: only data the server really sent
+    "com/autyism/ale/verifier/ServerContainerData.java", "com/autyism/ale/mixin/litematica/EntityDataReceivedMixin.java",
+    // Render Through Glass with Sodium (compiled against Sodium for 1.21.11 only)
+    "com/autyism/ale/mixin/compat/sodium/**"
 )
 val onlyOn12111Mixins = listOf("litematica.SchematicVerifierInvoker", "litematica.TaskBaseAccessor", "litematica.SchematicVerifierSelectMixin",
     "litematica.VerifierResultListMixin", "litematica.GuiSchematicVerifierMixin", "litematica.VerificationResultWidgetMixin",
     "malilib.ConfigButtonStringListMixin", "compat.schematicpreview.OpenReplaceDialogMixin", "client.MultiPlayerGameModeMixin",
-    "litematica.EasyPlaceRailMixin", "litematica.LegacyEasyPlaceRailMixin")
+    "litematica.EasyPlaceRailMixin", "litematica.LegacyEasyPlaceRailMixin", "litematica.EntityDataReceivedMixin",
+    "compat.sodium.SodiumGlassPassMixin")
 if (mc != "1.21.11") {
     sourceSets.named("main") { java.exclude(onlyOn12111) }
 }

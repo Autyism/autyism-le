@@ -107,25 +107,31 @@ public final class MarkerGameTest implements FabricClientGameTest {
                 markers(context, false);
                 ViewShots.rebuild(context, placement);
                 Path without = GT.shot(context, "ale-markers-" + cs.name + "-off");
-                markers(context, true);
-                ViewShots.rebuild(context, placement);
-                Path with = GT.shot(context, "ale-markers-" + cs.name);
-                int blue = RenderGameTest.countBlue(with) - RenderGameTest.countBlue(without);
-                int red = RenderGameTest.countRed(with) - RenderGameTest.countRed(without);
-                boolean hasW = blue >= MIN_PIXELS, hasD = red >= MIN_PIXELS;
-                boolean ok = hasW == cs.wantW && hasD == cs.wantD;
-                GT.log(String.format(java.util.Locale.ROOT, "[markers] %-28s W: %5d px (want %s)  D: %5d px (want %s)  %s",
-                        cs.name, blue, cs.wantW ? "yes" : "no", red, cs.wantD ? "yes" : "no", ok ? "ok" : "WRONG"));
-                if (!ok) failures.add(cs.name);
+                // 两种模式：并排（“标记只显示一个”关）和只画最重要的一个（开，默认：D 优先于 W）
+                for (boolean one : new boolean[]{false, true}) {
+                    context.runOnClient(c -> AleConfigs.Generic.MARKER_PRIORITY.setBooleanValue(one));
+                    markers(context, true);
+                    ViewShots.rebuild(context, placement);
+                    Path with = GT.shot(context, "ale-markers-" + cs.name + (one ? "-one" : ""));
+                    int blue = RenderGameTest.countBlue(with) - RenderGameTest.countBlue(without);
+                    int red = RenderGameTest.countRed(with) - RenderGameTest.countRed(without);
+                    boolean hasW = blue >= MIN_PIXELS, hasD = red >= MIN_PIXELS;
+                    boolean wantW = cs.wantW && !(one && cs.wantD);
+                    boolean ok = hasW == wantW && hasD == cs.wantD;
+                    GT.log(String.format(java.util.Locale.ROOT, "[markers] %-28s %-4s W: %5d px (want %s)  D: %5d px (want %s)  %s",
+                            cs.name, one ? "one" : "both", blue, wantW ? "yes" : "no", red, cs.wantD ? "yes" : "no", ok ? "ok" : "WRONG"));
+                    if (!ok) failures.add(cs.name + (one ? " (one marker)" : ""));
+                }
             }
             if (!failures.isEmpty() && !GTFilter.measureOnly()) throw new AssertionError("[markers] wrong W / D markers: " + failures);
-            GT.log("[markers] " + (failures.isEmpty() ? "OK: W and D shown for every wrong property, also together" : "measured only, wrong: " + failures));
+            GT.log("[markers] " + (failures.isEmpty() ? "OK: W and D shown for every wrong property, side by side or only the more important one" : "measured only, wrong: " + failures));
             // 世界关掉之前恢复（渲染层等设置会存进同名世界的数据）
             ViewShots.end(context);
         } finally {
             ViewShots.end(context);
             GT.removeAllPlacements(context);
             markers(context, true);
+            context.runOnClient(c -> AleConfigs.Generic.MARKER_PRIORITY.setBooleanValue(true));
         }
     }
 

@@ -34,12 +34,36 @@ import java.util.concurrent.CompletableFuture;
 public final class ContainerVerifier {
     private static final Minecraft mc = Minecraft.getInstance();
     private static final Map<SchematicVerifier, Results> RESULTS = new WeakHashMap<>();
-    private static final Map<BlockPos, CompletableFuture<List<ItemStack>>> FETCHES = new HashMap<>();
+    /** 单人游戏：向服务端线程要的容器内容（和要的时间）。太久以前要的结果不用（之后可能已经变了） */
+    private record Fetch(CompletableFuture<List<ItemStack>> future, long tick) {
+    }
+    private static final Map<BlockPos, Fetch> FETCHES = new HashMap<>();
+    private static final int FETCH_MAX_AGE = 10;
     /**
-     * 验证器确认过“世界里的内容和投影一样”的容器（BlockPos.asLong）。“需要填充”标记不画在这些容器上；
-     * 区块重建线程会读，所以用并发集合。验证器重置、换世界时清空
+     * 确认过“世界里的内容和投影一样”的容器（BlockPos.asLong → 确认时客户端世界里的方块和方块实体）。“需要填充”标记不画在这些容器上。
+     * 只在还能确定的时候有效：
+     * <ul>
+     * <li>方块被敲掉或换掉（客户端的方块实体换了一个）、区块卸载、换世界：作废（每 tick 在主线程检查）；</li>
+     * <li>打开容器看到内容不一样：作废（OpenedContainers）；</li>
+     * <li>能读到世界里的内容时（单人游戏；多人游戏里 Litematica 能从服务端拿到容器数据时，限玩家附近）定期重新比较，变了就作废。</li>
+     * </ul>
+     * 区块重建线程只读这个表（用并发表），写入都在客户端主线程。验证器重置时也全部清空
      */
-    private static final Set<Long> KNOWN_MATCH = java.util.concurrent.ConcurrentHashMap.newKeySet();
+    private static final Map<Long, Known> KNOWN = new java.util.concurrent.ConcurrentHashMap<>();
+
+    /** 确认时客户端世界里的方块和方块实体（敲掉重放会换成新的方块实体），以及上次比较内容的时间（tick） */
+    private record Known(Block block, java.lang.ref.WeakReference<BlockEntity> blockEntity, long checkedAt) {
+    }
+
+    /** 每 tick 最多检查这么多条“方块还是那个吗”（一般远少于这个数） */
+    private static final int VALIDATE_PER_TICK = 512;
+    /** 每条已确认的容器多久重新比较一次内容（tick） */
+    private static final int RECHECK_INTERVAL = 40;
+    private static final int CONTENT_RECHECKS_PER_TICK = 16;
+    /** 多人游戏里只重新比较玩家附近的（每次都要向服务端要数据） */
+    private static final double REMOTE_RECHECK_RADIUS = 64.0;
+    @Nullable
+    private static Iterator<Map.Entry<Long, Known>> validateCursor;
     /** 已知结果变了、要重建渲染数据的区块（每 tick 处理几个，不一次全部重建） */
     private static final Set<Long> REBUILD_CHUNKS = new LinkedHashSet<>();
     private static final int REBUILDS_PER_TICK = 8;
@@ -176,10 +200,13 @@ public final class ContainerVerifier {
     }
 
     private static void clearKnown() {
-        for (long p : KNOWN_MATCH) {
-            REBUILD_CHUNKS.add(net.minecraft.world.level.ChunkPos.asLong(BlockPos.getX(p) >> 4, BlockPos.getZ(p) >> 4));
+        for (long p : KNOWN.keySet()) forget(p);
+    }
+
+    private static void forget(long pos) {
+        if (KNOWN.remove(pos) != null) {
+            REBUILD_CHUNKS.add(net.minecraft.world.level.ChunkPos.asLong(BlockPos.getX(pos) >> 4, BlockPos.getZ(pos) >> 4));
         }
-        KNOWN_MATCH.clear();
     }
 
     /** 下次画框时按玩家现在的位置重新排（验证器整理自己的位置列表时调用） */
@@ -261,9 +288,9 @@ public final class ContainerVerifier {
         setKnownMatch(pos, same);
     }
 
-    /** 世界里这个容器的内容已经确认和投影一样（验证器查过） */
+    /** 世界里这个容器的内容已经确认和投影一样（验证器查过，或者打开看过），而且之后没有作废 */
     public static boolean isKnownToMatch(BlockPos pos) {
-        return !KNOWN_MATCH.isEmpty() && KNOWN_MATCH.contains(pos.asLong());
+        return !KNOWN.isEmpty() && KNOWN.containsKey(pos.asLong());
     }
 
     /** 别的途径（例如玩家打开了这个容器）知道了世界里这个容器的内容和投影是否一样 */
@@ -271,17 +298,125 @@ public final class ContainerVerifier {
         setKnownMatch(pos.immutable(), same);
     }
 
+    /** 主线程调用。确认一样时记下客户端世界里这一格现在的方块和方块实体（之后换掉了就作废） */
     private static void setKnownMatch(BlockPos pos, boolean same) {
-        boolean changed = same ? KNOWN_MATCH.add(pos.asLong()) : KNOWN_MATCH.remove(pos.asLong());
-        if (changed) REBUILD_CHUNKS.add(net.minecraft.world.level.ChunkPos.asLong(pos.getX() >> 4, pos.getZ() >> 4));
+        long key = pos.asLong();
+        BlockEntity be = same && mc.level != null ? mc.level.getBlockEntity(pos) : null;
+        if (be == null) {
+            forget(key);
+            return;
+        }
+        Known old = KNOWN.put(key, new Known(mc.level.getBlockState(pos).getBlock(), new java.lang.ref.WeakReference<>(be), tickCounter));
+        if (old == null) REBUILD_CHUNKS.add(net.minecraft.world.level.ChunkPos.asLong(pos.getX() >> 4, pos.getZ() >> 4));
+    }
+
+    /**
+     * 每 tick：已确认的容器里，方块被敲掉 / 换掉（方块实体不是原来那个）、区块卸载的作废；
+     * 读得到世界里的内容时，到时间的重新比较一次，变了的作废
+     */
+    private static void maintainKnown(@Nullable WorldSchematic ws) {
+        if (KNOWN.isEmpty() || mc.level == null) {
+            validateCursor = null;
+            return;
+        }
+        if (validateCursor == null || !validateCursor.hasNext()) validateCursor = KNOWN.entrySet().iterator();
+        for (int i = 0; i < VALIDATE_PER_TICK && validateCursor.hasNext(); i++) {
+            var e = validateCursor.next();
+            BlockPos pos = BlockPos.of(e.getKey());
+            Known k = e.getValue();
+            BlockEntity be = mc.level.getBlockEntity(pos);
+            if (be == null || be != k.blockEntity().get() || mc.level.getBlockState(pos).getBlock() != k.block()) forget(e.getKey());
+        }
+        boolean local = mc.getSingleplayerServer() != null;
+        //? if >=1.21.11 <26.1 {
+        boolean remote = !local && ServerContainerData.available();
+        //?} else
+        //boolean remote = false;
+        if ((!local && !remote) || ws == null || mc.player == null) return;
+        int budget = CONTENT_RECHECKS_PER_TICK;
+        for (var e : KNOWN.entrySet()) {
+            if (budget <= 0) break;
+            Known k = e.getValue();
+            if (tickCounter - k.checkedAt() < RECHECK_INTERVAL) continue;
+            BlockPos pos = BlockPos.of(e.getKey());
+            if (remote && mc.player.distanceToSqr(net.minecraft.world.phys.Vec3.atCenterOf(pos)) > REMOTE_RECHECK_RADIUS * REMOTE_RECHECK_RADIUS) continue;
+            budget--;
+            if (!(ws.getBlockEntity(pos) instanceof Container wanted)) {
+                forget(e.getKey());
+                continue;
+            }
+            List<ItemStack> actual = actualContents(mc.level, pos);
+            if (actual == null) continue;
+            if (sameContents(nonEmpty(wanted), actual)) KNOWN.replace(e.getKey(), k, new Known(k.block(), k.blockEntity(), tickCounter));
+            else forget(e.getKey());
+        }
     }
 
     /** 每 tick：处理挂起的位置、复查已标记的位置（玩家补好内容物后标记自动消失） */
+    // ---------------- 不用打开也能知道填好了没有 ----------------
+    /**
+     * 画着“需要填充”F 的容器（区块重建线程记下，BlockPos.asLong → 下次检查的 tick）。能读到世界里的内容时
+     * （单人游戏；多人游戏里 Litematica 的实体数据同步开着、服务端有 Servux），主线程每 tick 查几个：
+     * 和投影一样就记为已确认（F 随之消失），不一样就过一会儿再查。多人游戏只查玩家附近的（每次都要向服务端要数据）。
+     */
+    private static final Map<Long, Long> FILL_CANDIDATES = new java.util.concurrent.ConcurrentHashMap<>();
+    private static final int CANDIDATE_CHECKS_PER_TICK = 8;
+    private static final int CANDIDATE_RECHECK_INTERVAL = 20;
+    private static final int MAX_CANDIDATES = 8192;
+
+    /** 区块重建线程：这一格画了 F */
+    public static void noteFillCandidate(BlockPos pos) {
+        if (FILL_CANDIDATES.size() >= MAX_CANDIDATES) return;
+        FILL_CANDIDATES.putIfAbsent(pos.asLong(), 0L);
+    }
+
+    private static void checkFillCandidates(@Nullable WorldSchematic ws) {
+        if (FILL_CANDIDATES.isEmpty() || ws == null || mc.level == null || mc.player == null) return;
+        boolean local = mc.getSingleplayerServer() != null;
+        //? if >=1.21.11 <26.1 {
+        boolean remote = !local && ServerContainerData.available();
+        //?} else
+        //boolean remote = false;
+        if (!local && !remote) return;
+        int budget = CANDIDATE_CHECKS_PER_TICK;
+        var it = FILL_CANDIDATES.entrySet().iterator();
+        while (it.hasNext() && budget > 0) {
+            var e = it.next();
+            if (e.getValue() > tickCounter) continue;
+            BlockPos pos = BlockPos.of(e.getKey());
+            if (KNOWN.containsKey(e.getKey()) || !(ws.getBlockEntity(pos) instanceof Container wanted)
+                    || ws.getBlockState(pos).getBlock() != mc.level.getBlockState(pos).getBlock()) {
+                // 已经确认过、投影里不再是容器、或者世界里还没放这个方块（放了以后区块重建会再记一次）
+                it.remove();
+                continue;
+            }
+            if (remote && mc.player.distanceToSqr(net.minecraft.world.phys.Vec3.atCenterOf(pos)) > REMOTE_RECHECK_RADIUS * REMOTE_RECHECK_RADIUS) continue;
+            budget--;
+            List<ItemStack> actual = actualContents(mc.level, pos);
+            if (actual == null) {
+                e.setValue(tickCounter + 5L); // 在等服务端发数据
+                continue;
+            }
+            if (sameContents(nonEmpty(wanted), actual)) {
+                noteWorldContents(pos, true);
+                it.remove();
+            } else {
+                e.setValue((long) tickCounter + CANDIDATE_RECHECK_INTERVAL);
+            }
+        }
+    }
+
     public static void tick() {
         if (mc.level != knownLevel) {
+            // 换世界 / 离开世界：之前知道的都不算了
             knownLevel = mc.level;
-            KNOWN_MATCH.clear();
+            KNOWN.clear();
+            FILL_CANDIDATES.clear();
+            SignHighlight.onWorldChange(mc.level);
+            validateCursor = null;
             REBUILD_CHUNKS.clear();
+            //? if >=1.21.11 <26.1
+            ServerContainerData.clear();
         }
         if (mc.level == null) {
             FETCHES.clear();
@@ -299,6 +434,9 @@ public final class ContainerVerifier {
         tickCounter++;
         int budget = RECHECK_PER_TICK;
         WorldSchematic ws = fi.dy.masa.litematica.world.SchematicWorldHandler.getSchematicWorld();
+        maintainKnown(ws);
+        checkFillCandidates(ws);
+        SignHighlight.tick();
         for (var entry : new ArrayList<>(RESULTS.entrySet())) {
             SchematicVerifier verifier = entry.getKey();
             for (var p : new ArrayList<>(entry.getValue().pending.entrySet())) {
@@ -308,9 +446,13 @@ public final class ContainerVerifier {
             }
         }
         if (tickCounter % 20 != 0 || ws == null) return;
+        // 多人游戏里每次复查都要向服务端要数据：只复查玩家附近的
+        boolean remote = mc.getSingleplayerServer() == null;
         for (var entry : new ArrayList<>(RESULTS.entrySet())) {
             Results r = entry.getValue();
             for (BlockPos pos : new ArrayList<>(r.mismatches.keySet())) {
+                if (remote && mc.player != null && mc.player.distanceToSqr(net.minecraft.world.phys.Vec3.atCenterOf(pos))
+                        > REMOTE_RECHECK_RADIUS * REMOTE_RECHECK_RADIUS) continue;
                 if (budget-- <= 0) return;
                 if (ws.getBlockEntity(pos) instanceof Container c && ws.getBlockState(pos) == mc.level.getBlockState(pos)) {
                     evaluate(entry.getKey(), mc.level, pos, ws.getBlockState(pos), nonEmpty(c));
@@ -327,7 +469,12 @@ public final class ContainerVerifier {
     private static List<ItemStack> actualContents(Level worldClient, BlockPos pos) {
         IntegratedServer server = mc.getSingleplayerServer();
         if (server != null) {
-            CompletableFuture<List<ItemStack>> f = FETCHES.get(pos);
+            Fetch fetch = FETCHES.get(pos);
+            if (fetch != null && fetch.future().isDone() && tickCounter - fetch.tick() > FETCH_MAX_AGE) {
+                FETCHES.remove(pos); // 很早以前要的，内容可能已经变了：重新要
+                fetch = null;
+            }
+            CompletableFuture<List<ItemStack>> f = fetch == null ? null : fetch.future();
             if (f == null) {
                 var dim = worldClient.dimension();
                 f = server.submit(() -> {
@@ -335,30 +482,40 @@ public final class ContainerVerifier {
                     if (level != null && level.getBlockEntity(pos) instanceof Container c) return nonEmpty(c);
                     return List.<ItemStack>of();
                 });
-                FETCHES.put(pos, f);
+                FETCHES.put(pos, new Fetch(f, tickCounter));
             }
             if (!f.isDone()) return null;
             FETCHES.remove(pos);
             return f.getNow(List.of());
         }
-        // 1.21.10 及更早 Litematica 的实体数据管理器叫 EntitiesDataStorage
-        //? if >=1.21.11 {
-        Container c = EntityDataManager.getInstance().getBlockInventoryWrapped(worldClient, pos, false);
+        // 多人游戏：只用服务端真正发来的数据（Litematica 的实体数据同步：服务端装了 Servux，或者 OP 的备用查询）。
+        // Litematica 自己的缓存在等回复时放的是客户端世界里的方块实体（里面没有物品），大箱子还会两半合起来，都不能拿来比
+        //? if >=1.21.11 <26.1 {
+        return ServerContainerData.get(worldClient, pos);
+        //?} elif >=1.21.11 {
+        /*Container c = EntityDataManager.getInstance().getBlockInventoryWrapped(worldClient, pos, false);
         if (c == null) {
             EntityDataManager.getInstance().requestBlockEntityWrapped(worldClient, pos);
             return null;
         }
-        //?} else {
+        return nonEmpty(c);
+        *///?} else {
         /*Container c = EntitiesDataStorage.getInstance().getBlockInventory(worldClient, pos, false);
         if (c == null) {
             EntitiesDataStorage.getInstance().requestBlockEntity(worldClient, pos);
             return null;
         }
-        *///?}
         return nonEmpty(c);
+        *///?}
     }
 
-    private static List<ItemStack> nonEmpty(Container c) {
+    /** 主线程的 tick 计数（ServerContainerData 判断数据新旧用） */
+    static long now() {
+        return tickCounter;
+    }
+
+    /** 容器里不空的格子（复制） */
+    static List<ItemStack> nonEmpty(Container c) {
         List<ItemStack> list = new ArrayList<>();
         for (int i = 0; i < c.getContainerSize(); i++) {
             ItemStack s = c.getItem(i);

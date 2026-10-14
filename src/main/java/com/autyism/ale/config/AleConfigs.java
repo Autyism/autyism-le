@@ -44,10 +44,15 @@ public class AleConfigs implements IConfigHandler {
         // 朝向错误：红色 D
         public static final ConfigBoolean ORIENTATION_MARKER = new ConfigBoolean("orientationMarker", true).apply(PREFIX);
         public static final ConfigColor ORIENTATION_MARKER_COLOR = new ConfigColor("orientationMarkerColor", "#FFFF2020").apply(PREFIX);
+        // 一格只画一个标记：朝向 D > 含水 W > 填充 F；关掉时 D、W 并排，F 排在最后
+        public static final ConfigBoolean MARKER_PRIORITY = new ConfigBoolean("markerPriority", true).apply(PREFIX);
         // 需要填充：投影里装着东西的容器画绿色 F；可以跳过只装着列表里物品的容器（默认列表是各色潜影盒）
         public static final ConfigBoolean FILL_MARKER = new ConfigBoolean("fillMarker", true).apply(PREFIX);
         public static final ConfigColor FILL_MARKER_COLOR = new ConfigColor("fillMarkerColor", "#FF2BD96B").apply(PREFIX);
         public static final ConfigBoolean FILL_MARKER_SKIP = new ConfigBoolean("fillMarkerSkip", false).apply(PREFIX);
+        // 验证器界面“高亮告示牌”：已经放了的亮绿色，投影里有、还没放的深绿色
+        public static final ConfigColor SIGN_HIGHLIGHT_PLACED_COLOR = new ConfigColor("signHighlightPlacedColor", "#FF55FF55").apply(PREFIX);
+        public static final ConfigColor SIGN_HIGHLIGHT_MISSING_COLOR = new ConfigColor("signHighlightMissingColor", "#FF0E7A2E").apply(PREFIX);
         public static final ConfigStringList FILL_MARKER_SKIP_ITEMS = new ConfigStringList("fillMarkerSkipItems",
                 ImmutableList.copyOf(com.autyism.ale.render.FillMarker.DEFAULT_SKIP)).apply(PREFIX);
         // 轻松放置铁轨直接是投影里的形状（服务端也装了 ALE 时）
@@ -78,11 +83,14 @@ public class AleConfigs implements IConfigHandler {
                 WATERLOGGED_MARKER_COLOR,
                 ORIENTATION_MARKER,
                 ORIENTATION_MARKER_COLOR,
+                MARKER_PRIORITY,
                 //? if >=1.21.11 <26.1 {
                 FILL_MARKER,
                 FILL_MARKER_COLOR,
                 FILL_MARKER_SKIP,
                 FILL_MARKER_SKIP_ITEMS,
+                SIGN_HIGHLIGHT_PLACED_COLOR,
+                SIGN_HIGHLIGHT_MISSING_COLOR,
                 EASY_PLACE_EXACT_RAILS,
                 //?}
                 MATERIAL_LIST_ENTITIES,
@@ -152,9 +160,15 @@ public class AleConfigs implements IConfigHandler {
         Generic.ORIENTATION_MARKER.setValueChangeCallback(c -> refreshSchematicRender());
         Generic.ORIENTATION_MARKER_COLOR.setValueChangeCallback(c -> refreshSchematicRender());
         Generic.FILL_MARKER.setValueChangeCallback(c -> refreshSchematicRender());
+        Generic.MARKER_PRIORITY.setValueChangeCallback(c -> refreshSchematicRender());
         Generic.FILL_MARKER_COLOR.setValueChangeCallback(c -> refreshSchematicRender());
         Generic.FILL_MARKER_SKIP.setValueChangeCallback(c -> refreshSchematicRender());
         Generic.FILL_MARKER_SKIP_ITEMS.setValueChangeCallback(c -> refreshSchematicRender());
+        // 装了 Sodium 时这个设置决定玻璃画在哪一层（见 SodiumGlassPassMixin）：改了以后世界的区块重建
+        Generic.RENDER_THROUGH_GLASS.setValueChangeCallback(c -> {
+            var mc = net.minecraft.client.Minecraft.getInstance();
+            if (net.fabricmc.loader.api.FabricLoader.getInstance().isModLoaded("sodium") && mc.level != null) mc.levelRenderer.allChanged();
+        });
         //?}
         ConfigManager.getInstance().registerConfigHandler(AleMod.MOD_ID, INSTANCE);
         fi.dy.masa.malilib.registry.Registry.CONFIG_SCREEN.registerConfigScreenFactory(

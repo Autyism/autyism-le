@@ -158,6 +158,16 @@ public final class ContainerVerifierGui {
             gui.initGui();
         });
         buttons.add(button);
+        // “高亮告示牌”开关（见 SignHighlight）
+        String signs = StringUtils.translate(SignHighlight.enabled ? "autyism-le.gui.button.schematic_verifier.signs_on"
+                : "autyism-le.gui.button.schematic_verifier.signs_off");
+        ButtonGeneric signButton = new ButtonGeneric(x + button.getWidth() + 4, rowY, Minecraft.getInstance().font.width(signs) + 10, 20, signs);
+        signButton.setHoverStrings(StringUtils.translate("autyism-le.gui.hover.schematic_verifier.signs"));
+        signButton.setActionListener((btn, mouseButton) -> {
+            SignHighlight.toggle();
+            gui.initGui();
+        });
+        buttons.add(signButton);
         // “重置忽略”：忽略了容器种类时也能点
         if (ContainerVerifier.hasIgnored(gui.getPlacement().getSchematicVerifier())) {
             String reset = StringUtils.translate("litematica.gui.button.schematic_verifier.reset_ignored");

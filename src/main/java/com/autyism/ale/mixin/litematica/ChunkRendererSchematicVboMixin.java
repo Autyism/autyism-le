@@ -29,7 +29,7 @@ import java.util.List;
 
 /**
  * 需求 6：含水不对时在黄色错误状态标记上再画蓝色的 W，朝向不对时画红色的 D；别的属性也不对时照样画。
- * 投影里装着东西的容器画绿色的 F（需要填充）。几个字母同时要画时并排画。
+ * 投影里装着东西的容器画绿色的 F（需要填充）。几个字母同时要画时：默认只画最重要的一个（D > W > F，“标记只显示一个”），关掉后并排画。
  * 字母和 Litematica 的覆盖层一起写进区块的渲染数据，只在区块重建时计算一次。
  */
 @Mixin(value = ChunkRendererSchematicVbo.class, remap = false)
@@ -89,6 +89,10 @@ public abstract class ChunkRendererSchematicVboMixin {
         ALE_MARKED.get()[0] = pos.asLong();
         //?} else
         //if (glyphs.isEmpty()) return;
+        // “标记只显示一个”：列表的顺序就是重要程度（D、W、F），只留第一个
+        if (AleConfigs.Generic.MARKER_PRIORITY.getBooleanValue() && glyphs.size() > 1) {
+            glyphs.subList(1, glyphs.size()).clear();
+        }
         //? if >=1.21.11 {
         BufferBuilder buffer = this.preRenderOverlay(pack, OverlayRenderType.QUAD);
         //?} else
@@ -127,7 +131,10 @@ public abstract class ChunkRendererSchematicVboMixin {
     private boolean ale$needsFilling(BlockPos pos, BlockState stateSchematic) {
         if (!AleConfigs.Generic.FILL_MARKER.getBooleanValue() || !stateSchematic.hasBlockEntity()) return false;
         if (!com.autyism.ale.render.FillMarker.needsFilling(this.schematicWorldView.getBlockEntity(pos))) return false;
-        return !com.autyism.ale.verifier.ContainerVerifier.isKnownToMatch(pos);
+        if (com.autyism.ale.verifier.ContainerVerifier.isKnownToMatch(pos)) return false;
+        // 能读到世界里的内容时，主线程会去查它填好了没有（填好了 F 自己消失）
+        com.autyism.ale.verifier.ContainerVerifier.noteFillCandidate(pos);
+        return true;
     }
     //?}
 }

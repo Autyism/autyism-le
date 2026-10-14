@@ -27,7 +27,9 @@ public class AleMixinPlugin implements IMixinConfigPlugin {
         if (i >= 0) {
             String rest = mixinClassName.substring(i + ".compat.".length());
             String modId = rest.substring(0, rest.indexOf('.'));
-            return FabricLoader.getInstance().isModLoaded(modId);
+            // 那个模组装了，而且要改的类还在（模组更新后改了名就不应用，不报错）
+            return FabricLoader.getInstance().isModLoaded(modId)
+                    && AleMixinPlugin.class.getClassLoader().getResource(targetClassName.replace('.', '/') + ".class") != null;
         }
         // without.<modid>.*：只在那个模组没装时应用（ALE 自己实现、装了原作时让给原作的功能）
         //? if >=1.21.11 {

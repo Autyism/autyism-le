@@ -229,7 +229,8 @@ public final class RailGameTest implements FabricClientGameTest {
             try (TestServerConnection connection = server.connect()) {
                 joined(context, server, connection);
                 context.waitFor(c -> ExactRailPlacement.isAvailable(), 200);
-                GT.log("[rails] dedicated server with ALE: exact placement available on the client: true");
+                GT.log("[rails] dedicated server with ALE: exact placement available on the client: true, Litematica's placement protocol: "
+                        + context.computeOnClient(c -> fi.dy.masa.litematica.util.PlacementHandler.getEffectiveProtocolVersion()));
                 for (Case c : serverCases) placeAndCheck(context, server, c, true);
             }
 
@@ -242,7 +243,8 @@ public final class RailGameTest implements FabricClientGameTest {
                     context.waitTicks(40);
                     boolean available = context.computeOnClient(c -> ExactRailPlacement.isAvailable());
                     int sentBefore = SENT.get();
-                    GT.log("[rails] dedicated server without ALE: exact placement available on the client: " + available);
+                    GT.log("[rails] dedicated server without ALE: exact placement available on the client: " + available
+                            + ", Litematica's placement protocol: " + context.computeOnClient(c -> fi.dy.masa.litematica.util.PlacementHandler.getEffectiveProtocolVersion()));
                     if (available) throw new AssertionError("[rails] client thinks the server has ALE");
                     for (Case c : serverCases) placeAndCheck(context, server, c, false);
                     if (SENT.get() != sentBefore) throw new AssertionError("[rails] the client sent " + (SENT.get() - sentBefore) + " requests to a server without ALE");
@@ -377,7 +379,12 @@ public final class RailGameTest implements FabricClientGameTest {
             List<String> changed = changedAround(server, c);
             GT.log("[rails] " + c.name() + " without ALE on the server: " + placed + (changed.isEmpty() ? "" : ", around changed: " + changed));
             if (!placed.is(c.rail().getBlock())) throw new AssertionError("[rails] " + c.name() + ": nothing placed without ALE on the server");
-            if (placed == c.rail() && changed.isEmpty()) {
+            // Litematica's own placement protocol (V3, with Servux on the server) already sets the shape of a rail
+            // without neighbours; only the cases with rails next to them show vanilla reshaping then
+            boolean protocolV3 = context.computeOnClient(cl -> fi.dy.masa.litematica.util.PlacementHandler.getEffectiveProtocolVersion()
+                    == fi.dy.masa.litematica.util.EasyPlaceProtocol.V3);
+            boolean hasRailNeighbours = c.around().values().stream().anyMatch(s -> s.getBlock() instanceof net.minecraft.world.level.block.BaseRailBlock);
+            if (placed == c.rail() && changed.isEmpty() && !(protocolV3 && !hasRailNeighbours)) {
                 throw new AssertionError("[rails] " + c.name() + ": came out exactly like the schematic without ALE on the server (test case shows nothing)");
             }
         }
