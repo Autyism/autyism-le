@@ -110,6 +110,7 @@ public final class FillMarkerGameTest implements FabricClientGameTest {
 
             // “标记只显示一个”（默认开）：朝向、含水、填充都不对的箱子只画 D
             context.runOnClient(c -> AleConfigs.Generic.MARKER_PRIORITY.setBooleanValue(true));
+            context.waitTicks(5);
             int[] one = shoot(context, sp, placement, indexOf(cases, "chest-facing+water+items"), "chest-facing+water+items-one");
             GT.log("[fillmarker] one marker per block: D=" + one[1] + " px, W=" + one[2] + " px, F=" + one[0] + " px");
             if (one[1] < MIN_PIXELS || one[2] >= MIN_PIXELS || one[0] >= MIN_PIXELS) failures.add("one-marker");
@@ -230,7 +231,16 @@ public final class FillMarkerGameTest implements FabricClientGameTest {
         ViewShots.onlyLayerX(context, pos.getX());
         ViewShots.rebuild(context, placement);
         Path shot = GT.shot(context, "ale-fillmarker-" + name);
-        return new int[]{countGreen(shot), RenderGameTest.countRed(shot), RenderGameTest.countBlue(shot)};
+        int[] px = {countGreen(shot), RenderGameTest.countRed(shot), RenderGameTest.countBlue(shot)};
+        // 偶尔会截到 Litematica 正在后台重画、覆盖层还没画全的那一帧：F 只画了一部分或者什么都没有，重画一次再截
+        if (px[0] > 0 && px[0] < 1500 && !name.contains("facing") || px[0] == 0 && px[1] == 0 && px[2] == 0) {
+            ViewShots.rebuild(context, placement);
+            Path again = GT.shot(context, "ale-fillmarker-" + name + "-again");
+            int[] retry = {countGreen(again), RenderGameTest.countRed(again), RenderGameTest.countBlue(again)};
+            if (retry[0] != px[0]) GT.log("[fillmarker] " + name + ": half-drawn frame, taken again (" + px[0] + " -> " + retry[0] + " px)");
+            px = retry;
+        }
+        return px;
     }
 
     /** “F” 的绿色（默认 #2BD96B） */

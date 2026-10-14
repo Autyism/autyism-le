@@ -71,6 +71,27 @@ public final class WaterloggedMarker {
         }
     }
 
+    /**
+     * 大箱子这种两格拼成的方块：rel 和 rel 朝 toOther（EAST 或 SOUTH）的那一格看成一个长方体，只画一个字母：
+     * 长的四个面画在正中间（两格的接缝上），两头各画一个
+     */
+    public static void emitDouble(BufferBuilder buffer, BlockPos rel, int argb, float[][] strokes, Direction toOther) {
+        float a = ((argb >>> 24) & 0xFF) / 255f;
+        float r = ((argb >>> 16) & 0xFF) / 255f;
+        float g = ((argb >>> 8) & 0xFF) / 255f;
+        float b = (argb & 0xFF) / 255f;
+        for (Direction face : Direction.values()) {
+            float shift;
+            if (face == toOther) shift = 1f; // 另一格外侧的那一头
+            else if (face == toOther.getOpposite()) shift = 0f; // 这一格外侧的那一头
+            else shift = 0.5f; // 长的面：挪到两格中间
+            float ox = toOther.getStepX() * shift, oz = toOther.getStepZ() * shift;
+            for (float[] s : strokes) {
+                stroke(buffer, rel, face, s[0], s[1], s[2], s[3], HALF_WIDTH, r, g, b, a, ox, oz);
+            }
+        }
+    }
+
     /** 字母缩放 scale 后平移到 (u0, v0) */
     private static void emit(BufferBuilder buffer, BlockPos rel, int argb, float[][] strokes, float u0, float v0, float scale, float halfWidth) {
         float a = ((argb >>> 24) & 0xFF) / 255f;
@@ -86,6 +107,11 @@ public final class WaterloggedMarker {
 
     private static void stroke(BufferBuilder buffer, BlockPos rel, Direction face, float u0, float v0, float u1, float v1, float halfWidth,
                                float r, float g, float b, float a) {
+        stroke(buffer, rel, face, u0, v0, u1, v1, halfWidth, r, g, b, a, 0f, 0f);
+    }
+
+    private static void stroke(BufferBuilder buffer, BlockPos rel, Direction face, float u0, float v0, float u1, float v1, float halfWidth,
+                               float r, float g, float b, float a, float ox, float oz) {
         float du = u1 - u0, dv = v1 - v0;
         float len = (float) Math.sqrt(du * du + dv * dv);
         float nu = -dv / len * halfWidth, nv = du / len * halfWidth;
@@ -94,7 +120,7 @@ public final class WaterloggedMarker {
         };
         for (float[] c : corners) {
             float[] p = toBlock(face, c[0], c[1]);
-            buffer.addVertex(rel.getX() + p[0], rel.getY() + p[1], rel.getZ() + p[2]).setColor(r, g, b, a);
+            buffer.addVertex(rel.getX() + p[0] + ox, rel.getY() + p[1], rel.getZ() + p[2] + oz).setColor(r, g, b, a);
         }
     }
 

@@ -43,6 +43,7 @@
     "litematica.EasyPlaceRailMixin",
     "litematica.LegacyEasyPlaceRailMixin",
     "litematica.EntityDataReceivedMixin",
+    "litematica.ChunkManagerSchematicMixin",
     "compat.sodium.SodiumGlassPassMixin",
     "litematica.WorldRendererSchematicMixin"
   ],

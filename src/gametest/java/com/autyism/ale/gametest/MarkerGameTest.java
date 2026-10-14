@@ -99,25 +99,33 @@ public final class MarkerGameTest implements FabricClientGameTest {
             context.waitTicks(10);
 
             List<String> failures = new ArrayList<>();
-            for (int i = 0; i < cases.size(); i++) {
-                Case cs = cases.get(i);
-                BlockPos pos = new BlockPos(X0 + STEP * i, Y, Z);
-                ViewShots.lookAt(context, sp, pos);
-                ViewShots.onlyLayerX(context, pos.getX());
-                markers(context, false);
-                ViewShots.rebuild(context, placement);
-                Path without = GT.shot(context, "ale-markers-" + cs.name + "-off");
-                // 两种模式：并排（“标记只显示一个”关）和只画最重要的一个（开，默认：D 优先于 W）
-                for (boolean one : new boolean[]{false, true}) {
-                    context.runOnClient(c -> AleConfigs.Generic.MARKER_PRIORITY.setBooleanValue(one));
-                    markers(context, true);
+            // 两种模式各测一遍：并排（“标记只显示一个”关）和只画最重要的一个（开，默认：D 优先于 W）。
+            // 这个设置一改 Litematica 就重画整个投影，所以每种模式只切换一次、等画完，再逐个截图
+            for (boolean one : new boolean[]{false, true}) {
+                context.runOnClient(c -> AleConfigs.Generic.MARKER_PRIORITY.setBooleanValue(one));
+                context.waitTicks(20);
+                for (int i = 0; i < cases.size(); i++) {
+                    Case cs = cases.get(i);
+                    BlockPos pos = new BlockPos(X0 + STEP * i, Y, Z);
+                    ViewShots.lookAt(context, sp, pos);
+                    ViewShots.onlyLayerX(context, pos.getX());
+                    markers(context, false);
                     ViewShots.rebuild(context, placement);
-                    Path with = GT.shot(context, "ale-markers-" + cs.name + (one ? "-one" : ""));
-                    int blue = RenderGameTest.countBlue(with) - RenderGameTest.countBlue(without);
-                    int red = RenderGameTest.countRed(with) - RenderGameTest.countRed(without);
-                    boolean hasW = blue >= MIN_PIXELS, hasD = red >= MIN_PIXELS;
+                    Path without = GT.shot(context, "ale-markers-" + cs.name + (one ? "-one" : "") + "-off");
+                    markers(context, true);
                     boolean wantW = cs.wantW && !(one && cs.wantD);
-                    boolean ok = hasW == wantW && hasD == cs.wantD;
+                    int blue = 0, red = 0;
+                    boolean ok = false;
+                    // 偶尔会截到 Litematica 正在后台重画、投影覆盖层还没画出来的那一帧（各处都是 0）：重画一次再截一次
+                    for (int attempt = 0; attempt < 2 && !ok; attempt++) {
+                        if (attempt > 0) GT.log("[markers] " + cs.name + " (" + (one ? "one" : "both") + "): nothing drawn in the shot, taking it again");
+                        ViewShots.rebuild(context, placement);
+                        Path with = GT.shot(context, "ale-markers-" + cs.name + (one ? "-one" : "") + (attempt > 0 ? "-again" : ""));
+                        blue = RenderGameTest.countBlue(with) - RenderGameTest.countBlue(without);
+                        red = RenderGameTest.countRed(with) - RenderGameTest.countRed(without);
+                        ok = (blue >= MIN_PIXELS) == wantW && (red >= MIN_PIXELS) == cs.wantD;
+                        if (!ok && (blue >= MIN_PIXELS || red >= MIN_PIXELS)) break; // 画出来了但不对：不是没画完，不重试
+                    }
                     GT.log(String.format(java.util.Locale.ROOT, "[markers] %-28s %-4s W: %5d px (want %s)  D: %5d px (want %s)  %s",
                             cs.name, one ? "one" : "both", blue, wantW ? "yes" : "no", red, cs.wantD ? "yes" : "no", ok ? "ok" : "WRONG"));
                     if (!ok) failures.add(cs.name + (one ? " (one marker)" : ""));

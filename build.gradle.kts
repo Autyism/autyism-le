@@ -102,13 +102,14 @@ val onlyOn12111 = listOf(
     "com/autyism/ale/mixin/litematica/EasyPlaceRailMixin.java", "com/autyism/ale/mixin/litematica/LegacyEasyPlaceRailMixin.java",
     // Container contents in multiplayer: only data the server really sent
     "com/autyism/ale/verifier/ServerContainerData.java", "com/autyism/ale/mixin/litematica/EntityDataReceivedMixin.java",
+    "com/autyism/ale/mixin/litematica/ChunkManagerSchematicMixin.java",
     // Render Through Glass with Sodium (compiled against Sodium for 1.21.11 only)
     "com/autyism/ale/mixin/compat/sodium/**"
 )
 val onlyOn12111Mixins = listOf("litematica.SchematicVerifierInvoker", "litematica.TaskBaseAccessor", "litematica.SchematicVerifierSelectMixin",
     "litematica.VerifierResultListMixin", "litematica.GuiSchematicVerifierMixin", "litematica.VerificationResultWidgetMixin",
     "malilib.ConfigButtonStringListMixin", "compat.schematicpreview.OpenReplaceDialogMixin", "client.MultiPlayerGameModeMixin",
-    "litematica.EasyPlaceRailMixin", "litematica.LegacyEasyPlaceRailMixin", "litematica.EntityDataReceivedMixin",
+    "litematica.EasyPlaceRailMixin", "litematica.LegacyEasyPlaceRailMixin", "litematica.EntityDataReceivedMixin", "litematica.ChunkManagerSchematicMixin",
     "compat.sodium.SodiumGlassPassMixin")
 if (mc != "1.21.11") {
     sourceSets.named("main") { java.exclude(onlyOn12111) }

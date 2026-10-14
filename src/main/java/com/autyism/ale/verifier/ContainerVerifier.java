@@ -203,9 +203,25 @@ public final class ContainerVerifier {
         for (long p : KNOWN.keySet()) forget(p);
     }
 
+    /**
+     * 这一格的“需要填充”可能变了：重画它所在的区块。大箱子的 F 画在两半中间、由其中一半来画，
+     * 另一半在别的区块时那个区块也要重画
+     */
+    private static void markRebuild(long pos) {
+        REBUILD_CHUNKS.add(net.minecraft.world.level.ChunkPos.asLong(BlockPos.getX(pos) >> 4, BlockPos.getZ(pos) >> 4));
+        WorldSchematic ws = fi.dy.masa.litematica.world.SchematicWorldHandler.getSchematicWorld();
+        if (ws == null) return;
+        net.minecraft.world.level.block.state.BlockState state = ws.getBlockState(BlockPos.of(pos));
+        if (state.getBlock() instanceof net.minecraft.world.level.block.ChestBlock
+                && state.getValue(net.minecraft.world.level.block.ChestBlock.TYPE) != net.minecraft.world.level.block.state.properties.ChestType.SINGLE) {
+            BlockPos other = BlockPos.of(pos).relative(net.minecraft.world.level.block.ChestBlock.getConnectedDirection(state));
+            REBUILD_CHUNKS.add(net.minecraft.world.level.ChunkPos.asLong(other.getX() >> 4, other.getZ() >> 4));
+        }
+    }
+
     private static void forget(long pos) {
         if (KNOWN.remove(pos) != null) {
-            REBUILD_CHUNKS.add(net.minecraft.world.level.ChunkPos.asLong(BlockPos.getX(pos) >> 4, BlockPos.getZ(pos) >> 4));
+            markRebuild(pos);
         }
     }
 
@@ -307,7 +323,7 @@ public final class ContainerVerifier {
             return;
         }
         Known old = KNOWN.put(key, new Known(mc.level.getBlockState(pos).getBlock(), new java.lang.ref.WeakReference<>(be), tickCounter));
-        if (old == null) REBUILD_CHUNKS.add(net.minecraft.world.level.ChunkPos.asLong(pos.getX() >> 4, pos.getZ() >> 4));
+        if (old == null) markRebuild(key);
     }
 
     /**
@@ -412,6 +428,7 @@ public final class ContainerVerifier {
             knownLevel = mc.level;
             KNOWN.clear();
             FILL_CANDIDATES.clear();
+            FETCHES.clear(); // 上一个世界里要的内容不能拿来比
             SignHighlight.onWorldChange(mc.level);
             validateCursor = null;
             REBUILD_CHUNKS.clear();

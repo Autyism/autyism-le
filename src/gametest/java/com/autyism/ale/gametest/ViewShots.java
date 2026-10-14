@@ -80,7 +80,13 @@ public final class ViewShots {
             DataManager.getSchematicPlacementManager().markAllPlacementsOfSchematicForRebuild(placement.getSchematic());
             fi.dy.masa.litematica.render.LitematicaRenderer.getInstance().updateConfigState();
         });
-        context.waitTicks(15);
+        context.waitTicks(5);
+        // Litematica 在后台线程重新放投影方块（设置的回调也会触发）：等它做完，再给区块重画几 tick。
+        // 固定等 15 tick 偶尔不够，会截到投影刚被清空的那一帧
+        for (int i = 0; i < 200 && context.computeOnClient(c -> fi.dy.masa.litematica.schematic.placement.PlacementManagerDaemonHandler.INSTANCE.hasAnyTasks()); i++) {
+            context.waitTick();
+        }
+        context.waitTicks(10);
     }
 
     /**

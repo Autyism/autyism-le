@@ -117,6 +117,26 @@ public abstract class ChunkRendererSchematicVboMixin {
         }
         if (!fi.dy.masa.litematica.config.Configs.Visuals.ENABLE_SCHEMATIC_OVERLAY.getBooleanValue()) return;
         BlockState stateSchematic = this.schematicWorldView.getBlockState(pos);
+        // 大箱子：两半看成一个长方体，只在中间画一个 F（两半都没有 D / W 时；有的话各画各的，免得叠在一起）。
+        // 只由另一半在东边 / 南边的那一半来画
+        if (stateSchematic.getBlock() instanceof net.minecraft.world.level.block.ChestBlock
+                && stateSchematic.getValue(net.minecraft.world.level.block.ChestBlock.TYPE) != net.minecraft.world.level.block.state.properties.ChestType.SINGLE) {
+            net.minecraft.core.Direction toOther = net.minecraft.world.level.block.ChestBlock.getConnectedDirection(stateSchematic);
+            BlockPos other = pos.relative(toOther);
+            BlockState otherSchematic = this.schematicWorldView.getBlockState(other);
+            if (otherSchematic.getBlock() == stateSchematic.getBlock() && !ale$hasLetters(other, otherSchematic)) {
+                // 两半都要算（顺便都记成要检查的容器）
+                boolean need = ale$needsFilling(pos, stateSchematic) | ale$needsFilling(other, otherSchematic);
+                if (!need || (toOther != net.minecraft.core.Direction.EAST && toOther != net.minecraft.core.Direction.SOUTH)) return;
+                BufferBuilder buffer = this.preRenderOverlay(pack, OverlayRenderType.QUAD);
+                if (!data.isOverlayTypeStarted(OverlayRenderType.QUAD)) {
+                    ((ChunkRenderDataSchematicInvoker) data).ale$setOverlayTypeStarted(OverlayRenderType.QUAD);
+                }
+                WaterloggedMarker.emitDouble(buffer, this.getChunkRelativePosition(pos).immutable(),
+                        AleConfigs.Generic.FILL_MARKER_COLOR.getIntegerValue(), com.autyism.ale.render.FillMarker.STROKES, toOther);
+                return;
+            }
+        }
         if (!ale$needsFilling(pos, stateSchematic)) return;
         BufferBuilder buffer = this.preRenderOverlay(pack, OverlayRenderType.QUAD);
         if (!data.isOverlayTypeStarted(OverlayRenderType.QUAD)) {
@@ -124,6 +144,15 @@ public abstract class ChunkRendererSchematicVboMixin {
         }
         WaterloggedMarker.emit(buffer, this.getChunkRelativePosition(pos).immutable(),
                 AleConfigs.Generic.FILL_MARKER_COLOR.getIntegerValue(), com.autyism.ale.render.FillMarker.STROKES);
+    }
+
+    /** 这一格会画 D 或 W（世界里是同一种方块、但朝向或含水不对） */
+    @Unique
+    private boolean ale$hasLetters(BlockPos pos, BlockState stateSchematic) {
+        BlockState client = this.clientWorldView.getBlockState(pos);
+        if (client.getBlock() != stateSchematic.getBlock() || client == stateSchematic) return false;
+        return (AleConfigs.Generic.ORIENTATION_MARKER.getBooleanValue() && OrientationMarker.orientationDiffers(stateSchematic, client))
+                || (AleConfigs.Generic.WATERLOGGED_MARKER.getBooleanValue() && WaterloggedMarker.waterloggedDiffers(stateSchematic, client));
     }
 
     /** 投影里这一格是装着东西、要填充的容器（世界里已经确认内容一样的不算） */
