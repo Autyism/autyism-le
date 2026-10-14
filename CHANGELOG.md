@@ -6,7 +6,7 @@ For Minecraft 1.21.11; the other jars stay at 1.1.0.
 
 - Mismatch colours stay clear on water, bubble columns, ice, slime and other see-through blocks, and W and D show up for every wrong property.
 - Container contents are a category in the Schematic Verifier and only get highlighted when you select them.
-- A green F on containers that still need filling. It disappears by itself once the container is filled right (single player, or Servux with Litematica's Entity Data Sync) and comes back when it no longer matches.
+- A green F on containers that still need filling. It disappears by itself once the container is filled right (single player, or Servux with Litematica's Entity Data Sync) and comes back when it no longer matches. A double chest gets one F in the middle.
 - **One Marker per Block** (on by default): only the most important letter is drawn, D before W before F.
 - **Highlight Signs** button in the Schematic Verifier: signs with text are marked through walls, bright green when placed, dark green when still missing.
 - With Sodium, Render Through Glass works behind clear glass too.
@@ -33,7 +33,7 @@ More: open "Details" below.
 
 - 水、气泡柱、冰、粘液块等半透明方块上的错误颜色清楚了；W 和 D 在多个属性不对时也都会显示。
 - 容器内容物在投影验证器里是一个分类，只有选中时才高亮。
-- 还需要往里放东西的容器显示绿色的 F；填对了自己消失（单人游戏，或者服务器有 Servux 并打开了投影的“实体数据同步”），之后又不对了会重新出现。
+- 还需要往里放东西的容器显示绿色的 F；填对了自己消失（单人游戏，或者服务器有 Servux 并打开了投影的“实体数据同步”），之后又不对了会重新出现。大箱子只在中间画一个 F。
 - **标记只显示一个**（默认开）：一个方块只画最重要的字母，朝向 D 优先，其次含水 W，最后填充 F。
 - 投影验证器界面新增 **高亮告示牌** 按钮：有字的告示牌透墙标出来，已放置亮绿色，还没放深绿色。
 - 装了 Sodium 时，“透过玻璃显示投影”对普通玻璃也有效了。
