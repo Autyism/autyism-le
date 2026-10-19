@@ -2,6 +2,7 @@ package com.autyism.ale.mixin.render;
 
 import com.autyism.ale.config.AleConfigs;
 import com.autyism.ale.render.GlassRenderState;
+import com.autyism.ale.render.ShaderRouting;
 //? if >=1.21.11
 import com.mojang.blaze3d.textures.GpuSampler;
 import fi.dy.masa.litematica.render.LitematicaRenderer;
@@ -82,7 +83,8 @@ public abstract class LevelRendererMixin {
         this.ale$modelView = modelView;
         this.ale$projection = projection;
     *///?}
-        if (!AleConfigs.Generic.RENDER_THROUGH_GLASS.getBooleanValue()) return;
+        // routed past a shader pack, Litematica's own drawing already shows through glass (see ShaderRouting)
+        if (!AleConfigs.Generic.RENDER_THROUGH_GLASS.getBooleanValue() || ShaderRouting.routesLitematica()) return;
         ale$drawEarly();
     }
 
@@ -97,7 +99,7 @@ public abstract class LevelRendererMixin {
                                          net.minecraft.client.renderer.feature.FeatureRenderDispatcher.PreparedFrame frame,
                                          com.mojang.renderpearl.api.commands.RenderPass pass,
                                          com.llamalad7.mixinextras.injector.wrapoperation.Operation<Void> original) {
-        if (!AleConfigs.Generic.RENDER_THROUGH_GLASS.getBooleanValue()) {
+        if (!AleConfigs.Generic.RENDER_THROUGH_GLASS.getBooleanValue() || ShaderRouting.routesLitematica()) {
             original.call(self, chunks, frame, pass);
             return;
         }

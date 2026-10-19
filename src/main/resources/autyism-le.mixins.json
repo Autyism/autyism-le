@@ -14,6 +14,8 @@
     "litematica.MaterialListPlacementAccessor",
     "compat.schematicpreview.GuiBlockSelectMixin",
     "compat.schematicpreview.OpenReplaceDialogMixin",
+    "compat.litematicafastmove.OverlayMeshBuilderMixin",
+    "compat.litematicafastmove.PlacementMeshRendererMixin",
     "litematica.SchematicVerifierMixin",
     "litematica.OverlayRendererMixin",
     "litematica.MaterialListBaseMixin",

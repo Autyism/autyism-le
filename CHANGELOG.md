@@ -12,6 +12,8 @@ For Minecraft 1.21.11; the other jars stay at 1.1.0.
 - With Sodium, Render Through Glass works behind clear glass too.
 - Easy Place puts rails down in the schematic's shape, ascending rails and curves included, when ALE is on the server too (or in single player).
 - Pick block in the Replace dialog and the block picker; wall and standing forms are one entry, and ALE's screens open first.
+- With a shader pack and LitematicaPass, the mismatch colours no longer disappear.
+- Works with Litefastica (fast schematic moving): W and D show on the placements it draws, and Render Through Glass works for them too.
 
 More: open "Details" below.
 
@@ -39,6 +41,8 @@ More: open "Details" below.
 - 装了 Sodium 时，“透过玻璃显示投影”对普通玻璃也有效了。
 - 服务端也装了 ALE 时（单人游戏也算），轻松放置直接把铁轨放成投影里的形状，上坡、弯道都一次放好。
 - “替换”界面和方块选择界面可以用选取方块键；挂墙和立着的形态合成一项，默认打开 ALE 的界面。
+- 开着光影、装了 LitematicaPass 时，错误颜色不会再消失。
+- 兼容 Litefastica（快速移动投影）：它接管的投影上也显示 W 和 D，“透过玻璃显示投影”也对它们生效。
 
 更多：点开下面的“详细说明”。
 
