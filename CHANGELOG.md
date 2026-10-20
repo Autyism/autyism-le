@@ -14,6 +14,7 @@ For Minecraft 1.21.11; the other jars stay at 1.1.0.
 - Pick block in the Replace dialog and the block picker; wall and standing forms are one entry, and ALE's screens open first.
 - With a shader pack and LitematicaPass, the mismatch colours no longer disappear.
 - Works with Litefastica (fast schematic moving): W and D show on the placements it draws, and Render Through Glass works for them too.
+- With ALE on the server too, the printer (Litematica Printer Autyism Edition 1.2.0) mines deepslate over an area like an instant block. Mining by hand stays vanilla.
 
 More: open "Details" below.
 
@@ -23,6 +24,7 @@ More: open "Details" below.
 - **W and D**: a block that is wrong in waterlogging and in other properties (a rail with the wrong shape and water, for example) shows W, and also D when it faces the wrong way; with One Marker per Block off the letters sit side by side, F always last.
 - **Container contents in the verifier**: **Wrong Contents** is listed next to Litematica's categories, with one entry per container type and the missing and extra items in the tooltip. Select the category or an entry to highlight those containers; Ignore and Reset ignored work too.
 - **Needs filling (F)**: containers whose schematic block holds items get an F, without opening each one. It goes away once the verifier, opening the container, or (in single player, or with Servux and Litematica's Entity Data Sync on) an automatic check of containers near you shows the right contents, and comes back when the container is emptied, broken or replaced. A skip list (off by default; all shulker boxes in it) leaves out containers that hold only those items, for example the hoppers full of empty shulker boxes under a box loader.
+- **Fast deepslate**: vanilla servers mine one block at a time per player, and deepslate needs two ticks even with an Efficiency V netherite pickaxe and Haste II. With ALE on the server, a block breaks at once when the printer asks for it right before mining it, it is in the `autyism-le:fast_break` tag (only deepslate; a data pack can change that), and the player mines at least half of it per tick. Reach, permissions, drops and tool wear stay vanilla, and any other mining is untouched.
 - **Exact rails**: put the same ALE jar on the server too. The server needs Fabric API but not Litematica or MaLiLib. The server checks each placement like a normal one and places the rail in the schematic's shape, without bending rails that are already there. An ascending rail waits until the block on its high side is there. Without ALE on the server, Easy Place works as before. Other mods (such as a printer) can use the same placement.
 - **Replace and block lists**: middle click (or your pick block key) picks the block under the mouse or crosshair, in the world or the schematic. Signs, hanging signs, torches, banners, heads and coral fans are one entry each, and every replaced block keeps its own form. Block lists and Schematic Preview's **Replace** open ALE's screen; a button at the top right opens the original one.
 - New settings: **Needs Filling Marker** (with colour, skip switch and skip list), **One Marker per Block**, **Sign Highlight** colours and **Easy Place: Exact Rail Shapes**.
@@ -43,6 +45,7 @@ More: open "Details" below.
 - “替换”界面和方块选择界面可以用选取方块键；挂墙和立着的形态合成一项，默认打开 ALE 的界面。
 - 开着光影、装了 LitematicaPass 时，错误颜色不会再消失。
 - 兼容 Litefastica（快速移动投影）：它接管的投影上也显示 W 和 D，“透过玻璃显示投影”也对它们生效。
+- 服务端也装了 ALE 时，打印机（Litematica Printer Autyism Edition 1.2.0）可以像挖能秒破的方块一样大范围秒挖深板岩。自己手动挖照原版。
 
 更多：点开下面的“详细说明”。
 
@@ -52,6 +55,7 @@ More: open "Details" below.
 - **W 和 D**：含水不对、同时别的属性也不对的方块（比如形状和含水都不对的铁轨）也显示 W，朝向不对时同时显示 D；关掉“标记只显示一个”时几个字母并排，F 总在最后。
 - **验证器里的容器内容物**：Litematica 的分类旁边多了 **错误内容物**，每种容器一项，鼠标停在上面能看到缺少和多出的物品。选中分类或某一项才高亮这些容器；忽略和“重置忽略”也能用。
 - **需要填充（F）**：投影里装着东西的容器显示 F，不用一个个打开看。验证器、打开容器、或者自动检查（单人游戏；或者服务器有 Servux 并打开了投影的“实体数据同步”时，查玩家附近的容器）确认内容物对了以后，F 就不显示了；之后被拿空、敲掉或换掉会重新显示。跳过列表（默认关闭，列表里是各色潜影盒）可以不标只装着这些物品的容器，比如打包机下面装满空潜影盒的一排漏斗。
+- **秒挖深板岩**：原版服务器一个玩家同一时间只能挖一格，深板岩用效率 V 的下界合金镐加急迫 II 也要两 tick。服务端装了 ALE 时，打印机挖之前先打个招呼，方块在 `autyism-le:fast_break` 标签里（只有深板岩，数据包可以改），而且这个玩家一 tick 至少挖得动一半，服务端就当场挖掉。距离、权限、掉落和工具磨损照原版，别的挖掘一概不变。
 - **铁轨按投影形状放**：把同一个 ALE jar 也放进服务端。服务端需要 Fabric API，不需要 Litematica 和 MaLiLib。服务端像普通放置一样检查每一次放置，按投影的形状放下铁轨，也不会把已经放好的铁轨拉歪。上坡铁轨等高的那一侧的方块放好再放。服务端没装 ALE 时，轻松放置照旧。别的模组（比如打印机）也能用同样的放置方式。
 - **替换和方块列表**：鼠标中键（或者你的选取方块键）选鼠标或准星指着的方块，世界里的和投影里的都可以。告示牌、悬挂式告示牌、火把、旗帜、头颅和珊瑚扇各算一项，替换后每个方块保留自己的形态。方块列表和 Schematic Preview 的“替换”默认打开 ALE 的界面，右上角的按钮打开原来的界面。
 - 新设置：**需要填充标记**（含颜色、跳过开关和跳过列表）、**标记只显示一个**、**高亮告示牌** 的两种颜色和 **轻松放置：铁轨按投影形状**。

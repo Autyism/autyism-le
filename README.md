@@ -70,6 +70,7 @@ These features and **Replace** in material lists are on Minecraft 1.21.11 and 26
 ### Easy Place
 
 - **Rails in the schematic's shape (1.21.11).** With ALE on the server too (single player counts), Litematica's Easy Place puts each rail down in the schematic's shape right away: ascending rails and curves of all four rail types, without placing other rails first, and without bending rails that are already there. The server checks every placement like a normal one. An ascending rail waits until the block on its high side is there, and a message tells you which side. Without ALE on the server, Easy Place works as before.
+- **Fast deepslate for the printer (1.21.11).** With ALE on the server too (single player counts), the printer (Litematica Printer Autyism Edition 1.2.0) mines deepslate over an area like an instant block, with an Efficiency V netherite pickaxe and Haste II. The server only does this when the printer asks for it right before mining a block; mining by hand stays vanilla.
 
 ### Litematica screens
 
@@ -285,7 +286,7 @@ Fabric API, MaLiLib and Litematica are required, each in the build for your Mine
 | Schematic Preview | not needed on 1.21.11 and 26.x (when it is installed, ALE leaves the previews, icons and **Replace** to it); on 1.21.6–1.21.10 needed for the sign wood replacement; it has no 1.21.5 version |
 | Litematica Printer Autyism Edition | its block lists get the picker too |
 
-ALE runs on your client and needs nothing on the server. Only for rails in the schematic's shape with Easy Place (1.21.11), put the same jar on the server too; the server needs Fabric API, not Litematica or MaLiLib.
+ALE runs on your client and needs nothing on the server. Only for rails in the schematic's shape with Easy Place and the printer's fast deepslate (1.21.11), put the same jar on the server too; the server needs Fabric API, not Litematica or MaLiLib.
 
 <details>
 <summary><b>Compatibility</b> (click to open)</summary>
@@ -308,13 +309,13 @@ ALE runs on your client and needs nothing on the server. Only for rails in the s
 3. Download the ALE jar for your Minecraft version and put it into the `mods` folder too.
 4. Optional: add Mod Menu and Schematic Preview.
 5. Start the game.
-6. Optional, 1.21.11: for rails in the schematic's shape on a server, put the same ALE jar into the server's `mods` folder too (Fabric API is needed there; Litematica and MaLiLib are not).
+6. Optional, 1.21.11: for rails in the schematic's shape and the printer's fast deepslate on a server, put the same ALE jar into the server's `mods` folder too (Fabric API is needed there; Litematica and MaLiLib are not).
 
 <details>
 <summary><b>FAQ</b> (click to open)</summary>
 
 **Do I need ALE on the server?**
-No. Everything works with ALE only on your client (see Known limitations for the container check on servers). Only Easy Place's rails in the schematic's shape (1.21.11) need ALE on the server too; without it, Easy Place places rails like before.
+No. Everything works with ALE only on your client (see Known limitations for the container check on servers). Only Easy Place's rails in the schematic's shape and the printer's fast deepslate (1.21.11) need ALE on the server too; without it, Easy Place places rails like before and deepslate is mined one block at a time.
 
 **Does ALE need the printer, or the printer ALE?**
 No. ALE and Litematica Printer Autyism Edition are separate mods and each works on its own.
@@ -429,6 +430,7 @@ Autyism 的投影增强（Autyism's Litematica Enhancement，简称 ALE）是 [L
 ### 轻松放置
 
 - **铁轨按投影形状（1.21.11）**：服务端也装了 ALE 时（单人游戏也算），Litematica 的轻松放置会直接把每节铁轨放成投影里的形状：四种铁轨的上坡和弯道都一次放好，不用先放别的铁轨，也不会把已经放好的铁轨拉歪。服务端像普通放置一样检查每一次放置。上坡铁轨要等高的那一侧的方块放好再放，会提示是哪一侧。服务端没装 ALE 时，轻松放置照旧。
+- **打印机秒挖深板岩（1.21.11）**：服务端也装了 ALE 时（单人游戏也算），打印机（Litematica Printer Autyism Edition 1.2.0）用效率 V 下界合金镐加急迫 II，可以像挖能秒破的方块一样大范围秒挖深板岩。只有打印机挖之前先打招呼，服务端才这样做；自己手动挖照原版。
 
 ### Litematica 界面
 
@@ -644,7 +646,7 @@ Fabric API、MaLiLib 和 Litematica 都是必需的，各自下载你的 Minecra
 | Schematic Preview | 1.21.11 和 26.x 不需要（装了它时，预览、图标和“替换”由它提供）；1.21.6–1.21.10 的告示牌木材替换需要它；它没有 1.21.5 版 |
 | Litematica Printer Autyism Edition | 打印机的方块列表也能用选择界面 |
 
-ALE 在客户端运行，服务器不需要安装任何东西。只有想让轻松放置按投影形状放铁轨（1.21.11）时，才需要把同一个 jar 也装进服务端；服务端需要 Fabric API，不需要 Litematica 和 MaLiLib。
+ALE 在客户端运行，服务器不需要安装任何东西。只有想让轻松放置按投影形状放铁轨、让打印机秒挖深板岩（1.21.11）时，才需要把同一个 jar 也装进服务端；服务端需要 Fabric API，不需要 Litematica 和 MaLiLib。
 
 <details>
 <summary><b>兼容性</b>（点开查看）</summary>
@@ -667,13 +669,13 @@ ALE 在客户端运行，服务器不需要安装任何东西。只有想让轻�
 3. 下载 ALE 对应你的 Minecraft 版本的 jar，也放进 `mods` 文件夹。
 4. 可选：再装上 Mod Menu 和 Schematic Preview。
 5. 启动游戏。
-6. 可选（1.21.11）：想在服务器上按投影形状放铁轨，把同一个 ALE jar 也放进服务端的 `mods` 文件夹（服务端需要 Fabric API，不需要 Litematica 和 MaLiLib）。
+6. 可选（1.21.11）：想在服务器上按投影形状放铁轨、让打印机秒挖深板岩，把同一个 ALE jar 也放进服务端的 `mods` 文件夹（服务端需要 Fabric API，不需要 Litematica 和 MaLiLib）。
 
 <details>
 <summary><b>常见问题</b>（点开查看）</summary>
 
 **服务器需要装 ALE 吗？**
-不需要。只在客户端装 ALE，所有功能都能用（服务器上的容器检查见“已知限制”）。只有轻松放置按投影形状放铁轨（1.21.11）需要服务端也装 ALE；没装时，轻松放置照旧放铁轨。
+不需要。只在客户端装 ALE，所有功能都能用（服务器上的容器检查见“已知限制”）。只有轻松放置按投影形状放铁轨、打印机秒挖深板岩（1.21.11）需要服务端也装 ALE；没装时，轻松放置照旧放铁轨，深板岩一格一格挖。
 
 **ALE 需要打印机吗？打印机需要 ALE 吗？**
 都不需要。ALE 和 Litematica Printer Autyism Edition 是两个独立的模组，各自都能单独使用。

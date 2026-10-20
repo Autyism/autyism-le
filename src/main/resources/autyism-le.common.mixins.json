@@ -6,7 +6,8 @@
   "mixins": [
     "BaseRailBlockMixin",
     "BlockItemMixin",
-    "ServerGamePacketListenerImplMixin"
+    "ServerGamePacketListenerImplMixin",
+    "ServerPlayerGameModeMixin"
   ],
   "client": [
     "ClientPacketSendMixin"

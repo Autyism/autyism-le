@@ -59,6 +59,8 @@ dependencies {
         if (printer.exists() && providers.gradleProperty("withPrinter").isPresent) {
             modLocalRuntime(files(printer))
         }
+        // -Pquiet=<jar>: an extra local mod for the test client only (e.g. one that keeps the window off screen)
+        providers.gradleProperty("quiet").orNull?.let { modLocalRuntime(files(it)) }
     }
 }
 
@@ -99,6 +101,8 @@ val onlyOn12111 = listOf(
     "com/autyism/ale/verifier/OpenedContainers.java", "com/autyism/ale/mixin/client/MultiPlayerGameModeMixin.java",
     // Exact rail placement: the server part (ALE runs on a server too) and Easy Place / the API on the client
     "com/autyism/ale/AleCommon.java", "com/autyism/ale/rail/**", "com/autyism/ale/api/**", "com/autyism/ale/mixin/common/**",
+    // Fast breaking of deepslate for the printer (server part and the API)
+    "com/autyism/ale/mining/**",
     "com/autyism/ale/mixin/litematica/EasyPlaceRailMixin.java", "com/autyism/ale/mixin/litematica/LegacyEasyPlaceRailMixin.java",
     // Container contents in multiplayer: only data the server really sent
     "com/autyism/ale/verifier/ServerContainerData.java", "com/autyism/ale/mixin/litematica/EntityDataReceivedMixin.java",
@@ -232,7 +236,7 @@ if (providers.gradleProperty("aleGameTest").isPresent) {
     // The 1.2.0 tests run on 1.21.11 only for now
     if (mc != "1.21.11") {
         val newTests = listOf("OverlayVisibilityGameTest", "MarkerGameTest", "VerifierContentsGameTest", "FillMarkerGameTest", "ReplaceUiGameTest", "StillFramesMixin", "NoParticlesMixin",
-            "RailGameTest", "RailPacketCounterMixin", "GuiOverlayAccessor")
+            "RailGameTest", "RailPacketCounterMixin", "GuiOverlayAccessor", "FastBreakGameTest")
         sourceSets.matching { it.name == "gametest" }.configureEach {
             java.exclude(newTests.map { "com/autyism/ale/gametest/**/$it.java" } + "com/autyism/ale/gametest/ViewShots.java")
         }

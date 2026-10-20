@@ -7,6 +7,7 @@
   "entrypoints": {
     "fabric-client-gametest": [
       "com.autyism.ale.gametest.RailGameTest",
+      "com.autyism.ale.gametest.FastBreakGameTest",
       "com.autyism.ale.gametest.OverlayVisibilityGameTest",
       "com.autyism.ale.gametest.VerifierContentsGameTest",
       "com.autyism.ale.gametest.FillMarkerGameTest",
