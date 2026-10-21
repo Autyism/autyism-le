@@ -2,7 +2,6 @@ package com.autyism.ale.preview;
 
 import com.autyism.ale.AleMod;
 import com.mojang.blaze3d.vertex.PoseStack;
-import net.minecraft.client.Minecraft;
 import net.minecraft.client.renderer.LightTexture;
 import net.minecraft.client.renderer.MultiBufferSource;
 import net.minecraft.client.renderer.blockentity.BlockEntityRenderDispatcher;
@@ -28,8 +27,8 @@ public final class LegacyBlockEntities {
     private LegacyBlockEntities() {
     }
 
-    static void render(PreviewModel model, BlockEntityRenderDispatcher dispatcher, Vector3f eye) {
-        MultiBufferSource.BufferSource buffers = Minecraft.getInstance().renderBuffers().bufferSource();
+    /** 画进 buffers（1.21.6 起是原版的缓冲，之后由原版画；1.21.5 是预览自己的，见 src/v1215 的 PreviewRenderer） */
+    static void render(PreviewModel model, BlockEntityRenderDispatcher dispatcher, Vector3f eye, MultiBufferSource buffers) {
         Vec3 cameraPos = new Vec3(eye.x, eye.y, eye.z);
         PoseStack pose = new PoseStack();
         try {

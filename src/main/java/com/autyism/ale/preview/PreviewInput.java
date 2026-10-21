@@ -36,13 +36,22 @@ public final class PreviewInput {
         if (tx + w + 4 > g.guiWidth()) tx = Math.max(4, x - 12 - w);
         if (ty + h + 4 > g.guiHeight()) ty = g.guiHeight() - h - 4;
         ty = Math.max(4, ty);
+        //? if >=1.21.6 {
         g.nextStratum();
+        //?} else {
+        /*// 1.21.5 画界面没有分层：往前挪，盖在别的界面元素上面（和原版的提示框一样）
+        var pose = g.pose();
+        pose.pushPose();
+        pose.translate(0.0F, 0.0F, 400.0F);
+        *///?}
         g.fill(tx - 3, ty - 3, tx + w + 3, ty + h + 3, 0xF0101010);
         g.fill(tx - 3, ty - 3, tx + w + 3, ty - 2, 0xFF707070);
         g.fill(tx - 3, ty + h + 2, tx + w + 3, ty + h + 3, 0xFF707070);
         g.fill(tx - 3, ty - 3, tx - 2, ty + h + 3, 0xFF707070);
         g.fill(tx + w + 2, ty - 3, tx + w + 3, ty + h + 3, 0xFF707070);
         for (int i = 0; i < list.size(); i++) GuiCompat.text(g, font, list.get(i), tx, ty + i * 10, 0xFFFFFFFF, true);
+        //? if <1.21.6
+        //pose.popPose();
     }
 
     /** 绑定的键（原版按名字存的那个） */

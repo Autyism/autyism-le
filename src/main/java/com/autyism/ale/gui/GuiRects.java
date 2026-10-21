@@ -5,7 +5,7 @@ import fi.dy.masa.malilib.render.RenderUtils;
 import net.minecraft.client.gui.GuiGraphics;
 
 // 1.21.5 的 MaLiLib 画矩形是立即绘制，不经过 GuiGraphics：先把 GuiGraphics 里已经排队的图标和文字画掉，前后顺序才对
-// （和 MaLiLib 自己的界面一样）。各处的 RenderUtils.drawRect / drawOutlinedBox(ctx, …) 在这个版本换成这里的方法
+// （和 MaLiLib 自己的界面一样）。各处的 RenderUtils.drawRect / drawOutlinedBox / drawOutline(ctx, …) 在这个版本换成这里的方法
 public final class GuiRects {
     private GuiRects() {
     }
@@ -18,6 +18,11 @@ public final class GuiRects {
     public static void drawOutlinedBox(GuiGraphics ctx, int x, int y, int width, int height, int colorBg, int colorBorder) {
         RenderUtils.forceDraw(ctx);
         RenderUtils.drawOutlinedBox(x, y, width, height, colorBg, colorBorder);
+    }
+
+    public static void drawOutline(GuiGraphics ctx, int x, int y, int width, int height, int colorBorder) {
+        RenderUtils.forceDraw(ctx);
+        RenderUtils.drawOutline(x, y, width, height, colorBorder);
     }
 }
 *///?}

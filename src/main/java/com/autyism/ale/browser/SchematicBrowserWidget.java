@@ -218,7 +218,10 @@ public class SchematicBrowserWidget extends WidgetSchematicBrowser {
     }
 
     @Override
+    //? if >=1.21.6 {
     protected void drawSelectedSchematicInfo(GuiContext ctx, @Nullable WidgetFileBrowserBase.DirectoryEntry entry) {
+    //?} else
+    //protected void drawSelectedSchematicInfo(@Nullable WidgetFileBrowserBase.DirectoryEntry entry, GuiContext ctx) {
         Path file = entry != null && entry.getType() == WidgetFileBrowserBase.DirectoryEntryType.FILE ? entry.getFullPath() : null;
         // Litematica 自己的小预览图（存在投影文件里的截图）由 3D 预览代替：画信息时先把它拿开
         var image = file != null ? this.cachedPreviewImages.remove(file) : null;
@@ -227,7 +230,11 @@ public class SchematicBrowserWidget extends WidgetSchematicBrowser {
         int h = Math.min(this.infoHeight, this.parent.getMaxInfoHeight());
         int textBottom;
         try {
+            InfoTextBounds.begin(x, y, this.infoWidth, h);
+            //? if >=1.21.6 {
             super.drawSelectedSchematicInfo(ctx, entry);
+            //?} else
+            //super.drawSelectedSchematicInfo(entry, ctx);
             textBottom = InfoTextBounds.bottom(ctx, x, y, this.infoWidth, h);
         } finally {
             if (image != null) this.cachedPreviewImages.put(file, image);

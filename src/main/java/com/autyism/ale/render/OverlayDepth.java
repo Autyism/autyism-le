@@ -4,6 +4,7 @@ import com.mojang.blaze3d.pipeline.RenderTarget;
 import com.mojang.blaze3d.systems.GpuDevice;
 import com.mojang.blaze3d.systems.RenderSystem;
 import com.mojang.blaze3d.textures.GpuTexture;
+//? if >=1.21.6
 import com.mojang.blaze3d.textures.GpuTextureView;
 import fi.dy.masa.malilib.compat.iris.IrisCompat;
 import net.minecraft.client.Minecraft;
@@ -21,6 +22,7 @@ import org.jetbrains.annotations.Nullable;
  */
 public final class OverlayDepth {
     private static @Nullable GpuTexture texture;
+    //? if >=1.21.6
     private static @Nullable GpuTextureView view;
     /** 这一帧已经复制好，覆盖层可以用 */
     private static boolean captured;
@@ -52,9 +54,12 @@ public final class OverlayDepth {
                     || texture.getFormat() != depth.getFormat()) {
                 close();
                 GpuDevice device = RenderSystem.getDevice();
+                //? if >=1.21.6 {
                 texture = device.createTexture(() -> "ALE overlay depth", GpuTexture.USAGE_COPY_DST | GpuTexture.USAGE_COPY_SRC
                         | GpuTexture.USAGE_TEXTURE_BINDING | GpuTexture.USAGE_RENDER_ATTACHMENT, depth.getFormat(), width, height, 1, 1);
                 view = device.createTextureView(texture);
+                //?} else
+                //texture = device.createTexture(() -> "ALE overlay depth", depth.getFormat(), width, height, 1);
             }
             RenderSystem.getDevice().createCommandEncoder().copyTextureToTexture(depth, texture, 0, 0, 0, 0, 0, width, height);
             captured = true;
@@ -66,20 +71,31 @@ public final class OverlayDepth {
     }
 
     /** 覆盖层的渲染通道用的深度：这一帧复制过、尺寸也对得上时换成复制的那份，否则不变 */
+    //? if >=1.21.6 {
     public static @Nullable GpuTextureView depthFor(@Nullable GpuTextureView original) {
         if (!captured || original == null || view == null || view.isClosed()) return original;
         if (view.getWidth(0) != original.getWidth(0) || view.getHeight(0) != original.getHeight(0)) return original;
         return view;
     }
+    //?} else {
+    /*// 1.21.5 还没有纹理视图：直接换成复制的纹理
+    public static @Nullable GpuTexture depthFor(@Nullable GpuTexture original) {
+        if (!captured || original == null || texture == null || texture.isClosed()) return original;
+        if (texture.getWidth(0) != original.getWidth(0) || texture.getHeight(0) != original.getHeight(0)) return original;
+        return texture;
+    }
+    *///?}
 
     public static boolean isCaptured() {
         return captured;
     }
 
     private static void close() {
+        //? if >=1.21.6 {
         if (view != null) view.close();
-        if (texture != null) texture.close();
         view = null;
+        //?}
+        if (texture != null) texture.close();
         texture = null;
         captured = false;
     }

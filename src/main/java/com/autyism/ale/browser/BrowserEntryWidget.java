@@ -57,7 +57,10 @@ public class BrowserEntryWidget extends WidgetDirectoryEntry {
     }
 
     @Override
+    //? if >=1.21.6 {
     public void render(GuiContext ctx, int mouseX, int mouseY, boolean selected) {
+    //?} else
+    //public void render(int mouseX, int mouseY, boolean selected, GuiContext ctx) {
         int x = this.getX(), y = this.getY(), w = this.getWidth(), h = this.getHeight();
         // 网格最下面一行可能只露出一部分：超出列表区域的部分裁掉
         int clipBottom = this.browser.listBottom();
@@ -142,7 +145,10 @@ public class BrowserEntryWidget extends WidgetDirectoryEntry {
         }
         IGuiIcon icon = this.iconProvider == null ? null
                 : isDirectory() ? this.iconProvider.getIconDirectory() : this.iconProvider.getIconForFile(path());
+        //? if >=1.21.6 {
         if (icon != null) icon.renderAt(ctx, x + (BADGE - icon.getWidth()) / 2, y + (BADGE - icon.getHeight()) / 2, 0.0F, false, false);
+        //?} else
+        //if (icon != null) icon.renderAt(x + (BADGE - icon.getWidth()) / 2, y + (BADGE - icon.getHeight()) / 2, 0.0F, false, false, ctx);
     }
 
     /** 图片区：投影缩略图 / 文件夹里第一个投影的缩略图 / 大图标 */
@@ -215,7 +221,10 @@ public class BrowserEntryWidget extends WidgetDirectoryEntry {
         ctx.pose().pushMatrix();
         ctx.pose().translate(x + (size - icon.getWidth() * scale) / 2.0F, y + (size - icon.getHeight() * scale) / 2.0F);
         ctx.pose().scale(scale, scale);
+        //? if >=1.21.6 {
         icon.renderAt(ctx, 0, 0, 0.0F, false, false);
+        //?} else
+        //icon.renderAt(0, 0, 0.0F, false, false, ctx);
         ctx.pose().popMatrix();
     }
 
@@ -236,11 +245,17 @@ public class BrowserEntryWidget extends WidgetDirectoryEntry {
     }
 
     @Override
+    //? if >=1.21.6 {
     public void postRenderHovered(GuiContext ctx, int mouseX, int mouseY, boolean selected) {
+    //?} else
+    //public void postRenderHovered(int mouseX, int mouseY, boolean selected, GuiContext ctx) {
         if (isOverIcon(mouseX, mouseY)) {
             com.autyism.ale.preview.PreviewInput.tooltip(ctx, mouseX, mouseY, StringUtils.translate("autyism-le.gui.hover.change_icon"));
         } else {
+            //? if >=1.21.6 {
             super.postRenderHovered(ctx, mouseX, mouseY, selected);
+            //?} else
+            //super.postRenderHovered(mouseX, mouseY, selected, ctx);
         }
     }
 

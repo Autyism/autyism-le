@@ -76,6 +76,17 @@ java {
 if (sc.current.parsed < "1.21.11") {
     sourceSets.named("main") { java.exclude("com/autyism/ale/mixin/litematica/ChunkManagerSchematicMixin.java") }
 }
+// Schematic previews on 1.21.5: no uniform buffers, texture views or GUI render states yet. These classes have a
+// 1.21.5 version of their own in src/v1215 (same names, written for 1.21.5 only)
+if (sc.current.parsed < "1.21.6") {
+    sourceSets.named("main") {
+        java.exclude("com/autyism/ale/preview/PreviewRenderer.java", "com/autyism/ale/preview/PreviewTarget.java",
+            "com/autyism/ale/preview/SectionLayers.java", "com/autyism/ale/browser/InfoTextBounds.java")
+    }
+    // (added to the compile task: Stonecutter sets the source set's directories itself)
+    tasks.named<JavaCompile>("compileJava") { source(rootProject.file("src/v1215/java")) }
+}
+
 // Block entities in schematic previews: render states from 1.21.9 on, drawn directly before
 if (sc.current.parsed >= "1.21.9") {
     sourceSets.named("main") { java.exclude("com/autyism/ale/preview/LegacyBlockEntities.java",
@@ -126,6 +137,8 @@ tasks.processResources {
         if (sc.current.parsed < "1.21.11") add("litematica.ChunkManagerSchematicMixin")
         // Schematic previews before 1.21.9 (no render states): chests and beds drawn outside a world
         if (sc.current.parsed >= "1.21.9") addAll(listOf("render.PreviewChestRendererMixin", "render.PreviewBedRendererMixin"))
+        // ... and on 1.21.5 (no GUI render states) the browser's info text is recorded while it is drawn (src/v1215)
+        if (sc.current.parsed >= "1.21.6") add("render.InfoTextRecorderMixin")
         // Dev only: -PaleNoMixins=a.B,c.D leaves those mixins out (to find which one breaks something)
         providers.gradleProperty("aleNoMixins").orNull?.split(",")?.filter { it.isNotBlank() }?.let { addAll(it) }
     }

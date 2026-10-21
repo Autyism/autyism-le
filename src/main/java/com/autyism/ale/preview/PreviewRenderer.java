@@ -413,7 +413,7 @@ public final class PreviewRenderer {
             //?} else {
             /*RenderSystem.outputColorTextureOverride = target.colorView();
             RenderSystem.outputDepthTextureOverride = target.depthView();
-            LegacyBlockEntities.render(model, dispatcher, eye);
+            LegacyBlockEntities.render(model, dispatcher, eye, mc.renderBuffers().bufferSource());
             mc.renderBuffers().bufferSource().endBatch();
             *///?}
         } catch (Throwable t) {

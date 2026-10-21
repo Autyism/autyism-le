@@ -5,7 +5,6 @@ import fi.dy.masa.malilib.util.data.tag.CompoundData;
 import fi.dy.masa.malilib.util.data.tag.converter.DataConverterNbt;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.renderer.block.ModelBlockRenderer;
-import net.minecraft.client.renderer.chunk.ChunkSectionLayer;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.HolderLookup;
 import net.minecraft.nbt.CompoundTag;
@@ -15,6 +14,7 @@ import net.minecraft.world.level.block.RenderShape;
 import net.minecraft.world.level.block.entity.BlockEntity;
 import net.minecraft.world.level.block.state.BlockState;
 import net.minecraft.world.level.material.FluidState;
+//? if >=1.21.6
 import net.minecraft.world.level.storage.TagValueInput;
 import org.jetbrains.annotations.Nullable;
 
@@ -143,7 +143,7 @@ final class SceneMesher {
                     Marks marks = new Marks(part, x0, y0, z0);
                     if (!fluid.isEmpty()) {
                         try {
-                            this.fluidRenderer.tesselate(this.view, this.mpos, l -> marks.sink(layer(l)), state, fluid);
+                            this.fluidRenderer.tesselate(this.view, this.mpos, l -> marks.sink(SectionLayers.of(l)), state, fluid);
                         } catch (Throwable t) {
                             marks.rollback();
                             failed(state, t);
@@ -153,7 +153,7 @@ final class SceneMesher {
                         boolean opaque = ModelBlockRenderer.forceOpaque(this.cutoutLeaves, state);
                         try {
                             this.blockRenderer.tesselateBlock((qx, qy, qz, quad, instance) ->
-                                            marks.sink(opaque ? MeshLayer.SOLID : layer(quad.materialInfo().layer())).putBlockBakedQuad(qx, qy, qz, quad, instance),
+                                            marks.sink(opaque ? MeshLayer.SOLID : SectionLayers.of(quad.materialInfo().layer())).putBlockBakedQuad(qx, qy, qz, quad, instance),
                                     x - x0, y - y0, z - z0, this.view, this.mpos, state, this.models.get(state), state.getSeed(this.mpos));
                         } catch (Throwable t) {
                             marks.rollback();
@@ -162,7 +162,7 @@ final class SceneMesher {
                     }
                     *///?} else {
                     if (!fluid.isEmpty()) {
-                        MeshVertexSink sink = part.sink(layer(net.minecraft.client.renderer.ItemBlockRenderTypes.getRenderLayer(fluid)));
+                        MeshVertexSink sink = part.sink(SectionLayers.of(net.minecraft.client.renderer.ItemBlockRenderTypes.getRenderLayer(fluid)));
                         sink.setOffset(x0, y0, z0);
                         int mark = sink.vertexCount();
                         try {
@@ -173,7 +173,7 @@ final class SceneMesher {
                         }
                     }
                     if (state.getRenderShape() == RenderShape.MODEL) {
-                        MeshVertexSink sink = part.sink(layer(net.minecraft.client.renderer.ItemBlockRenderTypes.getChunkRenderType(state)));
+                        MeshVertexSink sink = part.sink(SectionLayers.of(net.minecraft.client.renderer.ItemBlockRenderTypes.getChunkRenderType(state)));
                         sink.setOffset(x0, y0, z0);
                         int mark = sink.vertexCount();
                         this.pose.pushPose();
@@ -209,7 +209,10 @@ final class SceneMesher {
             CompoundData data = this.blockEntityData != null ? this.blockEntityData.get(pos) : null;
             if (data != null && this.registries != null) {
                 CompoundTag tag = DataConverterNbt.toVanillaCompound(data);
+                //? if >=1.21.6 {
                 be.loadWithComponents(TagValueInput.create(ProblemReporter.DISCARDING, this.registries, tag));
+                //?} else
+                //be.loadWithComponents(tag, this.registries);
             }
             return be;
         } catch (Throwable t) {
@@ -222,17 +225,6 @@ final class SceneMesher {
         if (this.failures++ < 3) AleMod.LOGGER.warn("Schematic preview skipped a block it could not draw: {}", state, t);
     }
 
-    static MeshLayer layer(ChunkSectionLayer layer) {
-        return switch (layer) {
-            case SOLID -> MeshLayer.SOLID;
-            //? if <1.21.11
-            //case CUTOUT_MIPPED -> MeshLayer.CUTOUT_MIPPED;
-            case CUTOUT -> MeshLayer.CUTOUT;
-            case TRANSLUCENT -> MeshLayer.TRANSLUCENT;
-            //? if <26.1
-            case TRIPWIRE -> MeshLayer.TRIPWIRE;
-        };
-    }
 
     /** 一个方块开始写之前各层的位置：方块画到一半出错时全部退回 */
     private static final class Marks {

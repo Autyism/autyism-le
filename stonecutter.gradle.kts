@@ -33,9 +33,14 @@ stonecutter parameters {
             replace("""\bfi\.dy\.masa\.malilib\.util\.data\.tag\.CompoundData\b""" to """net.minecraft.nbt.CompoundTag""", """(?!)""" to """unused""")
             replace("""\bCompoundData\b""" to """CompoundTag""", """(?!)""" to """unused""")
         }
-        // 1.21.5: MaLiLib draws GUI rectangles immediately, without the GuiGraphics (see gui/GuiRects). One way only.
+        // 1.21.5: MaLiLib draws GUI rectangles immediately, without the GuiGraphics (see gui/GuiRects); the GUI is still
+        // moved with the 3D PoseStack (z 0, scale 1 on z). One way only.
         regex(current.parsed < "1.21.6") {
-            replace("""\bRenderUtils\.(drawRect|drawOutlinedBox)\(ctx,""" to """com.autyism.ale.gui.GuiRects.$1(ctx,""", """(?!)""" to """unused""")
+            replace("""(?<![.\w])RenderUtils\.(drawRect|drawOutlinedBox|drawOutline)\((ctx|g),""" to """com.autyism.ale.gui.GuiRects.$1($2,""", """(?!)""" to """unused""")
+            replace("""\.pose\(\)\.pushMatrix\(\)""" to """.pose().pushPose()""", """(?!)""" to """unused""")
+            replace("""\.pose\(\)\.popMatrix\(\)""" to """.pose().popPose()""", """(?!)""" to """unused""")
+            replace("""\.pose\(\)\.translate\(([^;]*)\);""" to """.pose().translate($1, 0.0F);""", """(?!)""" to """unused""")
+            replace("""\.pose\(\)\.scale\(([^;]*)\);""" to """.pose().scale($1, 1.0F);""", """(?!)""" to """unused""")
         }
         // 26.2: screens moved from Minecraft to Gui; entity type and concrete constants moved (gametests use `c` / `client` for the Minecraft instance)
         regex(current.parsed >= "26.2") {

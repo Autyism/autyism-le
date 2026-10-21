@@ -12,6 +12,10 @@ final class InfoTextBounds {
     private InfoTextBounds() {
     }
 
+    /** Litematica 画信息面板之前调用（这里不用做什么：事后从这一帧登记的文字里找；1.21.5 见 src/v1215） */
+    static void begin(int x, int y, int w, int h) {
+    }
+
     /** 面板里文字的下沿（界面坐标）；面板里没有文字时返回 -1 */
     static int bottom(GuiGraphics g, int x, int y, int w, int h) {
         int lineHeight = Minecraft.getInstance().font.lineHeight;

@@ -305,7 +305,11 @@ public final class PreviewFixtures {
     private static void saveStructure(TestSingleplayerContext sp, Path file, BlockPos min, BlockPos max) {
         sp.getServer().runOnServer(server -> {
             StructureTemplate template = new StructureTemplate();
+            // 1.21.5 只能给一种要忽略的方块
+            //? if >=1.21.6 {
             template.fillFromWorld(server.overworld(), min, max.subtract(min).offset(1, 1, 1), false, List.of(Blocks.STRUCTURE_VOID));
+            //?} else
+            //template.fillFromWorld(server.overworld(), min, max.subtract(min).offset(1, 1, 1), false, Blocks.STRUCTURE_VOID);
             template.setAuthor("ALE");
             try {
                 NbtIo.writeCompressed(template.save(new CompoundTag()), file);
@@ -337,7 +341,10 @@ public final class PreviewFixtures {
         }
         CompoundTag root = new CompoundTag();
         root.putInt("Version", 2);
+        //? if >=1.21.6 {
         root.putInt("DataVersion", SharedConstants.getCurrentVersion().dataVersion().version());
+        //?} else
+        //root.putInt("DataVersion", SharedConstants.getCurrentVersion().getDataVersion().getVersion());
         root.putShort("Width", (short) w);
         root.putShort("Height", (short) h);
         root.putShort("Length", (short) l);

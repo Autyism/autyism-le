@@ -271,9 +271,15 @@ public final class ContainerVerifierGui {
         }
 
         @Override
+        //? if >=1.21.6 {
         public void render(GuiContext ctx, int mouseX, int mouseY, boolean selected) {
+        //?} else
+        //public void render(int mouseX, int mouseY, boolean selected, GuiContext ctx) {
             if (!(this.myEntry instanceof DataEntry data)) {
+                //? if >=1.21.6 {
                 super.render(ctx, mouseX, mouseY, selected);
+                //?} else
+                //super.render(mouseX, mouseY, selected, ctx);
                 return;
             }
             selected = this.shouldRenderAsSelected();
@@ -283,26 +289,47 @@ public final class ContainerVerifierGui {
             int x1 = this.getColumnPosX(0), x2 = this.getColumnPosX(1), x3 = this.getColumnPosX(2);
             ItemStack icon = new ItemStack(data.block);
             String name = WidgetSchematicVerificationResult.BlockMismatchInfo.getDisplayName(expectedOf(data.mismatch), icon);
+            //? if >=1.21.6 {
             this.drawString(ctx, x1 + 20, this.y + 7, 0xFFFFFFFF, name);
+            //?} else
+            //this.drawString(x1 + 20, this.y + 7, 0xFFFFFFFF, name, ctx);
+            //? if >=1.21.6 {
             this.drawString(ctx, x2 + 20, this.y + 7, 0xFFFFFFFF, TEXT_COLOR + StringUtils.translate("autyism-le.gui.label.schematic_verifier.contents_differ") + GuiBase.TXT_RST);
+            //?} else
+            //this.drawString(x2 + 20, this.y + 7, 0xFFFFFFFF, TEXT_COLOR + StringUtils.translate("autyism-le.gui.label.schematic_verifier.contents_differ") + GuiBase.TXT_RST, ctx);
+            //? if >=1.21.6 {
             this.drawString(ctx, x3, this.y + 7, 0xFFFFFFFF, String.valueOf(countOf(data.mismatch)));
+            //?} else
+            //this.drawString(x3, this.y + 7, 0xFFFFFFFF, String.valueOf(countOf(data.mismatch)), ctx);
             RenderUtils.drawRect(ctx, x1, this.y + 3, 16, 16, 0x20FFFFFF);
             RenderUtils.drawRect(ctx, x2, this.y + 3, 16, 16, 0x20FFFFFF);
             ctx.renderItem(icon, x1, this.y + 3);
             ctx.renderItem(icon, x2, this.y + 3);
+            //? if >=1.21.6 {
             this.drawSubWidgets(ctx, mouseX, mouseY);
+            //?} else
+            //this.drawSubWidgets(mouseX, mouseY, ctx);
         }
 
         @Override
+        //? if >=1.21.6 {
         public void postRenderHovered(GuiContext ctx, int mouseX, int mouseY, boolean selected) {
+        //?} else
+        //public void postRenderHovered(int mouseX, int mouseY, boolean selected, GuiContext ctx) {
             if (!(this.myEntry instanceof DataEntry data)) {
+                //? if >=1.21.6 {
                 super.postRenderHovered(ctx, mouseX, mouseY, selected);
+                //?} else
+                //super.postRenderHovered(mouseX, mouseY, selected, ctx);
                 return;
             }
             boolean overButton = false;
             for (WidgetBase w : this.subWidgets) overButton |= w.isMouseOver(mouseX, mouseY);
             if (!overButton) renderTooltip(ctx, mouseX, mouseY, data.block);
+            //? if >=1.21.6 {
             this.drawHoveredSubWidget(ctx, mouseX, mouseY);
+            //?} else
+            //this.drawHoveredSubWidget(mouseX, mouseY, ctx);
         }
 
         /** 最近的几个这种容器，每个写出差了什么（少了 / 多了哪些物品） */
@@ -342,7 +369,10 @@ public final class ContainerVerifierGui {
             int x = mouseX + 10, y = mouseY;
             if (x + width > GuiUtils.getCurrentScreenWidth()) x = mouseX - width - 10;
             if (y + height > GuiUtils.getCurrentScreenHeight()) y = Math.max(0, mouseY - height - 2);
+            //? if >=1.21.6 {
             fi.dy.masa.litematica.render.RenderUtils.renderBackgroundMask(ctx, x + 1, y + 1, width - 1, height - 1);
+            //?} else
+            //fi.dy.masa.litematica.render.RenderUtils.renderBackgroundMask(x + 1, y + 1, width - 1, height - 1, ctx);
             RenderUtils.drawOutlinedBox(ctx, x, y, width, height, 0xFF000000, GuiBase.COLOR_HORIZONTAL_BAR);
             int ty = y + 5;
             for (String l : lines) {

@@ -68,7 +68,8 @@ public abstract class WorldRendererSchematicMixin {
     }
 
     // 透过玻璃显示投影时：错误标记的渲染通道用原版画半透明层之前的深度（见 OverlayDepth），水和半透明方块挡不住它。
-    // 26.2 起清屏颜色是 Optional，26.3 起渲染接口在 renderpearl 里
+    // 26.2 起清屏颜色是 Optional，26.3 起渲染接口在 renderpearl 里；1.21.9 及更早 Litematica 画覆盖层的方法叫 drawInternal，
+    // 1.21.5 的渲染通道还没有名字和纹理视图
     //? if >=26.3 {
     /*@com.llamalad7.mixinextras.injector.wrapoperation.WrapOperation(method = "drawOverlayInternal",
             at = @At(value = "INVOKE",
@@ -89,7 +90,7 @@ public abstract class WorldRendererSchematicMixin {
             com.llamalad7.mixinextras.injector.wrapoperation.Operation<com.mojang.blaze3d.systems.RenderPass> original) {
         return original.call(encoder, label, color, clearColor, com.autyism.ale.render.OverlayDepth.depthFor(depth), clearDepth);
     }
-    *///?} elif >=1.21.11 {
+    *///?} elif >=1.21.10 {
     @com.llamalad7.mixinextras.injector.wrapoperation.WrapOperation(method = "drawOverlayInternal",
             at = @At(value = "INVOKE", remap = true,
                     target = "Lcom/mojang/blaze3d/systems/CommandEncoder;createRenderPass(Ljava/util/function/Supplier;Lcom/mojang/blaze3d/textures/GpuTextureView;Ljava/util/OptionalInt;Lcom/mojang/blaze3d/textures/GpuTextureView;Ljava/util/OptionalDouble;)Lcom/mojang/blaze3d/systems/RenderPass;"))
@@ -99,5 +100,25 @@ public abstract class WorldRendererSchematicMixin {
             com.llamalad7.mixinextras.injector.wrapoperation.Operation<com.mojang.blaze3d.systems.RenderPass> original) {
         return original.call(encoder, label, color, clearColor, com.autyism.ale.render.OverlayDepth.depthFor(depth), clearDepth);
     }
-    //?}
+    //?} elif >=1.21.6 {
+    /*@com.llamalad7.mixinextras.injector.wrapoperation.WrapOperation(method = "drawInternal",
+            at = @At(value = "INVOKE", remap = true,
+                    target = "Lcom/mojang/blaze3d/systems/CommandEncoder;createRenderPass(Ljava/util/function/Supplier;Lcom/mojang/blaze3d/textures/GpuTextureView;Ljava/util/OptionalInt;Lcom/mojang/blaze3d/textures/GpuTextureView;Ljava/util/OptionalDouble;)Lcom/mojang/blaze3d/systems/RenderPass;"))
+    private com.mojang.blaze3d.systems.RenderPass ale$overlayDepth(com.mojang.blaze3d.systems.CommandEncoder encoder,
+            java.util.function.Supplier<String> label, com.mojang.blaze3d.textures.GpuTextureView color, java.util.OptionalInt clearColor,
+            @org.jetbrains.annotations.Nullable com.mojang.blaze3d.textures.GpuTextureView depth, java.util.OptionalDouble clearDepth,
+            com.llamalad7.mixinextras.injector.wrapoperation.Operation<com.mojang.blaze3d.systems.RenderPass> original) {
+        return original.call(encoder, label, color, clearColor, com.autyism.ale.render.OverlayDepth.depthFor(depth), clearDepth);
+    }
+    *///?} else {
+    /*@com.llamalad7.mixinextras.injector.wrapoperation.WrapOperation(method = "drawInternal",
+            at = @At(value = "INVOKE", remap = true,
+                    target = "Lcom/mojang/blaze3d/systems/CommandEncoder;createRenderPass(Lcom/mojang/blaze3d/textures/GpuTexture;Ljava/util/OptionalInt;Lcom/mojang/blaze3d/textures/GpuTexture;Ljava/util/OptionalDouble;)Lcom/mojang/blaze3d/systems/RenderPass;"))
+    private com.mojang.blaze3d.systems.RenderPass ale$overlayDepth(com.mojang.blaze3d.systems.CommandEncoder encoder,
+            com.mojang.blaze3d.textures.GpuTexture color, java.util.OptionalInt clearColor,
+            @org.jetbrains.annotations.Nullable com.mojang.blaze3d.textures.GpuTexture depth, java.util.OptionalDouble clearDepth,
+            com.llamalad7.mixinextras.injector.wrapoperation.Operation<com.mojang.blaze3d.systems.RenderPass> original) {
+        return original.call(encoder, color, clearColor, com.autyism.ale.render.OverlayDepth.depthFor(depth), clearDepth);
+    }
+    *///?}
 }

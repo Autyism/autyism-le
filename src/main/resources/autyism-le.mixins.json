@@ -32,6 +32,7 @@
     "render.GameRendererCameraAccessor",
     "render.PreviewChestRendererMixin",
     "render.PreviewBedRendererMixin",
+    "render.InfoTextRecorderMixin",
     "malilib.WidgetContainerAccess",
     "malilib.GuiListBaseAccess",
     "without.schematicpreview.SchematicBrowserListMixin",
