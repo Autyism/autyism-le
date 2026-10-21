@@ -15,12 +15,12 @@
 - Save your schematic edits back to a file.
 - Marks blocks that face the wrong way or are wrongly waterlogged; schematic overlays stay visible behind glass.
 - Material lists count entities and container contents, and containers get checked too.
-- 3D previews in the schematic browser, folder icons and a Replace button in material lists (1.21.11 and 26.x).
-- New in 1.2.0 (1.21.11): an F on containers that still need filling, clear overlays on water and other see-through blocks, and Easy Place puts rails down in the schematic's shape when ALE is on the server too.
+- 3D previews in the schematic browser, folder icons and a Replace button in material lists.
+- New in 1.2.0: an F on containers that still need filling, clear overlays on water and other see-through blocks, and Easy Place puts rails down in the schematic's shape when ALE is on the server too.
 
 Everything else is in the folded sections below (features, how to use, settings, FAQ): click a title to open it.
 
-Autyism's Litematica Enhancement (ALE) is an add-on for [Litematica](https://modrinth.com/mod/litematica) and [MaLiLib](https://modrinth.com/mod/malilib) that runs on your client; on 1.21.11 the same jar can also go on a server for exact rail placement. It does not replace Litematica. It adds the small things you miss when you build from schematics every day: a real block picker for block lists, a way to save your schematic edits, clearer error markers, and checks for entities and container contents.
+Autyism's Litematica Enhancement (ALE) is an add-on for [Litematica](https://modrinth.com/mod/litematica) and [MaLiLib](https://modrinth.com/mod/malilib) that runs on your client; the same jar can also go on a server for exact rail placement. It does not replace Litematica. It adds the small things you miss when you build from schematics every day: a real block picker for block lists, a way to save your schematic edits, clearer error markers, and checks for entities and container contents.
 
 All features except the scrollable button rows can be turned off in ALE's settings. ALE never writes to your schematic files unless you click **Save edits** or **Save as...**.
 
@@ -31,29 +31,27 @@ All features except the scrollable button rows can be turned off in ALE's settin
 
 - **Pick blocks / Pick items button.** Block lists in Litematica and other MaLiLib-based mods (for example Litematica's `ignorableExistingBlocks` or the printer's block lists) get a **Pick blocks...** button, and item lists get **Pick items...**. No more typing block IDs by hand.
 - **Searchable picker.** Your current list is on the left, every block with its icon and name is on the right, and you can search by name (in your game language) or by ID. Click a block to add it, click − to remove it.
-- **On 1.21.11** the picker opens straight away when you click a block list, and **Original editor** at the top right opens the normal list editor. Middle click (your pick block key) on a block in the world or the schematic adds it, and blocks with a wall and a standing form (signs, torches, banners, heads, coral fans...) are one entry.
+- The picker opens straight away when you click a block list, and **Original editor** at the top right opens the normal list editor. Middle click (your pick block key) on a block in the world or the schematic adds it, and blocks with a wall and a standing form (signs, torches, banners, heads, coral fans...) are one entry.
 
 ### Saving schematic edits
 
 - **Save edits.** A new button in the placement configuration screen writes the schematic as it is now, including **Replace** in the material list and changes made in Litematica's Edit Schematic mode, back to the placement's `.litematic` file, so your edits survive a restart. While there are unsaved changes, the button reads **Save edits\***.
 - **Save as...** Saves the edited schematic as a new file next to the original (the suggested name ends in `_edited`) and leaves the original untouched.
-- **Sign wood replacement that keeps your signs.** When you replace a sign's wood with **Replace**, every form of that sign (standing and wall, or hanging and wall hanging) becomes the matching form of the new wood, and rotation, facing, waterlogging and the text on both sides are kept. On 1.21.10 and older this needs Schematic Preview's **Replace**.
+- **Sign wood replacement that keeps your signs.** When you replace a sign's wood with **Replace**, every form of that sign (standing and wall, or hanging and wall hanging) becomes the matching form of the new wood, and rotation, facing, waterlogging and the text on both sides are kept.
 
 ### Spotting mistakes in the world
 
 - **Blue "W": wrong waterlogging.** When a placed block is waterlogged and the schematic's isn't (or the other way round), a blue W is drawn on all six faces, on top of Litematica's wrong-state overlay. You can see at once that the block needs water, or must not have any.
-- **Red "D": wrong orientation.** When the block is turned the wrong way, a red D is drawn on all six faces. This covers facing, axis, rotation, rail shape, floor/wall/ceiling attachment, door hinge side, top/bottom half and crafter orientation. On 1.21.11 every letter that applies is shown side by side, also when other properties are wrong too; in the other versions' jars W only shows when waterlogging is the only difference, and D wins when both apply.
-- **Green "F": needs filling (1.21.11).** Containers whose schematic block holds items, such as hoppers, droppers, chests and furnaces, get a green F, so you don't have to open each one. The F goes away once the Schematic Verifier or opening the container shows the right contents; in single player, or on a server with Servux and Litematica's *Entity Data Sync* turned on, ALE also checks the containers near you by itself, so a filled container loses its F without opening it. The F comes back when the container is emptied, broken or replaced. Optionally, containers that hold only items from a skip list (all shulker boxes by default) are left out.
-- **One marker per block (1.21.11).** When a block is wrong in several ways, only the most important letter is drawn: D (facing) before W (waterlogged) before F (needs filling). Turn **One Marker per Block** off to see them side by side.
-- **Highlight signs (1.21.11).** A **Highlight Signs** button in the Schematic Verifier marks signs with text inside the selected schematic through walls, because many schematics leave hints on signs where things need filling: bright green when the sign is placed, dark green when it is still missing.
-- **Render Through Glass.** Litematica's overlays and translucent ghost blocks normally disappear behind glass. With ALE they stay visible behind glass and stained glass, which helps when you build windows or greenhouses. On 1.21.11 water, bubble columns, ice, slime, honey, kelp and waterlogged blocks no longer wash out the overlay colours either.
+- **Red "D": wrong orientation.** When the block is turned the wrong way, a red D is drawn on all six faces. This covers facing, axis, rotation, rail shape, floor/wall/ceiling attachment, door hinge side, top/bottom half and crafter orientation. Every letter that applies is shown, also when other properties are wrong too.
+- **Green "F": needs filling.** Containers whose schematic block holds items, such as hoppers, droppers, chests and furnaces, get a green F, so you don't have to open each one. The F goes away once the Schematic Verifier or opening the container shows the right contents; in single player, or on a server with Servux and Litematica's *Entity Data Sync* turned on, ALE also checks the containers near you by itself, so a filled container loses its F without opening it. The F comes back when the container is emptied, broken or replaced. Optionally, containers that hold only items from a skip list (all shulker boxes by default) are left out.
+- **One marker per block.** When a block is wrong in several ways, only the most important letter is drawn: D (facing) before W (waterlogged) before F (needs filling). Turn **One Marker per Block** off to see them side by side.
+- **Highlight signs.** A **Highlight Signs** button in the Schematic Verifier marks signs with text inside the selected schematic through walls, because many schematics leave hints on signs where things need filling: bright green when the sign is placed, dark green when it is still missing.
+- **Render Through Glass.** Litematica's overlays and translucent ghost blocks normally disappear behind glass. With ALE they stay visible behind glass and stained glass, which helps when you build windows or greenhouses. Water, bubble columns, ice, slime, honey, kelp and waterlogged blocks no longer wash out the overlay colours either.
 - **Translucent schematic entities.** Item frames, armor stands, minecarts, boats and other entities of a schematic are drawn see-through with a light ghost tint, so you can't mistake them for real ones. With Litematica's `renderBlocksAsTranslucent` option turned on, block entities such as chests, signs, beds and shulker boxes turn see-through as well.
 - **Entity info overlay.** Hold Litematica's info overlay key (`I`) and look at a schematic entity to get a Schematic / World comparison: facing, item and item rotation for item frames, rotation and equipment for armor stands, facing and variant for paintings. The title is green when everything matches, yellow when something differs (the different lines are highlighted) and red when the entity is missing in the world.
 - **Fluid info overlay.** The same key also works on water and lava in the schematic and shows Litematica's usual block info for them.
 
 ### Schematic browser
-
-These features and **Replace** in material lists are on Minecraft 1.21.11 and 26.1–26.3 only for now.
 
 - **Layouts with 3D thumbnails.** A small button at the top-left of Litematica's schematic browser switches between a list, a list with 3D thumbnails and grids with 5, 4 or 3 tiles per row. Thumbnails are built in the background so big folders stay smooth; schematics over the size limit (125,000 blocks by default) show "Too large" and unreadable files "Can't read".
 - **3D preview.** The selected schematic is drawn in 3D below its information, with real block models, lighting, all regions and block entities such as chests, signs and banners. Drag to turn it and scroll to zoom; very large schematics stop at about two million faces, so the game never freezes.
@@ -64,13 +62,13 @@ These features and **Replace** in material lists are on Minecraft 1.21.11 and 26
 
 - **Entities in material lists.** Item frames, armor stands, minecarts, boats, paintings and other entities that are placed with an item are counted in Litematica's material lists next to the blocks. In a placement's list, entities that already exist in the world are not counted as missing.
 - **Contents list.** A **Contents** button in the material list opens a separate list of everything stored in the schematic: items in chests, barrels, shulker boxes, hoppers and other containers, in item frames, on armor stands and in container minecarts. Shulker boxes inside containers are opened up and their contents counted too.
-- **Replace.** A **Replace** button next to **Ignore** swaps every block of that material in the schematic for a block you pick from a searchable grid. Shared states such as facing, half and waterlogging are kept, signs, torches, banners and heads keep their standing or wall form, signs keep their text, and the list and the schematic in the world update at once. On 1.21.11 middle click (your pick block key) picks the block under the mouse or crosshair, the wall and standing forms are one choice, and when Schematic Preview is installed its **Replace** opens this dialog too (**Schematic Preview's dialog** at the top right opens its own).
-- **Container check in the Schematic Verifier.** The verifier also compares the items in each container with the schematic (slot order does not matter). On 1.21.11 the containers that differ are listed as **Wrong Contents** next to Litematica's own categories, one entry per container type, with the missing and extra items in the tooltip; they are only highlighted when you select the category or an entry. In the other versions' jars they get a magenta outline and a message tells you how many there are. Once a container is fixed, it drops off the list.
+- **Replace.** A **Replace** button next to **Ignore** swaps every block of that material in the schematic for a block you pick from a searchable grid. Shared states such as facing, half and waterlogging are kept, signs, torches, banners and heads keep their standing or wall form, signs keep their text, and the list and the schematic in the world update at once. Middle click (your pick block key) picks the block under the mouse or crosshair, the wall and standing forms are one choice, and when Schematic Preview is installed its **Replace** opens this dialog too (**Schematic Preview's dialog** at the top right opens its own).
+- **Container check in the Schematic Verifier.** The verifier also compares the items in each container with the schematic (slot order does not matter). The containers that differ are listed as **Wrong Contents** next to Litematica's own categories, one entry per container type, with the missing and extra items in the tooltip; they are only highlighted when you select the category or an entry. Once a container is fixed, it drops off the list.
 
 ### Easy Place
 
-- **Rails in the schematic's shape (1.21.11).** With ALE on the server too (single player counts), Litematica's Easy Place puts each rail down in the schematic's shape right away: ascending rails and curves of all four rail types, without placing other rails first, and without bending rails that are already there. The server checks every placement like a normal one. An ascending rail waits until the block on its high side is there, and a message tells you which side. Without ALE on the server, Easy Place works as before.
-- **Fast deepslate for the printer (1.21.11).** With ALE on the server too (single player counts), the printer (Litematica Printer Autyism Edition 1.2.0) mines deepslate over an area like an instant block, with an Efficiency V netherite pickaxe and Haste II. The server only does this when the printer asks for it right before mining a block; mining by hand stays vanilla.
+- **Rails in the schematic's shape.** With ALE on the server too (single player counts), Litematica's Easy Place puts each rail down in the schematic's shape right away: ascending rails and curves of all four rail types, without placing other rails first, and without bending rails that are already there. The server checks every placement like a normal one. An ascending rail waits until the block on its high side is there, and a message tells you which side. Without ALE on the server, Easy Place works as before.
+- **Fast deepslate for the printer.** With ALE on the server too (single player counts), the printer (Litematica Printer Autyism Edition 1.2.0) mines deepslate over an area like an instant block, with an Efficiency V netherite pickaxe and Haste II. The server only does this when the printer asks for it right before mining a block; mining by hand stays vanilla.
 
 ### Litematica screens
 
@@ -122,11 +120,11 @@ These features and **Replace** in material lists are on Minecraft 1.21.11 and 26
 
 ![Wrong Contents in the verifier](docs/images/verifier-contents.png)
 
-*On 1.21.11 those containers are a category in the verifier's list and are highlighted when you select them.*
+*Those containers are a category in the verifier's list and are highlighted when you select them.*
 
 ![Needs filling marker](docs/images/fill-marker.png)
 
-*On 1.21.11 an F marks a container that still needs filling, here next to D (wrong facing) and W (wrong waterlogging).*
+*An F marks a container that still needs filling, here next to D (wrong facing) and W (wrong waterlogging).*
 
 ![Entity info overlay](docs/images/info-entity.png)
 
@@ -135,7 +133,7 @@ These features and **Replace** in material lists are on Minecraft 1.21.11 and 26
 <details>
 <summary><b>How to use</b> (click to open)</summary>
 
-ALE has no commands and one hotkey of its own, **Open ALE Settings** (1.21.11 and 26.x, not bound by default). Everything else lives in Litematica's screens and uses Litematica's keys. These are Litematica's default keys:
+ALE has no commands and one hotkey of its own, **Open ALE Settings** (not bound by default). Everything else lives in Litematica's screens and uses Litematica's keys. These are Litematica's default keys:
 
 | Action | Default key | Where to change it |
 |---|---|---|
@@ -175,16 +173,16 @@ ALE has no commands and one hotkey of its own, **Open ALE Settings** (1.21.11 an
 **Check container contents**
 
 1. Open the Schematic Verifier (`M` + `V`) and click **Start verification**.
-2. On 1.21.11, **Wrong Contents** appears in the result list next to Litematica's categories. Hover an entry to see the missing and extra items, and select the category or an entry to highlight those containers in the world. In the other versions' jars the containers get a magenta outline right away.
+2. **Wrong Contents** appears in the result list next to Litematica's categories. Hover an entry to see the missing and extra items, and select the category or an entry to highlight those containers in the world.
 3. Fix the contents. The container drops off the list (and its outline goes away) shortly afterwards.
 
-**See which containers still need filling** (1.21.11)
+**See which containers still need filling**
 
 1. Keep Litematica's schematic overlay on. Containers that hold items in the schematic show a green F.
 2. Fill them. The F goes away once the verifier or opening the container shows the right contents.
 3. To leave out hoppers that only hold empty shulker boxes and similar, turn on **Needs Filling: Skip Listed Items** and edit **Needs Filling: Skip Items**.
 
-**Place rails in the schematic's shape** (1.21.11)
+**Place rails in the schematic's shape**
 
 1. Put the same ALE jar into the server's `mods` folder (with Fabric API). Litematica and MaLiLib are not needed there. In single player nothing extra is needed.
 2. Use Easy Place as usual. Rails go down in the schematic's shape.
@@ -209,10 +207,10 @@ ALE has no commands and one hotkey of its own, **Open ALE Settings** (1.21.11 an
 **Replace a material**
 
 1. In the material list (`M` + `L`), click **Replace** in the row of the material.
-2. Search for the new block, click it and click **OK**. A message tells you how many blocks were replaced. On 1.21.11 you can also middle click (your pick block key) a block in the world or the schematic to choose it.
+2. Search for the new block, click it and click **OK**. A message tells you how many blocks were replaced. You can also middle click (your pick block key) a block in the world or the schematic to choose it.
 3. Use **Save edits** if you want to keep the change.
 
-**Change the wood of signs** (on 1.21.10 and older this needs Schematic Preview)
+**Change the wood of signs**
 
 1. In the material list, click **Replace** next to a sign.
 2. Choose a sign of another wood and confirm. A message shows how many signs were changed.
@@ -229,7 +227,7 @@ ALE has no commands and one hotkey of its own, **Open ALE Settings** (1.21.11 an
 | Save Edit Buttons | ON | Adds **Save edits** and **Save as...** to the placement configuration screen. |
 | Info Overlay: Fluids & Entities | ON | The info overlay also compares schematic entities and shows info for schematic fluids. |
 | Translucent Schematic Entities | ON | Draws schematic entities see-through with a ghost tint. |
-| Waterlogged Marker | ON | Blue W on blocks with the wrong waterlogging (in the other versions' jars called Waterlogged-Only Marker: only when that is the only difference). |
+| Waterlogged Marker | ON | Blue W on blocks with the wrong waterlogging. |
 | Waterlogged Marker Color | `#FF1E64FF` (blue) | Colour of the W. |
 | Wrong Orientation Marker | ON | Red D on blocks turned the wrong way. |
 | Orientation Marker Color | `#FFFF2020` (red) | Colour of the D. |
@@ -237,26 +235,19 @@ ALE has no commands and one hotkey of its own, **Open ALE Settings** (1.21.11 an
 | Verifier: Container Contents | ON | The Schematic Verifier also checks what is inside containers. |
 | Sign Wood Replace Fix | ON | Replacing sign wood with Schematic Preview's **Replace** keeps each sign's form, facing, waterlogging and text (ALE's own **Replace** always does). |
 | Render Through Glass | ON | Keeps schematic overlays and translucent ghost blocks visible behind glass and stained glass. |
-
-Colours use the `#AARRGGBB` format.
-
-On 1.21.11 and 26.x there are also these settings:
-
-| Option (as shown in game) | Default | What it does |
-|---|---|---|
-| Schematic Browser Previews | ON | Browser layouts, thumbnails, the 3D preview and the icons. |
-| Material List: Replace | ON | The **Replace** button in material lists. |
-| Open ALE Settings | not bound | Hotkey that opens ALE's settings. |
-
-And on 1.21.11:
-
-| Option (as shown in game) | Default | What it does |
-|---|---|---|
 | Needs Filling Marker | ON | Green F on containers whose schematic block holds items. |
 | Needs Filling Marker Color | `#FF2BD96B` (green) | Colour of the F. |
 | Needs Filling: Skip Listed Items | OFF | No F on containers that hold only items from the list below. |
 | Needs Filling: Skip Items | all shulker boxes | The items for the option above. |
+| One Marker per Block | ON | Only the most important letter on a block: D, then W, then F. |
+| Sign Highlight: Placed Color | `#FF55FF55` (bright green) | Placed signs while **Highlight Signs** is on. |
+| Sign Highlight: Missing Color | `#FF0E7A2E` (dark green) | Signs that are still missing. |
 | Easy Place: Exact Rail Shapes | ON | With ALE on the server too, Easy Place puts rails down in the schematic's shape. |
+| Schematic Browser Previews | ON | Browser layouts, thumbnails, the 3D preview and the icons. |
+| Material List: Replace | ON | The **Replace** button in material lists. |
+| Open ALE Settings | not bound | Hotkey that opens ALE's settings. |
+
+Colours use the `#AARRGGBB` format.
 
 Two more tabs hold the details: **Schematic browser** (Browser Layout: List, Horizontal Gap and Vertical Gap: 2, List Row Height: 15, Preview List Row Height: 35, Tile Height Ratio: 1.0, Thumbnail Size Limit: 125000 blocks) and **3D preview** (Block Entities In Previews: ON, Preview Field Of View: 50, Preview Start Yaw: -45, Preview Start Pitch: 30).
 
@@ -270,23 +261,23 @@ There is a separate jar for each Minecraft version:
 
 | Minecraft | Jar | Java | Fabric Loader | MaLiLib | Litematica |
 |---|---|---|---|---|---|
-| 1.21.5 | `autyism-litematica-enhancement-1.0.0+1.21.5.jar` | 21 or newer | 0.17.0 or newer | 0.24.3 or newer | 0.22.5 or newer |
-| 1.21.6, 1.21.7, 1.21.8 | `autyism-litematica-enhancement-1.0.0+1.21.8.jar` | 21 or newer | 0.17.0 or newer | 0.25.7 or newer | 0.23.7 or newer |
-| 1.21.9, 1.21.10 | `autyism-litematica-enhancement-1.0.0+1.21.10.jar` | 21 or newer | 0.17.0 or newer | 0.26.8 or newer | 0.24.9 or newer |
+| 1.21.5 | `autyism-litematica-enhancement-1.2.0+1.21.5.jar` | 21 or newer | 0.17.0 or newer | 0.24.3 or newer | 0.22.5 or newer |
+| 1.21.6, 1.21.7, 1.21.8 | `autyism-litematica-enhancement-1.2.0+1.21.8.jar` | 21 or newer | 0.17.0 or newer | 0.25.7 or newer | 0.23.7 or newer |
+| 1.21.9, 1.21.10 | `autyism-litematica-enhancement-1.2.0+1.21.10.jar` | 21 or newer | 0.17.0 or newer | 0.26.8 or newer | 0.24.9 or newer |
 | 1.21.11 | `autyism-litematica-enhancement-1.2.0+1.21.11.jar` | 21 or newer | 0.17.0 or newer | 0.27.0 or newer | 0.26.0 or newer |
-| 26.1, 26.1.1, 26.1.2 | `autyism-litematica-enhancement-1.1.0+26.1.2.jar` | 25 or newer | 0.19.3 or newer | 0.28.12 or newer | 0.27.14 or newer |
-| 26.2 | `autyism-litematica-enhancement-1.1.0+26.2.jar` | 25 or newer | 0.19.3 or newer | 0.29.6 or newer | 0.28.8 or newer |
-| 26.3 | `autyism-litematica-enhancement-1.1.0+26.3.jar` | 25 or newer | 0.19.3 or newer | 0.30.2 or newer | 0.29.1 or newer |
+| 26.1, 26.1.1, 26.1.2 | `autyism-litematica-enhancement-1.2.0+26.1.2.jar` | 25 or newer | 0.19.3 or newer | 0.28.12 or newer | 0.27.14 or newer |
+| 26.2 | `autyism-litematica-enhancement-1.2.0+26.2.jar` | 25 or newer | 0.19.3 or newer | 0.29.6 or newer | 0.28.8 or newer |
+| 26.3 | `autyism-litematica-enhancement-1.2.0+26.3.jar` | 25 or newer | 0.19.3 or newer | 0.30.2 or newer | 0.29.1 or newer |
 
 Fabric API, MaLiLib and Litematica are required, each in the build for your Minecraft version.
 
 | Optional | |
 |---|---|
 | Mod Menu | adds a settings button to the mod list |
-| Schematic Preview | not needed on 1.21.11 and 26.x (when it is installed, ALE leaves the previews, icons and **Replace** to it); on 1.21.6–1.21.10 needed for the sign wood replacement; it has no 1.21.5 version |
+| Schematic Preview | not needed (when it is installed, ALE leaves the previews, icons and **Replace** to it); it has no 1.21.5 version |
 | Litematica Printer Autyism Edition | its block lists get the picker too |
 
-ALE runs on your client and needs nothing on the server. Only for rails in the schematic's shape with Easy Place and the printer's fast deepslate (1.21.11), put the same jar on the server too; the server needs Fabric API, not Litematica or MaLiLib.
+ALE runs on your client and needs nothing on the server. Only for rails in the schematic's shape with Easy Place and the printer's fast deepslate, put the same jar on the server too; the server needs Fabric API, not Litematica or MaLiLib.
 
 <details>
 <summary><b>Compatibility</b> (click to open)</summary>
@@ -309,13 +300,13 @@ ALE runs on your client and needs nothing on the server. Only for rails in the s
 3. Download the ALE jar for your Minecraft version and put it into the `mods` folder too.
 4. Optional: add Mod Menu and Schematic Preview.
 5. Start the game.
-6. Optional, 1.21.11: for rails in the schematic's shape and the printer's fast deepslate on a server, put the same ALE jar into the server's `mods` folder too (Fabric API is needed there; Litematica and MaLiLib are not).
+6. Optional: for rails in the schematic's shape and the printer's fast deepslate on a server, put the same ALE jar into the server's `mods` folder too (Fabric API is needed there; Litematica and MaLiLib are not).
 
 <details>
 <summary><b>FAQ</b> (click to open)</summary>
 
 **Do I need ALE on the server?**
-No. Everything works with ALE only on your client (see Known limitations for the container check on servers). Only Easy Place's rails in the schematic's shape and the printer's fast deepslate (1.21.11) need ALE on the server too; without it, Easy Place places rails like before and deepslate is mined one block at a time.
+No. Everything works with ALE only on your client (see Known limitations for the container check on servers). Only Easy Place's rails in the schematic's shape and the printer's fast deepslate need ALE on the server too; without it, Easy Place places rails like before and deepslate is mined one block at a time.
 
 **Does ALE need the printer, or the printer ALE?**
 No. ALE and Litematica Printer Autyism Edition are separate mods and each works on its own.
@@ -341,7 +332,7 @@ The screen features only run while a screen is open, the info overlay only while
 - The picker search matches names in your current game language and IDs; there is no fuzzy or pinyin search.
 - Lists are recognized by their name and current entries, so an unusual list may not get the picker button.
 - **Save edits** can only overwrite `.litematic` files. A placement without a file, or one loaded from another format, needs **Save as...**.
-- With Schematic Preview's **Replace** (the only one on 1.21.10 and older), the sign fix only applies when a sign is replaced with another sign.
+- With Schematic Preview's own **Replace** dialog, the sign fix only applies when a sign is replaced with another sign.
 - The 3D previews show blocks and block entities, not entities such as item frames or armor stands.
 - Very large schematics are shown only partly in the 3D preview (about two million faces), and schematics over the size limit get no thumbnail.
 - The previews were tested with Sodium and Iris without a shader pack; with a shader pack they may look different.
@@ -375,12 +366,12 @@ Made by **Autyism**. Source code and bug reports: [GitHub](https://github.com/Au
 - 投影改完可以保存回文件。
 - 标出朝向错、含水不对的方块；隔着玻璃也能看到投影。
 - 材料列表会统计实体和箱子里的东西，还能检查容器内容。
-- 投影浏览器里的 3D 预览、文件夹图标、材料列表的“替换”按钮（1.21.11 和 26.x）。
-- 1.2.0 新增（1.21.11）：还需要放东西的容器显示 F，水等半透明方块上的标记清楚了；服务端也装了 ALE 时，轻松放置直接把铁轨放成投影里的形状。
+- 投影浏览器里的 3D 预览、文件夹图标、材料列表的“替换”按钮。
+- 1.2.0 新增：还需要放东西的容器显示 F，水等半透明方块上的标记清楚了；服务端也装了 ALE 时，轻松放置直接把铁轨放成投影里的形状。
 
 详细说明都在下面折叠起来的部分（功能、使用方法、设置、常见问题），点标题就能展开。
 
-Autyism 的投影增强（Autyism's Litematica Enhancement，简称 ALE）是 [Litematica](https://modrinth.com/mod/litematica) 和 [MaLiLib](https://modrinth.com/mod/malilib) 的附属模组，在客户端运行；1.21.11 版的同一个 jar 也可以装进服务端，用来按投影形状放铁轨。它不替代 Litematica，而是补上平时用投影建造时缺的那些小功能：方块列表的方块选择界面、保存对投影的修改、更清楚的错误标记，以及实体和容器内容物的检查。
+Autyism 的投影增强（Autyism's Litematica Enhancement，简称 ALE）是 [Litematica](https://modrinth.com/mod/litematica) 和 [MaLiLib](https://modrinth.com/mod/malilib) 的附属模组，在客户端运行；同一个 jar 也可以装进服务端，用来按投影形状放铁轨。它不替代 Litematica，而是补上平时用投影建造时缺的那些小功能：方块列表的方块选择界面、保存对投影的修改、更清楚的错误标记，以及实体和容器内容物的检查。
 
 除了“按钮行可滚动”，所有功能都可以在 ALE 的设置里关闭。只有在你点击“保存修改”或“另存为…”时，ALE 才会写入投影文件。
 
@@ -391,29 +382,27 @@ Autyism 的投影增强（Autyism's Litematica Enhancement，简称 ALE）是 [L
 
 - **“选择方块…” / “选择物品…”按钮**：Litematica 和其他 MaLiLib 系模组里的方块列表（例如 Litematica 的“可忽略的现有方块”、打印机的各种方块列表）会多一个“选择方块…”按钮，物品列表则是“选择物品…”。不用再手打方块 ID。
 - **可搜索的选择界面**：左边是当前列表，右边是带图标和名称的全部方块，可以按名称（游戏当前语言）或 ID 搜索。点一下方块就加入列表，点 − 移除。
-- **1.21.11 上**点击方块列表直接打开选择界面，右上角的“原来的编辑框”打开普通的列表编辑框。在世界或投影里的方块上按鼠标中键（选取方块键）就能加入它；有挂墙和立着两种形态的方块（告示牌、火把、旗帜、头颅、珊瑚扇……）只算一项。
+- 点击方块列表直接打开选择界面，右上角的“原来的编辑框”打开普通的列表编辑框。在世界或投影里的方块上按鼠标中键（选取方块键）就能加入它；有挂墙和立着两种形态的方块（告示牌、火把、旗帜、头颅、珊瑚扇……）只算一项。
 
 ### 保存投影修改
 
 - **保存修改**：投影放置的配置界面多了这个按钮，可以把当前的投影（包括材料列表里“替换”的材料和 Litematica“编辑原理图”模式做的修改）写回这个放置对应的 `.litematic` 文件，重启游戏后也不会丢。有未保存的修改时，按钮显示为“保存修改*”。
 - **另存为…**：把修改后的投影另存为新文件，放在原文件旁边（默认文件名末尾加 `_edited`），原文件保持不变。
-- **替换告示牌木材时保留告示牌**：用“替换”更换告示牌的木材时，这种告示牌的所有形态（立式和挂墙，或者悬挂和挂墙悬挂）都会换成新木材的对应形态，旋转、朝向、含水状态和正反两面的文字都会保留。1.21.10 及更早的版本需要用 Schematic Preview 的“替换”。
+- **替换告示牌木材时保留告示牌**：用“替换”更换告示牌的木材时，这种告示牌的所有形态（立式和挂墙，或者悬挂和挂墙悬挂）都会换成新木材的对应形态，旋转、朝向、含水状态和正反两面的文字都会保留。
 
 ### 在世界里看出问题
 
 - **蓝色“W”：含水不对**：放好的方块含水而投影里的不含水（或者反过来）时，会在 Litematica 的“错误状态”覆盖层上，在方块六个面各画一个蓝色的 W，一眼就能看出这个方块需要（或者不该）含水。
-- **红色“D”：朝向错误**：方块方向不对时，六个面各画一个红色的 D。包括朝向、轴向、旋转角度、铁轨方向、贴地/贴墙/贴天花板、门轴左右、上半/下半以及合成器的朝向。1.21.11 上符合的字母都会并排显示，别的属性也不对时同样显示；其他版本的 jar 只有含水是唯一的不同时才显示 W，两种都符合时显示 D。
-- **绿色“F”：需要填充（1.21.11）**：投影里装着东西的容器（漏斗、投掷器、箱子、熔炉等）显示绿色的 F，不用一个个打开看。原理图验证器或者打开容器确认内容物对了以后，F 就不显示了；单人游戏里，或者服务器装了 Servux 并且打开了投影的“实体数据同步”时，ALE 还会自己检查你附近的容器，填好了不用打开 F 也会消失。之后容器被拿空、敲掉或换掉，F 会重新显示。也可以不标只装着跳过列表里物品的容器（默认列表是各色潜影盒）。
-- **标记只显示一个（1.21.11）**：一个方块同时有几种问题时只画最重要的字母：朝向 D 优先，其次含水 W，最后需要填充 F。关掉 **标记只显示一个** 就并排显示。
-- **高亮告示牌（1.21.11）**：原理图验证器界面的 **高亮告示牌** 按钮会把选中投影里有字的告示牌透墙标出来（很多投影在要填充的地方放了写着提示的告示牌）：已放置的亮绿色，还没放的深绿色。
-- **透过玻璃显示投影**：原本 Litematica 的覆盖层和半透明投影方块在玻璃后面会看不见。开启后，隔着玻璃和染色玻璃也能正常看到，做窗户、温室时很方便。1.21.11 上，水、气泡柱、冰、粘液块、蜂蜜块、海带和含水方块也不会再把覆盖层的颜色冲淡。
+- **红色“D”：朝向错误**：方块方向不对时，六个面各画一个红色的 D。包括朝向、轴向、旋转角度、铁轨方向、贴地/贴墙/贴天花板、门轴左右、上半/下半以及合成器的朝向。符合的字母都会显示，别的属性也不对时同样显示。
+- **绿色“F”：需要填充**：投影里装着东西的容器（漏斗、投掷器、箱子、熔炉等）显示绿色的 F，不用一个个打开看。原理图验证器或者打开容器确认内容物对了以后，F 就不显示了；单人游戏里，或者服务器装了 Servux 并且打开了投影的“实体数据同步”时，ALE 还会自己检查你附近的容器，填好了不用打开 F 也会消失。之后容器被拿空、敲掉或换掉，F 会重新显示。也可以不标只装着跳过列表里物品的容器（默认列表是各色潜影盒）。
+- **标记只显示一个**：一个方块同时有几种问题时只画最重要的字母：朝向 D 优先，其次含水 W，最后需要填充 F。关掉 **标记只显示一个** 就并排显示。
+- **高亮告示牌**：原理图验证器界面的 **高亮告示牌** 按钮会把选中投影里有字的告示牌透墙标出来（很多投影在要填充的地方放了写着提示的告示牌）：已放置的亮绿色，还没放的深绿色。
+- **透过玻璃显示投影**：原本 Litematica 的覆盖层和半透明投影方块在玻璃后面会看不见。开启后，隔着玻璃和染色玻璃也能正常看到，做窗户、温室时很方便。水、气泡柱、冰、粘液块、蜂蜜块、海带和含水方块也不会再把覆盖层的颜色冲淡。
 - **投影实体半透明**：投影里的物品展示框、盔甲架、矿车、船等实体会渲染成带幽灵色调的半透明效果，不会和真实实体搞混。开启 Litematica 的“渲染 - 方块半透明化”后，箱子、告示牌、床、潜影盒等方块实体也会一起变成半透明。
 - **实体信息显示**：按住 Litematica 的信息显示键（`I`）看向投影里的实体，会显示“投影 / 世界”对比：物品展示框的朝向、物品和物品旋转，盔甲架的角度和装备，画的朝向和图案。全部一致时标题为绿色，有不同时为黄色（不同的行会标出来），世界里没有这个实体时为红色。
 - **流体信息显示**：同一个键看向投影里的水和岩浆时，也会显示 Litematica 普通的方块信息。
 
 ### 投影浏览器
-
-这些功能和材料列表的“替换”目前只有 Minecraft 1.21.11 和 26.1–26.3 有。
 
 - **带 3D 缩略图的显示方式**：Litematica 投影浏览器左上角的小按钮可以在列表、带 3D 缩略图的列表和每行 5 / 4 / 3 个的网格之间切换。缩略图在后台生成，大文件夹也不卡；超过体积上限（默认 125000 个方块）的投影显示“太大”，读不出来的文件显示“无法读取”。
 - **3D 预览**：选中的投影会在信息下面画成 3D，有真实的方块模型、光照、所有区域，以及箱子、告示牌、旗帜等方块实体。拖动可以转动，滚轮可以缩放；很大的投影大约两百万个面之后停止生成，游戏不会卡住。
@@ -424,13 +413,13 @@ Autyism 的投影增强（Autyism's Litematica Enhancement，简称 ALE）是 [L
 
 - **材料列表统计实体**：物品展示框、盔甲架、矿车、船、画等需要用物品放置的实体，会和方块一起计入 Litematica 的材料列表。在投影放置的材料列表里，世界中已经存在的实体不算缺失。
 - **容器内容物列表**：材料列表里的“容器内容物”按钮会打开一个单独的列表，列出投影里存放的所有物品：箱子、木桶、潜影盒、漏斗等容器里的物品，物品展示框里的物品，盔甲架的装备，以及运输矿车里的东西。容器里的潜影盒也会展开，统计它装的东西。
-- **替换**：“忽略”旁边的“替换”按钮可以把投影里这种材料的方块全部换成你在可搜索网格里选的方块。两种方块都有的朝向、上下半、含水等状态会保留，告示牌、火把、旗帜、头颅保持立式或挂墙的形态，告示牌保留文字；材料列表和世界里的投影会马上更新。1.21.11 上可以按鼠标中键（选取方块键）选鼠标或准星指着的方块，挂墙和立着的形态只算一个选项；装了 Schematic Preview 时，它的“替换”也打开这个界面（右上角的“Schematic Preview 的对话框”打开它自己的）。
-- **验证器检查容器内容物**：Litematica 的投影验证器（界面里叫“原理图验证器”）还会比较每个容器里的物品是否和投影一致（不看格子顺序）。1.21.11 上不一致的容器在 Litematica 自己的分类旁边列为“错误内容物”，每种容器一项，鼠标停在上面能看到缺少和多出的物品；只有选中这个分类或某一项时才会高亮。其他版本的 jar 会直接用洋红色框标出，并提示有几个。补好之后它会从列表里消失。
+- **替换**：“忽略”旁边的“替换”按钮可以把投影里这种材料的方块全部换成你在可搜索网格里选的方块。两种方块都有的朝向、上下半、含水等状态会保留，告示牌、火把、旗帜、头颅保持立式或挂墙的形态，告示牌保留文字；材料列表和世界里的投影会马上更新。可以按鼠标中键（选取方块键）选鼠标或准星指着的方块，挂墙和立着的形态只算一个选项；装了 Schematic Preview 时，它的“替换”也打开这个界面（右上角的“Schematic Preview 的对话框”打开它自己的）。
+- **验证器检查容器内容物**：Litematica 的投影验证器（界面里叫“原理图验证器”）还会比较每个容器里的物品是否和投影一致（不看格子顺序）。不一致的容器在 Litematica 自己的分类旁边列为“错误内容物”，每种容器一项，鼠标停在上面能看到缺少和多出的物品；只有选中这个分类或某一项时才会高亮。补好之后它会从列表里消失。
 
 ### 轻松放置
 
-- **铁轨按投影形状（1.21.11）**：服务端也装了 ALE 时（单人游戏也算），Litematica 的轻松放置会直接把每节铁轨放成投影里的形状：四种铁轨的上坡和弯道都一次放好，不用先放别的铁轨，也不会把已经放好的铁轨拉歪。服务端像普通放置一样检查每一次放置。上坡铁轨要等高的那一侧的方块放好再放，会提示是哪一侧。服务端没装 ALE 时，轻松放置照旧。
-- **打印机秒挖深板岩（1.21.11）**：服务端也装了 ALE 时（单人游戏也算），打印机（Litematica Printer Autyism Edition 1.2.0）用效率 V 下界合金镐加急迫 II，可以像挖能秒破的方块一样大范围秒挖深板岩。只有打印机挖之前先打招呼，服务端才这样做；自己手动挖照原版。
+- **铁轨按投影形状**：服务端也装了 ALE 时（单人游戏也算），Litematica 的轻松放置会直接把每节铁轨放成投影里的形状：四种铁轨的上坡和弯道都一次放好，不用先放别的铁轨，也不会把已经放好的铁轨拉歪。服务端像普通放置一样检查每一次放置。上坡铁轨要等高的那一侧的方块放好再放，会提示是哪一侧。服务端没装 ALE 时，轻松放置照旧。
+- **打印机秒挖深板岩**：服务端也装了 ALE 时（单人游戏也算），打印机（Litematica Printer Autyism Edition 1.2.0）用效率 V 下界合金镐加急迫 II，可以像挖能秒破的方块一样大范围秒挖深板岩。只有打印机挖之前先打招呼，服务端才这样做；自己手动挖照原版。
 
 ### Litematica 界面
 
@@ -482,11 +471,11 @@ Autyism 的投影增强（Autyism's Litematica Enhancement，简称 ALE）是 [L
 
 ![验证器里的错误内容物](docs/images/verifier-contents.png)
 
-*1.21.11 上这些容器在验证器的列表里是一个分类，选中时才高亮。*
+*这些容器在验证器的列表里是一个分类，选中时才高亮。*
 
 ![需要填充标记](docs/images/fill-marker.png)
 
-*1.21.11 上还需要放东西的容器显示 F，旁边是 D（朝向不对）和 W（含水不对）。*
+*还需要放东西的容器显示 F，旁边是 D（朝向不对）和 W（含水不对）。*
 
 ![实体信息对比](docs/images/info-entity.png)
 
@@ -495,7 +484,7 @@ Autyism 的投影增强（Autyism's Litematica Enhancement，简称 ALE）是 [L
 <details>
 <summary><b>使用方法</b>（点开查看）</summary>
 
-ALE 没有命令，只有一个自己的热键“打开 ALE 设置”（1.21.11 和 26.x，默认不绑定）。其他功能都在 Litematica 的界面里，用的也是 Litematica 的按键。下面是 Litematica 的默认按键：
+ALE 没有命令，只有一个自己的热键“打开 ALE 设置”（默认不绑定）。其他功能都在 Litematica 的界面里，用的也是 Litematica 的按键。下面是 Litematica 的默认按键：
 
 | 操作 | 默认按键 | 在哪里修改 |
 |---|---|---|
@@ -535,16 +524,16 @@ ALE 没有命令，只有一个自己的热键“打开 ALE 设置”（1.21.11 
 **检查容器内容物**
 
 1. 打开原理图验证器（`M` + `V`），点“开始验证”。
-2. 1.21.11 上，结果列表里 Litematica 的分类旁边会出现“错误内容物”。鼠标停在某一项上可以看到缺少和多出的物品，选中这个分类或某一项就会在世界里高亮这些容器。其他版本的 jar 会直接用洋红色框标出。
+2. 结果列表里 Litematica 的分类旁边会出现“错误内容物”。鼠标停在某一项上可以看到缺少和多出的物品，选中这个分类或某一项就会在世界里高亮这些容器。
 3. 把内容物补好，过一会儿这个容器就会从列表里消失（框也会消失）。
 
-**看哪些容器还要放东西**（1.21.11）
+**看哪些容器还要放东西**
 
 1. 开着 Litematica 的投影覆盖层。投影里装着东西的容器显示绿色的 F。
 2. 把东西放进去。验证器或者打开容器确认内容物对了以后，F 就不显示了。
 3. 不想标那些只装着空潜影盒之类的漏斗时，打开“需要填充：跳过列表里的物品”，并编辑“需要填充：跳过的物品”。
 
-**按投影形状放铁轨**（1.21.11）
+**按投影形状放铁轨**
 
 1. 把同一个 ALE jar 也放进服务端的 `mods` 文件夹（服务端要有 Fabric API）。服务端不需要 Litematica 和 MaLiLib。单人游戏不需要额外做什么。
 2. 照常使用轻松放置，铁轨会直接放成投影里的形状。
@@ -569,10 +558,10 @@ ALE 没有命令，只有一个自己的热键“打开 ALE 设置”（1.21.11 
 **替换一种材料**
 
 1. 在材料列表（`M` + `L`）里，点这种材料那一行的“替换”。
-2. 搜索新的方块，点一下它，再点“确定”，会提示换了多少个方块。1.21.11 上也可以在世界或投影里的方块上按鼠标中键（选取方块键）选中它。
+2. 搜索新的方块，点一下它，再点“确定”，会提示换了多少个方块。也可以在世界或投影里的方块上按鼠标中键（选取方块键）选中它。
 3. 想保留这个修改，就点“保存修改”。
 
-**更换告示牌的木材**（1.21.10 及更早的版本需要 Schematic Preview）
+**更换告示牌的木材**
 
 1. 在材料列表里点告示牌那一行的“替换”。
 2. 选择另一种木材的告示牌并确认，会提示换了多少个告示牌。
@@ -589,7 +578,7 @@ ALE 没有命令，只有一个自己的热键“打开 ALE 设置”（1.21.11 
 | 保存投影修改按钮 | 开 | 在投影放置配置界面加入“保存修改”和“另存为…”。 |
 | 方块信息显示：流体与实体 | 开 | 信息显示也对比投影实体，并显示投影流体的信息。 |
 | 投影实体半透明 | 开 | 投影实体渲染成带幽灵色调的半透明效果。 |
-| 含水标记 | 开 | 含水不对的方块显示蓝色 W（其他版本的 jar 里叫“只差含水标记”，只在含水是唯一的不同时显示）。 |
+| 含水标记 | 开 | 含水不对的方块显示蓝色 W。 |
 | 含水标记颜色 | `#FF1E64FF`（蓝） | W 的颜色。 |
 | 朝向错误标记 | 开 | 朝向错的方块显示红色 D。 |
 | 朝向标记颜色 | `#FFFF2020`（红） | D 的颜色。 |
@@ -597,26 +586,19 @@ ALE 没有命令，只有一个自己的热键“打开 ALE 设置”（1.21.11 
 | 验证器：容器内容物 | 开 | 投影验证器同时检查容器里的物品。 |
 | 告示牌替换修复 | 开 | 用 Schematic Preview 的“替换”更换告示牌木材时，保留形态、朝向、含水和文字（ALE 自己的“替换”总是这样做）。 |
 | 透过玻璃显示投影 | 开 | 投影覆盖层和半透明投影方块在玻璃、染色玻璃后面也能看到。 |
-
-颜色格式为 `#AARRGGBB`。
-
-1.21.11 和 26.x 还有这些设置：
-
-| 选项（游戏内名称） | 默认值 | 作用 |
-|---|---|---|
-| 投影浏览器预览 | 开 | 浏览器的显示方式、缩略图、3D 预览和图标。 |
-| 材料列表：替换 | 开 | 材料列表里的“替换”按钮。 |
-| 打开 ALE 设置 | 未绑定 | 打开 ALE 设置界面的热键。 |
-
-1.21.11 还有：
-
-| 选项（游戏内名称） | 默认值 | 作用 |
-|---|---|---|
 | 需要填充标记 | 开 | 投影里装着东西的容器显示绿色 F。 |
 | 需要填充标记颜色 | `#FF2BD96B`（绿） | F 的颜色。 |
 | 需要填充：跳过列表里的物品 | 关 | 只装着下面列表里物品的容器不显示 F。 |
 | 需要填充：跳过的物品 | 各色潜影盒 | 上一项用的物品列表。 |
+| 标记只显示一个 | 开 | 一个方块只画最重要的字母：D，其次 W，最后 F。 |
+| 高亮告示牌：已放置的颜色 | `#FF55FF55`（亮绿） | 打开“高亮告示牌”时，已经放了的告示牌。 |
+| 高亮告示牌：未放置的颜色 | `#FF0E7A2E`（深绿） | 还没放的告示牌。 |
 | 轻松放置：铁轨按投影形状 | 开 | 服务端也装了 ALE 时，轻松放置把铁轨放成投影里的形状。 |
+| 投影浏览器预览 | 开 | 浏览器的显示方式、缩略图、3D 预览和图标。 |
+| 材料列表：替换 | 开 | 材料列表里的“替换”按钮。 |
+| 打开 ALE 设置 | 未绑定 | 打开 ALE 设置界面的热键。 |
+
+颜色格式为 `#AARRGGBB`。
 
 另外两个分页放细节：“投影浏览器”（浏览器显示方式：列表，横向间距和纵向间距：2，列表行高：15，预览列表行高：35，格子高宽比：1.0，缩略图体积上限：125000 个方块）和“3D 预览”（预览里画方块实体：开，预览视野：50，预览初始水平角：-45，预览初始俯仰角：30）。
 
@@ -630,23 +612,23 @@ ALE 没有命令，只有一个自己的热键“打开 ALE 设置”（1.21.11 
 
 | Minecraft | jar 文件 | Java | Fabric Loader | MaLiLib | Litematica |
 |---|---|---|---|---|---|
-| 1.21.5 | `autyism-litematica-enhancement-1.0.0+1.21.5.jar` | 21 或更新 | 0.17.0 或更新 | 0.24.3 或更新 | 0.22.5 或更新 |
-| 1.21.6、1.21.7、1.21.8 | `autyism-litematica-enhancement-1.0.0+1.21.8.jar` | 21 或更新 | 0.17.0 或更新 | 0.25.7 或更新 | 0.23.7 或更新 |
-| 1.21.9、1.21.10 | `autyism-litematica-enhancement-1.0.0+1.21.10.jar` | 21 或更新 | 0.17.0 或更新 | 0.26.8 或更新 | 0.24.9 或更新 |
+| 1.21.5 | `autyism-litematica-enhancement-1.2.0+1.21.5.jar` | 21 或更新 | 0.17.0 或更新 | 0.24.3 或更新 | 0.22.5 或更新 |
+| 1.21.6、1.21.7、1.21.8 | `autyism-litematica-enhancement-1.2.0+1.21.8.jar` | 21 或更新 | 0.17.0 或更新 | 0.25.7 或更新 | 0.23.7 或更新 |
+| 1.21.9、1.21.10 | `autyism-litematica-enhancement-1.2.0+1.21.10.jar` | 21 或更新 | 0.17.0 或更新 | 0.26.8 或更新 | 0.24.9 或更新 |
 | 1.21.11 | `autyism-litematica-enhancement-1.2.0+1.21.11.jar` | 21 或更新 | 0.17.0 或更新 | 0.27.0 或更新 | 0.26.0 或更新 |
-| 26.1、26.1.1、26.1.2 | `autyism-litematica-enhancement-1.1.0+26.1.2.jar` | 25 或更新 | 0.19.3 或更新 | 0.28.12 或更新 | 0.27.14 或更新 |
-| 26.2 | `autyism-litematica-enhancement-1.1.0+26.2.jar` | 25 或更新 | 0.19.3 或更新 | 0.29.6 或更新 | 0.28.8 或更新 |
-| 26.3 | `autyism-litematica-enhancement-1.1.0+26.3.jar` | 25 或更新 | 0.19.3 或更新 | 0.30.2 或更新 | 0.29.1 或更新 |
+| 26.1、26.1.1、26.1.2 | `autyism-litematica-enhancement-1.2.0+26.1.2.jar` | 25 或更新 | 0.19.3 或更新 | 0.28.12 或更新 | 0.27.14 或更新 |
+| 26.2 | `autyism-litematica-enhancement-1.2.0+26.2.jar` | 25 或更新 | 0.19.3 或更新 | 0.29.6 或更新 | 0.28.8 或更新 |
+| 26.3 | `autyism-litematica-enhancement-1.2.0+26.3.jar` | 25 或更新 | 0.19.3 或更新 | 0.30.2 或更新 | 0.29.1 或更新 |
 
 Fabric API、MaLiLib 和 Litematica 都是必需的，各自下载你的 Minecraft 版本对应的那一版。
 
 | 可选 | |
 |---|---|
 | Mod Menu | 在模组列表里提供设置按钮 |
-| Schematic Preview | 1.21.11 和 26.x 不需要（装了它时，预览、图标和“替换”由它提供）；1.21.6–1.21.10 的告示牌木材替换需要它；它没有 1.21.5 版 |
+| Schematic Preview | 不需要（装了它时，预览、图标和“替换”由它提供）；它没有 1.21.5 版 |
 | Litematica Printer Autyism Edition | 打印机的方块列表也能用选择界面 |
 
-ALE 在客户端运行，服务器不需要安装任何东西。只有想让轻松放置按投影形状放铁轨、让打印机秒挖深板岩（1.21.11）时，才需要把同一个 jar 也装进服务端；服务端需要 Fabric API，不需要 Litematica 和 MaLiLib。
+ALE 在客户端运行，服务器不需要安装任何东西。只有想让轻松放置按投影形状放铁轨、让打印机秒挖深板岩时，才需要把同一个 jar 也装进服务端；服务端需要 Fabric API，不需要 Litematica 和 MaLiLib。
 
 <details>
 <summary><b>兼容性</b>（点开查看）</summary>
@@ -669,13 +651,13 @@ ALE 在客户端运行，服务器不需要安装任何东西。只有想让轻�
 3. 下载 ALE 对应你的 Minecraft 版本的 jar，也放进 `mods` 文件夹。
 4. 可选：再装上 Mod Menu 和 Schematic Preview。
 5. 启动游戏。
-6. 可选（1.21.11）：想在服务器上按投影形状放铁轨、让打印机秒挖深板岩，把同一个 ALE jar 也放进服务端的 `mods` 文件夹（服务端需要 Fabric API，不需要 Litematica 和 MaLiLib）。
+6. 可选：想在服务器上按投影形状放铁轨、让打印机秒挖深板岩，把同一个 ALE jar 也放进服务端的 `mods` 文件夹（服务端需要 Fabric API，不需要 Litematica 和 MaLiLib）。
 
 <details>
 <summary><b>常见问题</b>（点开查看）</summary>
 
 **服务器需要装 ALE 吗？**
-不需要。只在客户端装 ALE，所有功能都能用（服务器上的容器检查见“已知限制”）。只有轻松放置按投影形状放铁轨、打印机秒挖深板岩（1.21.11）需要服务端也装 ALE；没装时，轻松放置照旧放铁轨，深板岩一格一格挖。
+不需要。只在客户端装 ALE，所有功能都能用（服务器上的容器检查见“已知限制”）。只有轻松放置按投影形状放铁轨、打印机秒挖深板岩需要服务端也装 ALE；没装时，轻松放置照旧放铁轨，深板岩一格一格挖。
 
 **ALE 需要打印机吗？打印机需要 ALE 吗？**
 都不需要。ALE 和 Litematica Printer Autyism Edition 是两个独立的模组，各自都能单独使用。
@@ -701,7 +683,7 @@ ALE 在客户端运行，服务器不需要安装任何东西。只有想让轻�
 - 搜索只匹配游戏当前语言的名称和 ID，不支持模糊搜索或拼音搜索。
 - ALE 根据列表名称和现有内容判断是否是方块/物品列表，个别特殊的列表可能不会出现选择按钮。
 - “保存修改”只能覆盖 `.litematic` 文件。没有对应文件的放置，或者从其他格式加载的投影，请用“另存为…”。
-- 使用 Schematic Preview 的“替换”时（1.21.10 及更早的版本只有它），告示牌修复只在用告示牌替换告示牌时生效。
+- 使用 Schematic Preview 自己的“替换”对话框时，告示牌修复只在用告示牌替换告示牌时生效。
 - 3D 预览显示方块和方块实体，不显示物品展示框、盔甲架之类的实体。
 - 很大的投影在 3D 预览里只显示一部分（大约两百万个面），超过体积上限的投影没有缩略图。
 - 预览在 Sodium、Iris（未开光影包）下测试过；开启光影包时显示效果可能不同。

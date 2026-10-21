@@ -73,7 +73,7 @@ public final class ContainerVerifier {
     private static int tickCounter;
 
     /**
-     * 有结果列表里的“容器内容不同”一类（1.21.11）时，只框选中的；其他版本暂时没有这一类，照以前框出全部不一致的容器
+     * 结果列表里有“容器内容不同”一类：只框选中的（不再一下框出全部不一致的容器）
      */
     public static final boolean SELECT_IN_VERIFIER = true;
 

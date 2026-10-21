@@ -148,7 +148,7 @@ public abstract class OverlayRendererMixin {
     private void ale$renderContainerMismatches(Matrix4f posMatrix, Matrix4f projMatrix, ProfilerFiller profiler, CallbackInfo ci) {
         SchematicPlacement placement = DataManager.getSchematicPlacementManager().getSelectedSchematicPlacement();
         if (placement == null || !placement.hasVerifier()) return;
-        // 选中的（1.21.11 起在验证器结果列表里选；更早的版本暂时是全部），缓存好的、离玩家近的在前
+        // 在验证器结果列表里选中的，缓存好的、离玩家近的在前
         List<BlockPos> positions = ContainerVerifier.renderPositions(placement.getSchematicVerifier(),
                 fi.dy.masa.litematica.config.Configs.InfoOverlays.VERIFIER_ERROR_HILIGHT_MAX_POSITIONS.getIntegerValue());
         if (positions.isEmpty()) return;

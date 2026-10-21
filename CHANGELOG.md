@@ -2,7 +2,7 @@
 
 ## 1.2.0 — 2026-10-14
 
-For Minecraft 1.21.11; the other jars stay at 1.1.0.
+For Minecraft 1.21.5–26.3. On 1.21.5–1.21.10 it also brings 1.1.0: 3D previews in the schematic browser, folder icons and Replace in material lists.
 
 - Mismatch colours stay clear on water, bubble columns, ice, slime and other see-through blocks, and W and D show up for every wrong property.
 - Container contents are a category in the Schematic Verifier and only get highlighted when you select them.
@@ -13,7 +13,7 @@ For Minecraft 1.21.11; the other jars stay at 1.1.0.
 - Easy Place puts rails down in the schematic's shape, ascending rails and curves included, when ALE is on the server too (or in single player).
 - Pick block in the Replace dialog and the block picker; wall and standing forms are one entry, and ALE's screens open first.
 - With a shader pack and LitematicaPass, the mismatch colours no longer disappear.
-- Works with Litefastica (fast schematic moving): W and D show on the placements it draws, and Render Through Glass works for them too.
+- Works with Litefastica on 1.21.11 (fast schematic moving): W and D show on the placements it draws, and Render Through Glass works for them too.
 - With ALE on the server too, the printer (Litematica Printer Autyism Edition 1.2.0) mines deepslate over an area like an instant block. Mining by hand stays vanilla.
 
 More: open "Details" below.
@@ -33,7 +33,7 @@ More: open "Details" below.
 
 ### 中文
 
-适用于 Minecraft 1.21.11；其他版本的 jar 仍是 1.1.0。
+适用于 Minecraft 1.21.5–26.3。1.21.5–1.21.10 同时带来 1.1.0 的内容：投影浏览器的 3D 预览、文件夹图标和材料列表的“替换”。
 
 - 水、气泡柱、冰、粘液块等半透明方块上的错误颜色清楚了；W 和 D 在多个属性不对时也都会显示。
 - 容器内容物在投影验证器里是一个分类，只有选中时才高亮。
@@ -44,7 +44,7 @@ More: open "Details" below.
 - 服务端也装了 ALE 时（单人游戏也算），轻松放置直接把铁轨放成投影里的形状，上坡、弯道都一次放好。
 - “替换”界面和方块选择界面可以用选取方块键；挂墙和立着的形态合成一项，默认打开 ALE 的界面。
 - 开着光影、装了 LitematicaPass 时，错误颜色不会再消失。
-- 兼容 Litefastica（快速移动投影）：它接管的投影上也显示 W 和 D，“透过玻璃显示投影”也对它们生效。
+- 兼容 1.21.11 上的 Litefastica（快速移动投影）：它接管的投影上也显示 W 和 D，“透过玻璃显示投影”也对它们生效。
 - 服务端也装了 ALE 时，打印机（Litematica Printer Autyism Edition 1.2.0）可以像挖能秒破的方块一样大范围秒挖深板岩。自己手动挖照原版。
 
 更多：点开下面的“详细说明”。
