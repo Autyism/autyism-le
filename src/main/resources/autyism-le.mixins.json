@@ -30,6 +30,8 @@
     "render.RenderTypeAccessor",
     "render.RenderSetupAccessor",
     "render.GameRendererCameraAccessor",
+    "render.PreviewChestRendererMixin",
+    "render.PreviewBedRendererMixin",
     "malilib.WidgetContainerAccess",
     "malilib.GuiListBaseAccess",
     "without.schematicpreview.SchematicBrowserListMixin",

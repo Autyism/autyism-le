@@ -435,6 +435,10 @@ public class GuiBlockPicker extends GuiBase {
     //?} else {
     /*@Override
     public boolean onMouseClicked(int mouseX, int mouseY, int mouseButton) {
+        if (WorldPick.isPickButton(mouseButton)) {
+            pickAt(mouseX, mouseY);
+            return true;
+        }
         if (mouseButton == InputConstants.MOUSE_BUTTON_LEFT) {
             int mx = mouseX, my = mouseY;
     *///?}

@@ -5,8 +5,10 @@ import fi.dy.masa.malilib.util.StringUtils;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.gui.GuiGraphics;
 import net.minecraft.client.gui.screens.Screen;
+//? if >=1.21.9 {
 import net.minecraft.client.input.KeyEvent;
 import net.minecraft.client.input.MouseButtonEvent;
+//?}
 import net.minecraft.network.chat.Component;
 import org.jetbrains.annotations.Nullable;
 
@@ -66,15 +68,11 @@ public final class FullscreenPreviewScreen extends Screen implements Previews.Pr
         }
     }
 
+    // 1.21.9 起鼠标事件是 MouseButtonEvent，之前是 (x, y, 按键)
+    //? if >=1.21.9 {
     @Override
     public boolean mouseClicked(MouseButtonEvent event, boolean doubleClick) {
-        if (event.button() == InputConstants.MOUSE_BUTTON_LEFT) {
-            Minecraft mc = Minecraft.getInstance();
-            this.dragging = true;
-            this.lastX = mc.mouseHandler.getScaledXPos(mc.getWindow());
-            this.lastY = mc.mouseHandler.getScaledYPos(mc.getWindow());
-            return true;
-        }
+        if (startDrag(event.button())) return true;
         return super.mouseClicked(event, doubleClick);
     }
 
@@ -83,6 +81,29 @@ public final class FullscreenPreviewScreen extends Screen implements Previews.Pr
         if (event.button() == InputConstants.MOUSE_BUTTON_LEFT) this.dragging = false;
         return super.mouseReleased(event);
     }
+    //?} else {
+    /*@Override
+    public boolean mouseClicked(double mouseX, double mouseY, int button) {
+        if (startDrag(button)) return true;
+        return super.mouseClicked(mouseX, mouseY, button);
+    }
+
+    @Override
+    public boolean mouseReleased(double mouseX, double mouseY, int button) {
+        if (button == InputConstants.MOUSE_BUTTON_LEFT) this.dragging = false;
+        return super.mouseReleased(mouseX, mouseY, button);
+    }
+    *///?}
+
+    /** 左键按下：开始拖动转视角 */
+    private boolean startDrag(int button) {
+        if (button != InputConstants.MOUSE_BUTTON_LEFT) return false;
+        Minecraft mc = Minecraft.getInstance();
+        this.dragging = true;
+        this.lastX = mc.mouseHandler.getScaledXPos(mc.getWindow());
+        this.lastY = mc.mouseHandler.getScaledYPos(mc.getWindow());
+        return true;
+    }
 
     @Override
     public boolean mouseScrolled(double mouseX, double mouseY, double horizontal, double vertical) {
@@ -90,12 +111,20 @@ public final class FullscreenPreviewScreen extends Screen implements Previews.Pr
         return true;
     }
 
+    // 移动键留给自由视角（不触发别的东西）
+    //? if >=1.21.9 {
     @Override
     public boolean keyPressed(KeyEvent event) {
-        // 移动键留给自由视角（不触发别的东西）
         if (PreviewInput.isMovementKey(event.key()) && this.session.camera().isFree()) return true;
         return super.keyPressed(event);
     }
+    //?} else {
+    /*@Override
+    public boolean keyPressed(int keyCode, int scanCode, int modifiers) {
+        if (PreviewInput.isMovementKey(keyCode) && this.session.camera().isFree()) return true;
+        return super.keyPressed(keyCode, scanCode, modifiers);
+    }
+    *///?}
 
     @Override
     public void onClose() {

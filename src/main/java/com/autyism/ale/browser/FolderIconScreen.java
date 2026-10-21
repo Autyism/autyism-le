@@ -14,6 +14,7 @@ import fi.dy.masa.malilib.render.RenderUtils;
 import fi.dy.masa.malilib.util.StringUtils;
 import net.minecraft.client.gui.GuiGraphics;
 import net.minecraft.client.gui.screens.Screen;
+//? if >=1.21.9
 import net.minecraft.client.input.KeyEvent;
 import net.minecraft.world.item.ItemStack;
 import org.jetbrains.annotations.Nullable;
@@ -134,17 +135,32 @@ public class FolderIconScreen extends GuiBase implements Previews.PreviewOwnedSc
         this.closeGui(true);
     }
 
+    // 1.21.9 起按键是 KeyEvent，之前是 (键码, 扫描码, 修饰键)
+    //? if >=1.21.9 {
     @Override
     public boolean onKeyTyped(KeyEvent event) {
-        if (event.key() == com.mojang.blaze3d.platform.InputConstants.KEY_RETURN || event.key() == com.mojang.blaze3d.platform.InputConstants.KEY_NUMPADENTER) {
+        if (keyTyped(event.key())) return true;
+        return super.onKeyTyped(event);
+    }
+    //?} else {
+    /*@Override
+    public boolean onKeyTyped(int keyCode, int scanCode, int modifiers) {
+        if (keyTyped(keyCode)) return true;
+        return super.onKeyTyped(keyCode, scanCode, modifiers);
+    }
+    *///?}
+
+    /** 回车确定，Esc 取消 */
+    private boolean keyTyped(int key) {
+        if (key == com.mojang.blaze3d.platform.InputConstants.KEY_RETURN || key == com.mojang.blaze3d.platform.InputConstants.KEY_NUMPADENTER) {
             confirm();
             return true;
         }
-        if (event.key() == com.mojang.blaze3d.platform.InputConstants.KEY_ESCAPE) {
+        if (key == com.mojang.blaze3d.platform.InputConstants.KEY_ESCAPE) {
             cancel();
             return true;
         }
-        return super.onKeyTyped(event);
+        return false;
     }
 
     // 后面的浏览器照常画（可以看到改动），对话框画在上面

@@ -19,22 +19,16 @@ import com.mojang.blaze3d.vertex.VertexFormat;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.renderer.RenderPipelines;
 import net.minecraft.client.renderer.blockentity.BlockEntityRenderDispatcher;
-import net.minecraft.client.renderer.blockentity.BlockEntityRenderer;
+//? if >=1.21.9 {
 import net.minecraft.client.renderer.blockentity.state.BlockEntityRenderState;
-import net.minecraft.client.renderer.blockentity.state.ChestRenderState;
 import net.minecraft.client.renderer.feature.FeatureRenderDispatcher;
+//?}
 import net.minecraft.client.renderer.fog.FogRenderer;
-import net.minecraft.client.renderer.state.CameraRenderState;
 import net.minecraft.client.renderer.texture.TextureAtlas;
-import net.minecraft.world.level.block.ChestBlock;
 import net.minecraft.world.level.block.entity.BlockEntity;
-import net.minecraft.world.level.block.state.BlockState;
-import net.minecraft.world.level.block.state.properties.BlockStateProperties;
-import net.minecraft.world.phys.Vec3;
 import org.jetbrains.annotations.Nullable;
 import org.joml.Matrix4f;
 import org.joml.Matrix4fStack;
-import org.joml.Quaternionf;
 import org.joml.Vector3f;
 import org.joml.Vector4f;
 import org.lwjgl.system.MemoryStack;
@@ -107,13 +101,15 @@ public final class PreviewRenderer {
         }
     }
 
-    /** 一个要画的方块实体（渲染状态在第一次画的时候在渲染线程取出） */
+    /** 一个要画的方块实体（1.21.9 起渲染状态在第一次画的时候在渲染线程取出，之后不再需要方块实体） */
     public static final class BlockEntityDraw {
         final float x, y, z;
         @Nullable
         BlockEntity blockEntity;
+        //? if >=1.21.9 {
         @Nullable
         BlockEntityRenderState state;
+        //?}
         boolean failed;
 
         BlockEntityDraw(int x, int y, int z, BlockEntity blockEntity) {
@@ -376,34 +372,13 @@ public final class PreviewRenderer {
         //? if >=26.2 {
         /*FeatureRenderDispatcher features = mc.gameRenderer.featureRenderDispatcher();
         net.minecraft.client.renderer.SubmitNodeStorage submits = SUBMITS;
-        *///?} else {
+        *///?} elif >=1.21.9 {
         FeatureRenderDispatcher features = mc.gameRenderer.getFeatureRenderDispatcher();
         net.minecraft.client.renderer.SubmitNodeStorage submits = features.getSubmitNodeStorage();
         //?}
-        CameraRenderState camera = new CameraRenderState();
-        camera.initialized = true;
-        camera.pos = new Vec3(eye.x, eye.y, eye.z);
-        //? if <26.1
-        camera.entityPos = camera.pos;
-        camera.orientation = new Quaternionf().rotationYXZ((float) Math.PI - (float) Math.toRadians(previewCamera.yaw()),
-                -(float) Math.toRadians(previewCamera.pitch()), 0.0F);
-        PoseStack pose = new PoseStack();
-        int submitted = 0;
-        for (BlockEntityDraw draw : model.blockEntityDraws()) {
-            if (draw.failed) continue;
-            if (draw.state == null && !extract(dispatcher, draw, camera.pos)) continue;
-            pose.pushPose();
-            pose.translate(draw.x - eye.x, draw.y - eye.y, draw.z - eye.z);
-            try {
-                dispatcher.submit(draw.state, pose, submits, camera);
-                submitted++;
-            } catch (Throwable t) {
-                draw.failed = true;
-                AleMod.LOGGER.debug("Schematic preview skipped a block entity", t);
-            }
-            pose.popPose();
-        }
-        if (submitted == 0) return;
+        // 1.21.9 起先把方块实体提交成渲染状态，下面一起画；之前渲染器直接画进缓冲（在下面换好输出目标以后）
+        //? if >=1.21.9
+        if (BlockEntitySubmit.submit(model, dispatcher, submits, eye, previewCamera) == 0) return;
 
         // 方块实体走原版的渲染类型：投影、雾、光照、模型视图和输出目标都临时换成预览自己的
         GpuBufferSlice oldFog = RenderSystem.getShaderFog();
@@ -430,12 +405,17 @@ public final class PreviewRenderer {
             /*RenderSystem.outputColorTextureOverride = target.colorView();
             RenderSystem.outputDepthTextureOverride = target.depthView();
             features.renderAllFeatures(submits);
-            *///?} else {
+            *///?} elif >=1.21.9 {
             RenderSystem.outputColorTextureOverride = target.colorView();
             RenderSystem.outputDepthTextureOverride = target.depthView();
             features.renderAllFeatures();
             mc.renderBuffers().bufferSource().endBatch();
-            //?}
+            //?} else {
+            /*RenderSystem.outputColorTextureOverride = target.colorView();
+            RenderSystem.outputDepthTextureOverride = target.depthView();
+            LegacyBlockEntities.render(model, dispatcher, eye);
+            mc.renderBuffers().bufferSource().endBatch();
+            *///?}
         } catch (Throwable t) {
             // 某个方块实体在绘制阶段出错：这个预览以后不再画方块实体，其余照常
             model.disableBlockEntities();
@@ -451,47 +431,6 @@ public final class PreviewRenderer {
             if (oldLights != null) RenderSystem.setShaderLights(oldLights);
             if (scissorOn) RenderSystem.enableScissorForRenderTypeDraws(sx, sy, sw, sh);
         }
-    }
-
-    private static boolean extract(BlockEntityRenderDispatcher dispatcher, BlockEntityDraw draw, Vec3 cameraPos) {
-        BlockEntity be = draw.blockEntity;
-        if (be == null) {
-            draw.failed = true;
-            return false;
-        }
-        try {
-            BlockEntityRenderState state = extractState(dispatcher, be, cameraPos);
-            if (state == null) {
-                draw.failed = true;
-                return false;
-            }
-            // 预览里的方块实体没有世界：箱子会按“物品栏里的单个箱子”画，这里改回它真正的朝向和左右半边
-            if (state instanceof ChestRenderState chest) {
-                BlockState bs = be.getBlockState();
-                if (bs.hasProperty(ChestBlock.TYPE)) chest.type = bs.getValue(ChestBlock.TYPE);
-                //? if >=26.1 {
-                /*if (bs.hasProperty(BlockStateProperties.HORIZONTAL_FACING)) chest.facing = bs.getValue(BlockStateProperties.HORIZONTAL_FACING);
-                *///?} else {
-                if (bs.hasProperty(BlockStateProperties.HORIZONTAL_FACING)) chest.angle = bs.getValue(BlockStateProperties.HORIZONTAL_FACING).toYRot();
-                //?}
-            }
-            draw.state = state;
-            draw.blockEntity = null;
-            return true;
-        } catch (Throwable t) {
-            draw.failed = true;
-            AleMod.LOGGER.debug("Schematic preview skipped a block entity", t);
-            return false;
-        }
-    }
-
-    @Nullable
-    private static <E extends BlockEntity, S extends BlockEntityRenderState> S extractState(BlockEntityRenderDispatcher dispatcher, E be, Vec3 cameraPos) {
-        BlockEntityRenderer<E, S> renderer = dispatcher.getRenderer(be);
-        if (renderer == null) return null;
-        S state = renderer.createRenderState();
-        renderer.extractRenderState(be, state, 0.0F, cameraPos, null);
-        return state;
     }
 
     private static void ensureStaticBuffers() {

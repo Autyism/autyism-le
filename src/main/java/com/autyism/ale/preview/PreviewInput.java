@@ -14,9 +14,11 @@ public final class PreviewInput {
         if (key == null || key.getType() != InputConstants.Type.KEYSYM || key.getValue() < 0) return false;
         //? if >=26.3 {
         /*return InputConstants.isKeyDown(key.getValue());
-        *///?} else {
+        *///?} elif >=1.21.9 {
         return InputConstants.isKeyDown(Minecraft.getInstance().getWindow(), key.getValue());
-        //?}
+        //?} else {
+        /*return InputConstants.isKeyDown(Minecraft.getInstance().getWindow().getWindow(), key.getValue());
+        *///?}
     }
 
     /**

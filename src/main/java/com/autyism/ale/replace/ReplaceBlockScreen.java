@@ -12,8 +12,10 @@ import fi.dy.masa.malilib.util.InfoUtils;
 import fi.dy.masa.malilib.util.StringUtils;
 import net.minecraft.client.gui.GuiGraphics;
 import net.minecraft.client.gui.screens.Screen;
+//? if >=1.21.9 {
 import net.minecraft.client.input.KeyEvent;
 import net.minecraft.client.input.MouseButtonEvent;
+//?}
 import net.minecraft.core.registries.BuiltInRegistries;
 import net.minecraft.world.item.Item;
 import net.minecraft.world.item.ItemStack;
@@ -266,28 +268,11 @@ public class ReplaceBlockScreen extends GuiBase {
         }
     }
 
+    // 1.21.9 起 MaLiLib 的输入事件是 MouseButtonEvent / KeyEvent，之前是分开的数字；双击之前要自己判断
+    //? if >=1.21.9 {
     @Override
     public boolean onMouseClicked(MouseButtonEvent click, boolean doubleClick) {
-        double mx = click.x(), my = click.y();
-        if (com.autyism.ale.gui.WorldPick.isPickButton(click)) {
-            pickAt(mx, my);
-            return true;
-        }
-        if (click.button() == com.mojang.blaze3d.platform.InputConstants.MOUSE_BUTTON_LEFT && mx >= this.gridX && mx < this.gridX + COLUMNS * CELL && my >= this.gridY && my < this.gridY + ROWS * CELL) {
-            int c = (int) ((mx - this.gridX) / CELL), r = (int) ((my - this.gridY) / CELL);
-            int i = (this.scroll + r) * COLUMNS + c;
-            if (i < this.filtered.size()) {
-                this.selected = this.filtered.get(i).block();
-                if (doubleClick) confirm();
-            }
-            return true;
-        }
-        if (click.button() == com.mojang.blaze3d.platform.InputConstants.MOUSE_BUTTON_LEFT && maxScroll() > 0 && mx >= this.gridX + COLUMNS * CELL && mx < this.gridX + COLUMNS * CELL + 8
-                && my >= this.gridY && my < this.gridY + ROWS * CELL) {
-            this.draggingBar = true;
-            scrollTo(my);
-            return true;
-        }
+        if (clicked(click.x(), click.y(), click.button(), com.autyism.ale.gui.WorldPick.isPickButton(click), doubleClick)) return true;
         return super.onMouseClicked(click, doubleClick);
     }
 
@@ -297,6 +282,61 @@ public class ReplaceBlockScreen extends GuiBase {
         return super.onMouseReleased(click);
     }
 
+    @Override
+    public boolean onKeyTyped(KeyEvent event) {
+        if (keyTyped(event.key(), com.autyism.ale.gui.WorldPick.isPickKey(event))) return true;
+        return super.onKeyTyped(event);
+    }
+    //?} else {
+    /*@Override
+    public boolean onMouseClicked(int mouseX, int mouseY, int mouseButton) {
+        long now = net.minecraft.Util.getMillis();
+        boolean doubleClick = mouseButton == this.lastClickButton && now - this.lastClickTime < 250L;
+        this.lastClickButton = mouseButton;
+        this.lastClickTime = now;
+        if (clicked(mouseX, mouseY, mouseButton, com.autyism.ale.gui.WorldPick.isPickButton(mouseButton), doubleClick)) return true;
+        return super.onMouseClicked(mouseX, mouseY, mouseButton);
+    }
+
+    private int lastClickButton = -1;
+    private long lastClickTime;
+
+    @Override
+    public boolean onMouseReleased(int mouseX, int mouseY, int mouseButton) {
+        this.draggingBar = false;
+        return super.onMouseReleased(mouseX, mouseY, mouseButton);
+    }
+
+    @Override
+    public boolean onKeyTyped(int keyCode, int scanCode, int modifiers) {
+        if (keyTyped(keyCode, com.autyism.ale.gui.WorldPick.isPickKey(keyCode, scanCode))) return true;
+        return super.onKeyTyped(keyCode, scanCode, modifiers);
+    }
+    *///?}
+
+    private boolean clicked(double mx, double my, int button, boolean pick, boolean doubleClick) {
+        if (pick) {
+            pickAt(mx, my);
+            return true;
+        }
+        if (button == com.mojang.blaze3d.platform.InputConstants.MOUSE_BUTTON_LEFT && mx >= this.gridX && mx < this.gridX + COLUMNS * CELL && my >= this.gridY && my < this.gridY + ROWS * CELL) {
+            int c = (int) ((mx - this.gridX) / CELL), r = (int) ((my - this.gridY) / CELL);
+            int i = (this.scroll + r) * COLUMNS + c;
+            if (i < this.filtered.size()) {
+                this.selected = this.filtered.get(i).block();
+                if (doubleClick) confirm();
+            }
+            return true;
+        }
+        if (button == com.mojang.blaze3d.platform.InputConstants.MOUSE_BUTTON_LEFT && maxScroll() > 0 && mx >= this.gridX + COLUMNS * CELL && mx < this.gridX + COLUMNS * CELL + 8
+                && my >= this.gridY && my < this.gridY + ROWS * CELL) {
+            this.draggingBar = true;
+            scrollTo(my);
+            return true;
+        }
+        return false;
+    }
+
     private void scrollTo(double mouseY) {
         double t = (mouseY - this.gridY) / (ROWS * CELL);
         this.scroll = (int) Math.round(t * maxScroll());
@@ -304,7 +344,10 @@ public class ReplaceBlockScreen extends GuiBase {
     }
 
     @Override
+    //? if >=1.21.9 {
     public boolean onMouseScrolled(double mouseX, double mouseY, double horizontalAmount, double verticalAmount) {
+    //?} else
+    //public boolean onMouseScrolled(int mouseX, int mouseY, double horizontalAmount, double verticalAmount) {
         if (verticalAmount != 0) {
             this.scroll += verticalAmount > 0 ? -1 : 1;
             clampScroll();
@@ -312,19 +355,18 @@ public class ReplaceBlockScreen extends GuiBase {
         return true;
     }
 
-    @Override
-    public boolean onKeyTyped(KeyEvent event) {
-        if (event.key() == com.mojang.blaze3d.platform.InputConstants.KEY_RETURN || event.key() == com.mojang.blaze3d.platform.InputConstants.KEY_NUMPADENTER) {
+    private boolean keyTyped(int key, boolean pick) {
+        if (key == com.mojang.blaze3d.platform.InputConstants.KEY_RETURN || key == com.mojang.blaze3d.platform.InputConstants.KEY_NUMPADENTER) {
             confirm();
             return true;
         }
         // 选取方块键绑在键盘上时：搜索框没在打字才算
-        if (com.autyism.ale.gui.WorldPick.isPickKey(event) && !this.searchFocused()) {
+        if (pick && !this.searchFocused()) {
             double scale = net.minecraft.client.Minecraft.getInstance().getWindow().getGuiScale();
             pickAt(net.minecraft.client.Minecraft.getInstance().mouseHandler.xpos() / scale, net.minecraft.client.Minecraft.getInstance().mouseHandler.ypos() / scale);
             return true;
         }
-        return super.onKeyTyped(event);
+        return false;
     }
 
     private boolean searchFocused() {

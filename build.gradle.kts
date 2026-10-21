@@ -76,6 +76,13 @@ java {
 if (sc.current.parsed < "1.21.11") {
     sourceSets.named("main") { java.exclude("com/autyism/ale/mixin/litematica/ChunkManagerSchematicMixin.java") }
 }
+// Block entities in schematic previews: render states from 1.21.9 on, drawn directly before
+if (sc.current.parsed >= "1.21.9") {
+    sourceSets.named("main") { java.exclude("com/autyism/ale/preview/LegacyBlockEntities.java",
+        "com/autyism/ale/mixin/render/PreviewChestRendererMixin.java", "com/autyism/ale/mixin/render/PreviewBedRendererMixin.java") }
+} else {
+    sourceSets.named("main") { java.exclude("com/autyism/ale/preview/BlockEntitySubmit.java") }
+}
 
 tasks.withType<JavaCompile>().configureEach {
     options.encoding = "UTF-8"
@@ -117,6 +124,8 @@ tasks.processResources {
         if (sc.current.parsed < "26.2") add("render.GameRendererCameraAccessor")
         // Litematica's chunk race (getChunkState) only exists from 1.21.11 on
         if (sc.current.parsed < "1.21.11") add("litematica.ChunkManagerSchematicMixin")
+        // Schematic previews before 1.21.9 (no render states): chests and beds drawn outside a world
+        if (sc.current.parsed >= "1.21.9") addAll(listOf("render.PreviewChestRendererMixin", "render.PreviewBedRendererMixin"))
         // Dev only: -PaleNoMixins=a.B,c.D leaves those mixins out (to find which one breaks something)
         providers.gradleProperty("aleNoMixins").orNull?.split(",")?.filter { it.isNotBlank() }?.let { addAll(it) }
     }

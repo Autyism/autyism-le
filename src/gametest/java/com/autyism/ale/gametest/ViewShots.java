@@ -39,7 +39,11 @@ public final class ViewShots {
         sp.getServer().runCommand("tick freeze");
         context.runOnClient(c -> {
             GT.setGuiHidden(c, true);
+            // 1.21.10 之前清空粒子的方法是私有的；换一次世界（同一个）也会清空
+            //? if >=1.21.10 {
             c.particleEngine.clearParticles();
+            //?} else
+            //c.particleEngine.setLevel(c.level);
         });
         GTFilter.stillFrames = true;
     }

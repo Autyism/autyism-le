@@ -15,6 +15,7 @@ import fi.dy.masa.malilib.util.StringUtils;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.gui.Font;
 import net.minecraft.client.gui.GuiGraphics;
+//? if >=1.21.9
 import net.minecraft.client.input.MouseButtonEvent;
 import net.minecraft.world.item.ItemStack;
 import org.jetbrains.annotations.Nullable;
@@ -243,13 +244,26 @@ public class BrowserEntryWidget extends WidgetDirectoryEntry {
         }
     }
 
+    // 1.21.9 起 MaLiLib 的鼠标事件带 MouseButtonEvent，之前是 (x, y, 按键)
+    //? if >=1.21.9 {
     @Override
     protected boolean onMouseClickedImpl(MouseButtonEvent click, boolean doubleClick) {
-        if (click.button() == com.mojang.blaze3d.platform.InputConstants.MOUSE_BUTTON_RIGHT && isOverIcon(click.x(), click.y())) {
-            GuiBase.openGui(new FolderIconScreen(path(), this.entry.getDisplayName(), isDirectory(), com.autyism.ale.preview.GuiCompat.screen()));
-            return true;
-        }
+        if (openIconScreen(click.button(), click.x(), click.y())) return true;
         return super.onMouseClickedImpl(click, doubleClick);
+    }
+    //?} else {
+    /*@Override
+    protected boolean onMouseClickedImpl(int mouseX, int mouseY, int mouseButton) {
+        if (openIconScreen(mouseButton, mouseX, mouseY)) return true;
+        return super.onMouseClickedImpl(mouseX, mouseY, mouseButton);
+    }
+    *///?}
+
+    /** 右键点图标：打开换图标的对话框 */
+    private boolean openIconScreen(int button, double mouseX, double mouseY) {
+        if (button != com.mojang.blaze3d.platform.InputConstants.MOUSE_BUTTON_RIGHT || !isOverIcon(mouseX, mouseY)) return false;
+        GuiBase.openGui(new FolderIconScreen(path(), this.entry.getDisplayName(), isDirectory(), com.autyism.ale.preview.GuiCompat.screen()));
+        return true;
     }
 
     SchematicBrowserWidget browser() {

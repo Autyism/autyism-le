@@ -13,8 +13,10 @@ import fi.dy.masa.malilib.gui.button.ConfigButtonStringList;
 import net.fabricmc.fabric.api.client.gametest.v1.FabricClientGameTest;
 import net.fabricmc.fabric.api.client.gametest.v1.context.ClientGameTestContext;
 import net.fabricmc.fabric.api.client.gametest.v1.context.TestSingleplayerContext;
+//? if >=1.21.9 {
 import net.minecraft.client.input.MouseButtonEvent;
 import net.minecraft.client.input.MouseButtonInfo;
+//?}
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.Direction;
 import net.minecraft.server.level.ServerLevel;
@@ -157,7 +159,10 @@ public final class ReplaceUiGameTest implements FabricClientGameTest {
             context.runOnClient(c -> {
                 var configGui = (fi.dy.masa.malilib.gui.interfaces.IConfigGui) c.screen;
                 ConfigButtonStringList button = new ConfigButtonStringList(10, 10, 100, 20, Configs.Visuals.IGNORABLE_EXISTING_BLOCKS, configGui, null);
+                //? if >=1.21.9 {
                 button.onMouseClicked(new MouseButtonEvent(20, 15, new MouseButtonInfo(InputConstants.MOUSE_BUTTON_LEFT, 0)), false);
+                //?} else
+                //button.onMouseClicked(20, 15, InputConstants.MOUSE_BUTTON_LEFT);
             });
             context.waitTicks(3);
             boolean pickerFirst = context.computeOnClient(c -> c.screen instanceof GuiBlockPicker);

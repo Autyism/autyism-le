@@ -107,6 +107,8 @@ public final class RailGameTest implements FabricClientGameTest {
         list.add(new Case("powered-by-block", rel(32, 0), rail(Blocks.POWERED_RAIL, RailShape.ASCENDING_NORTH).setValue(BlockStateProperties.POWERED, true),
                 around(rel(32, -1), stone, rel(33, 0), Blocks.REDSTONE_BLOCK.defaultBlockState()), How.EASY_PLACE));
         list.add(new Case("api", rel(36, 0), rail(Blocks.ACTIVATOR_RAIL, RailShape.ASCENDING_SOUTH), around(rel(36, 1), stone), How.API));
+        // Litematica 的“新的轻松放置”（post rewrite）1.21.10 起才有
+        //? if >=1.21.10
         list.add(new Case("post-rewrite-curve", rel(40, 0), rail(Blocks.RAIL, RailShape.NORTH_WEST), around(), How.POST_REWRITE));
         return list;
     }
@@ -126,7 +128,7 @@ public final class RailGameTest implements FabricClientGameTest {
         } finally {
             context.runOnClient(c -> {
                 Configs.Generic.EASY_PLACE_MODE.setBooleanValue(false);
-                Configs.Generic.EASY_PLACE_POST_REWRITE.setBooleanValue(false);
+                setPostRewrite(false);
             });
             GT.removeAllPlacements(context);
         }
@@ -338,7 +340,7 @@ public final class RailGameTest implements FabricClientGameTest {
         context.runOnClient(c -> {
             Configs.Generic.EASY_PLACE_MODE.setBooleanValue(true);
             Configs.Generic.EASY_PLACE_FIRST.setBooleanValue(true);
-            Configs.Generic.EASY_PLACE_POST_REWRITE.setBooleanValue(false);
+            setPostRewrite(false);
             Configs.Generic.EASY_PLACE_SWAP_INTERVAL.setIntegerValue(0);
         });
         context.waitFor(c -> c.player != null && c.player.getAbilities().flying && c.player.getInventory().countItem(Items.ACTIVATOR_RAIL) > 0, 100);
@@ -361,11 +363,17 @@ public final class RailGameTest implements FabricClientGameTest {
     private static void easyPlace(ClientGameTestContext context, TestServerContext server, BlockPos pos, boolean postRewrite) {
         aim(context, server, pos);
         context.runOnClient(c -> {
-            Configs.Generic.EASY_PLACE_POST_REWRITE.setBooleanValue(postRewrite);
+            setPostRewrite(postRewrite);
             if (postRewrite) EasyPlaceUtils.handleEasyPlaceWithMessage();
             else WorldUtils.handleEasyPlace(c);
-            Configs.Generic.EASY_PLACE_POST_REWRITE.setBooleanValue(false);
+            setPostRewrite(false);
         });
+    }
+
+    /** Litematica 的“新的轻松放置”开关（1.21.10 起才有；之前只有一种轻松放置） */
+    private static void setPostRewrite(boolean on) {
+        //? if >=1.21.10
+        Configs.Generic.EASY_PLACE_POST_REWRITE.setBooleanValue(on);
     }
 
     private static void placeAndCheck(ClientGameTestContext context, TestServerContext server, Case c, boolean exact) {

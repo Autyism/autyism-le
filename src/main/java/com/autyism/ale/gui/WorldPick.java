@@ -24,6 +24,7 @@ public final class WorldPick {
     }
 
     /** 这次鼠标 / 键盘事件是不是“选取方块”键 */
+    //? if >=1.21.9 {
     public static boolean isPickButton(net.minecraft.client.input.MouseButtonEvent click) {
         return Minecraft.getInstance().options.keyPickItem.matchesMouse(click);
     }
@@ -31,6 +32,16 @@ public final class WorldPick {
     public static boolean isPickKey(net.minecraft.client.input.KeyEvent event) {
         return Minecraft.getInstance().options.keyPickItem.matches(event);
     }
+    //?} else {
+    /*// 1.21.8 及更早：鼠标键和键盘键是单独的数字
+    public static boolean isPickButton(int button) {
+        return Minecraft.getInstance().options.keyPickItem.matchesMouse(button);
+    }
+
+    public static boolean isPickKey(int keyCode, int scanCode) {
+        return Minecraft.getInstance().options.keyPickItem.matches(keyCode, scanCode);
+    }
+    *///?}
 
     /**
      * @param guiX       鼠标在界面上的坐标
@@ -45,7 +56,10 @@ public final class WorldPick {
         /*Camera camera = mc.gameRenderer.mainCamera();
         *///?} else
         Camera camera = mc.gameRenderer.getMainCamera();
+        //? if >=1.21.11 {
         Vec3 eye = camera.position();
+        //?} else
+        //Vec3 eye = camera.getPosition();
         Vector3f dir;
         net.minecraft.client.gui.screens.Screen screen = com.autyism.ale.preview.GuiCompat.screen();
         if (useCursor && screen != null && screen.width > 0 && screen.height > 0) {

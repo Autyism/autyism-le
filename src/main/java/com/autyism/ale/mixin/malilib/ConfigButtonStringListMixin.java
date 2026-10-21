@@ -7,6 +7,7 @@ import fi.dy.masa.malilib.gui.GuiBase;
 import fi.dy.masa.malilib.gui.button.ConfigButtonStringList;
 import fi.dy.masa.malilib.gui.interfaces.IConfigGui;
 import fi.dy.masa.malilib.util.GuiUtils;
+//? if >=1.21.9
 import net.minecraft.client.input.MouseButtonEvent;
 import org.spongepowered.asm.mixin.Final;
 import org.spongepowered.asm.mixin.Mixin;
@@ -29,7 +30,10 @@ public abstract class ConfigButtonStringListMixin {
     private IConfigGui configGui;
 
     @Inject(method = "onMouseClickedImpl", at = @At("HEAD"), cancellable = true)
+    //? if >=1.21.9 {
     private void ale$openPicker(MouseButtonEvent click, boolean doubleClick, CallbackInfoReturnable<Boolean> cir) {
+    //?} else
+    //private void ale$openPicker(int mouseX, int mouseY, int mouseButton, CallbackInfoReturnable<Boolean> cir) {
         if (!AleConfigs.Generic.BLOCK_PICKER.getBooleanValue()) return;
         GuiBlockPicker.Mode mode = GuiBlockPicker.detectMode(this.config);
         if (mode == null) return;

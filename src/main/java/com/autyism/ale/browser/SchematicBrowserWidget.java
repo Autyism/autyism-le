@@ -13,9 +13,11 @@ import fi.dy.masa.malilib.render.GuiContext;
 import fi.dy.masa.malilib.render.RenderUtils;
 import fi.dy.masa.malilib.util.StringUtils;
 import net.minecraft.client.Minecraft;
+//? if >=1.21.9 {
 import net.minecraft.client.input.CharacterEvent;
 import net.minecraft.client.input.KeyEvent;
 import net.minecraft.client.input.MouseButtonEvent;
+//?}
 import org.jetbrains.annotations.Nullable;
 import org.joml.Vector2f;
 
@@ -239,13 +241,11 @@ public class SchematicBrowserWidget extends WidgetSchematicBrowser {
 
     // ------------------------------------------------------------------ 输入
 
+    // 1.21.9 起 MaLiLib 的输入事件是 MouseButtonEvent / KeyEvent / CharacterEvent，之前是分开的数字
+    //? if >=1.21.9 {
     @Override
     public boolean onMouseClicked(MouseButtonEvent click, boolean doubleClick) {
-        if (click.button() == com.mojang.blaze3d.platform.InputConstants.MOUSE_BUTTON_LEFT && isOverToggle(click.x(), click.y())) {
-            cycleLayout();
-            return true;
-        }
-        if (this.panel.mouseClicked(click.x(), click.y(), click.button(), com.autyism.ale.preview.GuiCompat.screen())) return true;
+        if (clicked(click.x(), click.y(), click.button())) return true;
         return super.onMouseClicked(click, doubleClick);
     }
 
@@ -271,6 +271,46 @@ public class SchematicBrowserWidget extends WidgetSchematicBrowser {
     public boolean onCharTyped(CharacterEvent event) {
         if (this.panel.wantsKeys()) return true;
         return super.onCharTyped(event);
+    }
+    //?} else {
+    /*@Override
+    public boolean onMouseClicked(int mouseX, int mouseY, int mouseButton) {
+        if (clicked(mouseX, mouseY, mouseButton)) return true;
+        return super.onMouseClicked(mouseX, mouseY, mouseButton);
+    }
+
+    @Override
+    public boolean onMouseReleased(int mouseX, int mouseY, int mouseButton) {
+        this.panel.mouseReleased();
+        return super.onMouseReleased(mouseX, mouseY, mouseButton);
+    }
+
+    @Override
+    public boolean onMouseScrolled(int mouseX, int mouseY, double horizontalAmount, double verticalAmount) {
+        if (this.panel.mouseScrolled(mouseX, mouseY, verticalAmount)) return true;
+        return super.onMouseScrolled(mouseX, mouseY, horizontalAmount, verticalAmount);
+    }
+
+    @Override
+    public boolean onKeyTyped(int keyCode, int scanCode, int modifiers) {
+        if (this.panel.wantsKeys() && com.autyism.ale.preview.PreviewInput.isMovementKey(keyCode)) return true;
+        return super.onKeyTyped(keyCode, scanCode, modifiers);
+    }
+
+    @Override
+    public boolean onCharTyped(char charIn, int modifiers) {
+        if (this.panel.wantsKeys()) return true;
+        return super.onCharTyped(charIn, modifiers);
+    }
+    *///?}
+
+    /** 点了显示方式的切换按钮，或者右边的预览 */
+    private boolean clicked(double mouseX, double mouseY, int button) {
+        if (button == com.mojang.blaze3d.platform.InputConstants.MOUSE_BUTTON_LEFT && isOverToggle(mouseX, mouseY)) {
+            cycleLayout();
+            return true;
+        }
+        return this.panel.mouseClicked(mouseX, mouseY, button, com.autyism.ale.preview.GuiCompat.screen());
     }
 
     /** 列表区域的下沿（网格最后一行超出的部分裁到这里） */
