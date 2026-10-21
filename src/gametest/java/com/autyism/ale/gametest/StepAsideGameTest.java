@@ -11,7 +11,6 @@ import fi.dy.masa.litematica.schematic.placement.SchematicPlacement;
 import net.fabricmc.fabric.api.client.gametest.v1.FabricClientGameTest;
 import net.fabricmc.fabric.api.client.gametest.v1.context.ClientGameTestContext;
 import net.fabricmc.fabric.api.client.gametest.v1.context.TestSingleplayerContext;
-import net.minecraft.world.item.Items;
 
 /**
  * 装了 Schematic Preview 时 ALE 的版本让开：浏览器用的是它的列表（不是 ALE 的），没有 ALE 的预览会话，
@@ -55,10 +54,9 @@ public final class StepAsideGameTest implements FabricClientGameTest {
             });
             context.waitTicks(10);
             ui.shot("material-list");
-            // clickReplace 检查每行恰好一个“替换”按钮；这里只检查，不点
-            for (var item : new net.minecraft.world.item.Item[]{Items.OAK_PLANKS, Items.DARK_OAK_PLANKS, Items.STONE_BRICKS}) {
-                checkOneReplace(context, item);
-            }
+            // 每一行恰好一个“替换”按钮（Schematic Preview 的）；这里只检查，不点。
+            // 列表只给看得到的行建按钮，所以检查当前看得到的所有行
+            checkOneReplacePerRow(context);
             GT.log("[stepaside] OK: with Schematic Preview installed, only its browser, preview and Replace buttons are shown");
         } finally {
             GT.removeAllPlacements(context);
@@ -67,8 +65,8 @@ public final class StepAsideGameTest implements FabricClientGameTest {
         }
     }
 
-    private static void checkOneReplace(ClientGameTestContext context, net.minecraft.world.item.Item item) {
-        int n = context.computeOnClient(c -> {
+    private static void checkOneReplacePerRow(ClientGameTestContext context) {
+        java.util.List<String> rows = context.computeOnClient(c -> {
             try {
                 Object list = GT.listWidget(c);
                 java.lang.reflect.Field lw = fi.dy.masa.malilib.gui.widgets.WidgetListBase.class.getDeclaredField("listWidgets");
@@ -77,22 +75,25 @@ public final class StepAsideGameTest implements FabricClientGameTest {
                 sub.setAccessible(true);
                 java.lang.reflect.Field ds = fi.dy.masa.malilib.gui.button.ButtonBase.class.getDeclaredField("displayString");
                 ds.setAccessible(true);
+                java.util.List<String> out = new java.util.ArrayList<>();
                 for (Object w : (java.util.List<?>) lw.get(list)) {
                     Object entry = ((fi.dy.masa.malilib.gui.widgets.WidgetListEntryBase<?>) w).getEntry();
-                    if (entry instanceof fi.dy.masa.litematica.materials.MaterialListEntry me && me.getStack().is(item)) {
-                        int count = 0;
-                        for (Object o : (java.util.List<?>) sub.get(w)) {
-                            if (o instanceof fi.dy.masa.malilib.gui.button.ButtonBase b && String.valueOf(ds.get(b)).contains("Replace")) count++;
-                        }
-                        return count;
+                    if (!(entry instanceof fi.dy.masa.litematica.materials.MaterialListEntry me)) continue;
+                    int count = 0;
+                    for (Object o : (java.util.List<?>) sub.get(w)) {
+                        if (o instanceof fi.dy.masa.malilib.gui.button.ButtonBase b && String.valueOf(ds.get(b)).contains("Replace")) count++;
                     }
+                    out.add(me.getStack().getItem() + "=" + count);
                 }
+                return out;
             } catch (ReflectiveOperationException e) {
                 throw new AssertionError(e);
             }
-            return -1;
         });
-        GT.log("[stepaside] Replace buttons in the row of " + item + ": " + n);
-        if (n != 1) throw new AssertionError("[stepaside] " + n + " Replace buttons in the row of " + item);
+        GT.log("[stepaside] Replace buttons per visible row: " + rows);
+        if (rows.size() < 3) throw new AssertionError("[stepaside] only " + rows.size() + " material rows visible");
+        for (String row : rows) {
+            if (!row.endsWith("=1")) throw new AssertionError("[stepaside] not exactly one Replace button in the row " + row);
+        }
     }
 }
