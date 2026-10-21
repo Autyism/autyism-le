@@ -117,9 +117,15 @@ public final class SignHighlightGameTest implements FabricClientGameTest {
 
     private static void setText(ServerLevel level, BlockPos pos, String... lines) {
         if (!(level.getBlockEntity(pos) instanceof SignBlockEntity sign)) return;
+        //? if >=26.3 {
+        /*java.util.List<Component> messages = new java.util.ArrayList<>();
+        for (int i = 0; i < SignText.LINES; i++) messages.add(i < lines.length ? Component.literal(lines[i]) : Component.empty());
+        sign.setText(new SignText(messages, messages, net.minecraft.world.item.DyeColor.BLACK, false), net.minecraft.world.level.block.entity.SignTextSlot.FRONT);
+        *///?} else {
         SignText text = new SignText();
         for (int i = 0; i < lines.length; i++) text = text.setMessage(i, Component.literal(lines[i]));
         sign.setText(text, true);
+        //?}
         sign.setChanged();
         level.sendBlockUpdated(pos, sign.getBlockState(), sign.getBlockState(), 3);
     }

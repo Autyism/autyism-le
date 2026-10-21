@@ -41,6 +41,9 @@ public final class EasyPlaceRails {
         if (property == null) return original.get();
         if (!(player.getItemInHand(hand).getItem() instanceof BlockItem item) || item.getBlock() != wanted.getBlock()) return original.get();
         if (!ExactRails.canStay(player.level(), pos, wanted)) {
+            //? if >=26.1 {
+            /*player.sendOverlayMessage(needsSupportMessage(pos, wanted, property));
+            *///?} else
             player.displayClientMessage(needsSupportMessage(pos, wanted, property), true);
             return InteractionResult.FAIL;
         }

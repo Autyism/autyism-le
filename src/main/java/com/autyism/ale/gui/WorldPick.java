@@ -41,11 +41,15 @@ public final class WorldPick {
         Minecraft mc = Minecraft.getInstance();
         Entity viewer = mc.getCameraEntity();
         if (mc.level == null || viewer == null) return null;
+        //? if >=26.2 {
+        /*Camera camera = mc.gameRenderer.mainCamera();
+        *///?} else
         Camera camera = mc.gameRenderer.getMainCamera();
         Vec3 eye = camera.position();
         Vector3f dir;
-        if (useCursor && mc.screen != null && mc.screen.width > 0 && mc.screen.height > 0) {
-            double nx = 2.0 * guiX / mc.screen.width - 1.0, ny = 1.0 - 2.0 * guiY / mc.screen.height;
+        net.minecraft.client.gui.screens.Screen screen = com.autyism.ale.preview.GuiCompat.screen();
+        if (useCursor && screen != null && screen.width > 0 && screen.height > 0) {
+            double nx = 2.0 * guiX / screen.width - 1.0, ny = 1.0 - 2.0 * guiY / screen.height;
             double tan = Math.tan(Math.toRadians(mc.options.fov().get()) / 2.0);
             double aspect = (double) mc.getWindow().getWidth() / Math.max(1, mc.getWindow().getHeight());
             // 相机坐标里向前是 -Z、向右是 +X、向上是 +Y

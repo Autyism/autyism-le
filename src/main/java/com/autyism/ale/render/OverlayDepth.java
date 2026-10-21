@@ -40,6 +40,9 @@ public final class OverlayDepth {
         boolean invert = fi.dy.masa.litematica.config.Hotkeys.INVERT_OVERLAY_RENDER_STATE.getKeybind().isKeybindHeld();
         if (fi.dy.masa.litematica.config.Configs.Visuals.ENABLE_SCHEMATIC_OVERLAY.getBooleanValue() == invert) return false;
         if (fi.dy.masa.litematica.world.SchematicWorldHandler.getSchematicWorld() == null) return false;
+        //? if >=26.2 {
+        /*RenderTarget main = Minecraft.getInstance().gameRenderer.mainRenderTarget();
+        *///?} else
         RenderTarget main = Minecraft.getInstance().getMainRenderTarget();
         GpuTexture depth = main.getDepthTexture();
         if (depth == null || depth.isClosed()) return false;

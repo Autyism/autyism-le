@@ -39,14 +39,14 @@ public final class ReplaceDialogs {
         if (!(base.getParent() instanceof GuiMaterialList gui)) return false;
         MaterialListBase list = gui.getMaterialList();
         if (list == null || MaterialReplacer.targetOf(list) == null) return false;
-        Minecraft.getInstance().setScreen(new ReplaceBlockScreen(list, new ItemStack(block.asItem()), gui, () -> openOriginal(original)));
+        com.autyism.ale.preview.GuiCompat.setScreen(new ReplaceBlockScreen(list, new ItemStack(block.asItem()), gui, () -> openOriginal(original)));
         return true;
     }
 
     private static void openOriginal(Screen original) {
         openingOriginal = true;
         try {
-            Minecraft.getInstance().setScreen(original);
+            com.autyism.ale.preview.GuiCompat.setScreen(original);
         } finally {
             openingOriginal = false;
         }

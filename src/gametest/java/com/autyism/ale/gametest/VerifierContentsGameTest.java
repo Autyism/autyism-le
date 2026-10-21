@@ -120,14 +120,14 @@ public final class VerifierContentsGameTest implements FabricClientGameTest {
             // 4) 只点“木桶”一条 → 整类取消，只框木桶
             context.runOnClient(c -> c.setScreen(new GuiSchematicVerifier(placement)));
             context.waitTicks(5);
-            clickRow(context, e -> e instanceof ContainerVerifierGui.DataEntry d && d.mismatch.block == Blocks.BARREL);
+            clickRow(context, e -> e instanceof ContainerVerifierGui.DataEntry d && d.block == Blocks.BARREL);
             List<BlockPos> barrelOnly = context.computeOnClient(c -> ContainerVerifier.renderPositions(verifier, 1000));
             boolean categoryStill = context.computeOnClient(c -> ContainerVerifier.isCategorySelected(verifier));
             if (!barrelOnly.equals(List.of(BARREL)) || categoryStill) {
                 throw new AssertionError("[verifiercontents] entry selection: " + barrelOnly + " categoryStillSelected=" + categoryStill);
             }
             // 再点一次 → 取消
-            clickRow(context, e -> e instanceof ContainerVerifierGui.DataEntry d && d.mismatch.block == Blocks.BARREL);
+            clickRow(context, e -> e instanceof ContainerVerifierGui.DataEntry d && d.block == Blocks.BARREL);
             int none = context.computeOnClient(c -> ContainerVerifier.renderPositions(verifier, 1000).size());
             if (none != 0) throw new AssertionError("[verifiercontents] entry not deselected: " + none);
 
@@ -142,7 +142,7 @@ public final class VerifierContentsGameTest implements FabricClientGameTest {
 
             // 6) 忽略“箱子” → 只剩木桶；重置忽略 → 回来
             context.runOnClient(c -> {
-                verifier.ignoreStateMismatch(new ContainerVerifierGui.ContainerMismatch(Blocks.CHEST, 2));
+                verifier.ignoreStateMismatch(ContainerVerifierGui.containerMismatch(Blocks.CHEST, 2));
                 if (c.screen instanceof GuiSchematicVerifier g) g.initGui();
             });
             context.waitTicks(2);
@@ -190,7 +190,7 @@ public final class VerifierContentsGameTest implements FabricClientGameTest {
         for (Object o : listContents(client)) {
             if (!(o instanceof BlockMismatchEntry e)) continue;
             if (e instanceof ContainerVerifierGui.CategoryEntry) out.add("category");
-            else if (e instanceof ContainerVerifierGui.DataEntry d) out.add(d.mismatch.block.getName().getString() + " x" + d.mismatch.count);
+            else if (e instanceof ContainerVerifierGui.DataEntry d) out.add(d.block.getName().getString() + " x" + ContainerVerifierGui.countOf(d.mismatch));
             else if (e.type == BlockMismatchEntry.Type.CATEGORY_TITLE) out.add("litematica:" + e.mismatchType);
         }
         return out;

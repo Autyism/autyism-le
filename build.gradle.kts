@@ -9,6 +9,9 @@ val mc = sc.current.version
 val requiredJava = if (sc.current.parsed >= "26.1") JavaVersion.VERSION_25 else JavaVersion.VERSION_21
 // Schematic Preview version on Modrinth's maven ("" where it has no build). Its code is All Rights Reserved: fetched, never committed
 val schematicPreview = prop("deps.schematicpreview")
+// Sodium release on Modrinth's maven for each version (glass compat mixin; test runs with -PwithSodium)
+val sodiumBuild = mapOf("1.21.5" to "mc1.21.5-0.6.13-fabric", "1.21.8" to "mc1.21.8-0.7.3-fabric", "1.21.10" to "mc1.21.10-0.7.3-fabric",
+    "1.21.11" to "mc1.21.11-0.8.7-fabric", "26.1.2" to "mc26.1.2-0.9.2-fabric", "26.2" to "mc26.2-0.9.2-fabric", "26.3" to "mc26.3-0.9.2-fabric")
 
 version = "${prop("mod.version")}+$mc"
 group = prop("mod.group")
@@ -40,8 +43,8 @@ dependencies {
 
     // 可选联动：Schematic Preview（编译期可见，运行时按需检测）
     if (schematicPreview.isNotEmpty()) modCompileOnly("maven.modrinth:schematicpreview:$schematicPreview")
-    // 可选联动：Sodium（1.21.11 的玻璃兼容 mixin 编译用，不打包，运行时装了才应用）
-    if (mc == "1.21.11") modCompileOnly("maven.modrinth:sodium:mc1.21.11-0.8.7-fabric")
+    // 可选联动：Sodium（玻璃兼容 mixin 编译用，不打包，运行时装了才应用）。每个版本用 Modrinth 上那个版本的正式版
+    if (sc.current.parsed >= "1.21.11") sodiumBuild[mc]?.let { modCompileOnly("maven.modrinth:sodium:$it") }
 
     // gametest 运行时：加载 Schematic Preview 与本作者的打印机，测试联动
     // -PnoSchematicPreview：不加载 Schematic Preview，测试 ALE 自己的预览、图标和替换
@@ -50,8 +53,7 @@ dependencies {
             modLocalRuntime("maven.modrinth:schematicpreview:$schematicPreview")
         }
         // 渲染环境测试：Sodium（-PwithSodium），1.21.11 可再加 Iris（-PwithIris），都从 Modrinth 取，只在测试时加载
-        val sodium = mapOf("1.21.11" to "mc1.21.11-0.8.7-fabric", "26.1.2" to "mc26.1.2-0.9.2-fabric")
-        if (providers.gradleProperty("withSodium").isPresent) sodium[mc]?.let { modLocalRuntime("maven.modrinth:sodium:$it") }
+        if (providers.gradleProperty("withSodium").isPresent) sodiumBuild[mc]?.let { modLocalRuntime("maven.modrinth:sodium:$it") }
         if (providers.gradleProperty("withIris").isPresent && mc == "1.21.11") modLocalRuntime("maven.modrinth:iris:1.10.7+1.21.11-fabric")
         // 打印机：1.21.11 用 libs 里的发布版，其他版本用打印机仓库各版本的构建
         val printer = if (mc == "1.21.11") rootProject.file("libs/litematica-printer-autyism-1.0.0.jar")
@@ -90,7 +92,7 @@ tasks.withType<JavaCompile>().configureEach {
     options.release.set(requiredJava.majorVersion.toInt())
 }
 
-// 1.2.0 features are only on 1.21.11 so far: the other versions leave these classes (and their mixins, below) out
+// 1.2.0 features are on 1.21.11 and 26.x; 1.21.10 and older leave these classes (and their mixins, below) out for now
 val onlyOn12111 = listOf(
     "com/autyism/ale/render/OverlayDepth.java", "com/autyism/ale/verifier/ContainerVerifierGui.java",
     "com/autyism/ale/mixin/litematica/SchematicVerifierInvoker.java", "com/autyism/ale/mixin/litematica/TaskBaseAccessor.java",
@@ -115,12 +117,12 @@ val onlyOn12111Mixins = listOf("litematica.SchematicVerifierInvoker", "litematic
     "malilib.ConfigButtonStringListMixin", "compat.schematicpreview.OpenReplaceDialogMixin", "client.MultiPlayerGameModeMixin",
     "litematica.EasyPlaceRailMixin", "litematica.LegacyEasyPlaceRailMixin", "litematica.EntityDataReceivedMixin", "litematica.ChunkManagerSchematicMixin",
     "compat.sodium.SodiumGlassPassMixin")
-if (mc != "1.21.11") {
+if (sc.current.parsed < "1.21.11") {
     sourceSets.named("main") { java.exclude(onlyOn12111) }
 }
 // 1.21.11 also runs on servers (exact rail placement needs the server). Litematica and MaLiLib are only needed on the
 // client: those dependencies sit in a small nested mod that only loads on clients
-val runsOnServer = mc == "1.21.11"
+val runsOnServer = sc.current.parsed >= "1.21.11"
 
 // Without a Schematic Preview build (1.21.5) its compat mixin is not compiled either; its line is left out of the mixin config below
 if (schematicPreview.isEmpty()) {
@@ -160,7 +162,7 @@ tasks.processResources {
         if (sc.current.parsed < "26.2") add("render.GameRendererCameraAccessor")
         // Schematic browser previews, icons and Replace: 1.21.11 and 26.x; 1.21.10 and older follow later
         if (sc.current.parsed < "1.21.11") addAll(listOf("malilib.WidgetContainerAccess", "malilib.GuiListBaseAccess", "without.schematicpreview."))
-        if (mc != "1.21.11") addAll(onlyOn12111Mixins)
+        if (sc.current.parsed < "1.21.11") addAll(onlyOn12111Mixins)
         // Dev only: -PaleNoMixins=a.B,c.D leaves those mixins out (to find which one breaks something)
         providers.gradleProperty("aleNoMixins").orNull?.split(",")?.filter { it.isNotBlank() }?.let { addAll(it) }
     }
@@ -187,7 +189,12 @@ if (runsOnServer) {
         inputs.properties(props)
         from(rootProject.file("src/client-requirements")) { expand(props) }
     }
-    tasks.named<net.fabricmc.loom.task.RemapJarTask>("remapJar") { nestedJars.from(clientRequirementsJar) }
+    if (sc.current.parsed >= "26.1") {
+        // 26.x is not remapped: the plain jar task is the release jar
+        tasks.named<Jar>("jar") { net.fabricmc.loom.task.NestJarsAction.addToTask(this, files(clientRequirementsJar)) }
+    } else {
+        tasks.named<net.fabricmc.loom.task.RemapJarTask>("remapJar") { nestedJars.from(clientRequirementsJar) }
+    }
 }
 
 loom {
@@ -233,8 +240,8 @@ if (providers.gradleProperty("aleGameTest").isPresent) {
             }
         }
     }
-    // The 1.2.0 tests run on 1.21.11 only for now
-    if (mc != "1.21.11") {
+    // The 1.2.0 tests run on 1.21.11 and 26.x for now
+    if (sc.current.parsed < "1.21.11") {
         val newTests = listOf("OverlayVisibilityGameTest", "MarkerGameTest", "VerifierContentsGameTest", "FillMarkerGameTest", "ReplaceUiGameTest", "StillFramesMixin", "NoParticlesMixin",
             "RailGameTest", "RailPacketCounterMixin", "GuiOverlayAccessor", "FastBreakGameTest")
         sourceSets.matching { it.name == "gametest" }.configureEach {

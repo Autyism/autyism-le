@@ -7,6 +7,7 @@ import fi.dy.masa.litematica.schematic.placement.SchematicPlacement;
 import fi.dy.masa.malilib.render.MaLiLibPipelines;
 import fi.dy.masa.malilib.render.RenderContext;
 import fi.dy.masa.malilib.util.data.Color4f;
+import com.mojang.blaze3d.pipeline.RenderPipeline;
 import com.mojang.blaze3d.vertex.BufferBuilder;
 import com.mojang.blaze3d.vertex.MeshData;
 import net.minecraft.core.BlockPos;
@@ -55,15 +56,23 @@ public abstract class OverlayRendererMixin {
         ci.cancel();
     }
 
-    //? if >=1.21.11 <26.1 {
-    /** 验证器界面打开了“高亮告示牌”：有字的告示牌透墙画框（已放置亮绿、未放置深绿） */
+    // 验证器界面打开了“高亮告示牌”：有字的告示牌透墙画框（已放置亮绿、未放置深绿）。1.21.11 和 26.x（更早的版本还没有这一功能）
     @Inject(method = "renderSchematicVerifierMismatches", at = @At("TAIL"))
+    //? if >=26.1 {
+    /*private void ale$renderSigns(ProfilerFiller profiler, CallbackInfo ci) {
+    *///?} else
     private void ale$renderSigns(Matrix4f posMatrix, Matrix4f projMatrix, ProfilerFiller profiler, CallbackInfo ci) {
+        ale$drawSigns();
+    }
+
+    //? if >=1.21.11 {
+    @org.spongepowered.asm.mixin.Unique
+    private static void ale$drawSigns() {
         if (!com.autyism.ale.verifier.SignHighlight.enabled) return;
         List<BlockPos> placed = com.autyism.ale.verifier.SignHighlight.placed();
         List<BlockPos> missing = com.autyism.ale.verifier.SignHighlight.missing();
         if (placed.isEmpty() && missing.isEmpty()) return;
-        RenderContext ctx = new RenderContext(() -> "autyism-le:sign_highlight", MaLiLibPipelines.DEBUG_LINES_MASA_SIMPLE_NO_DEPTH_NO_CULL);
+        RenderContext ctx = ale$context(() -> "autyism-le:sign_highlight", MaLiLibPipelines.DEBUG_LINES_MASA_SIMPLE_NO_DEPTH_NO_CULL);
         BufferBuilder buffer = ctx.getBuilder();
         Color4f placedColor = Color4f.fromColor(com.autyism.ale.verifier.SignHighlight.placedColor(), 1f);
         Color4f missingColor = Color4f.fromColor(com.autyism.ale.verifier.SignHighlight.missingColor(), 1f);
@@ -77,7 +86,7 @@ public abstract class OverlayRendererMixin {
             }
             ctx.reset();
             // 半透明的面，隔着墙也一眼能看到
-            buffer = ctx.start(() -> "autyism-le:sign_highlight/sides", MaLiLibPipelines.POSITION_COLOR_TRANSLUCENT_NO_DEPTH_NO_CULL);
+            buffer = ale$start(ctx, () -> "autyism-le:sign_highlight/sides", MaLiLibPipelines.POSITION_COLOR_TRANSLUCENT_NO_DEPTH_NO_CULL);
             for (BlockPos pos : placed) fi.dy.masa.malilib.render.RenderUtils.renderAreaSidesBatched(pos, pos, new Color4f(placedColor.r, placedColor.g, placedColor.b, 0.3f), 0.002, buffer);
             for (BlockPos pos : missing) fi.dy.masa.malilib.render.RenderUtils.renderAreaSidesBatched(pos, pos, new Color4f(missingColor.r, missingColor.g, missingColor.b, 0.3f), 0.002, buffer);
             MeshData sides = buffer.build();
@@ -90,7 +99,44 @@ public abstract class OverlayRendererMixin {
         } catch (Exception ignored) {
         }
     }
-    //?}
+    //?} else {
+    /*@org.spongepowered.asm.mixin.Unique
+    private static void ale$drawSigns() {
+    }
+    *///?}
+
+    // malilib 的 RenderContext：26.2 起构造和 start 都多一个参数（Litematica 自己传 0）；1.21.5 只认管线
+    //? if >=26.2 {
+    /*@org.spongepowered.asm.mixin.Unique
+    private static RenderContext ale$context(java.util.function.Supplier<String> name, RenderPipeline pipeline) {
+        return new RenderContext(name, pipeline, 0);
+    }
+
+    @org.spongepowered.asm.mixin.Unique
+    private static BufferBuilder ale$start(RenderContext ctx, java.util.function.Supplier<String> name, RenderPipeline pipeline) {
+        return ctx.start(name, pipeline, 0);
+    }
+    *///?} elif >=1.21.6 {
+    @org.spongepowered.asm.mixin.Unique
+    private static RenderContext ale$context(java.util.function.Supplier<String> name, RenderPipeline pipeline) {
+        return new RenderContext(name, pipeline);
+    }
+
+    @org.spongepowered.asm.mixin.Unique
+    private static BufferBuilder ale$start(RenderContext ctx, java.util.function.Supplier<String> name, RenderPipeline pipeline) {
+        return ctx.start(name, pipeline);
+    }
+    //?} else {
+    /*@org.spongepowered.asm.mixin.Unique
+    private static RenderContext ale$context(java.util.function.Supplier<String> name, RenderPipeline pipeline) {
+        return new RenderContext(pipeline);
+    }
+
+    @org.spongepowered.asm.mixin.Unique
+    private static BufferBuilder ale$start(RenderContext ctx, java.util.function.Supplier<String> name, RenderPipeline pipeline) {
+        return ctx.start(pipeline);
+    }
+    *///?}
 
     @Inject(method = "renderSchematicVerifierMismatches", at = @At("TAIL"))
     // 26.1 起 Litematica 的这个方法只剩 ProfilerFiller 参数（两个矩阵本来也没用到）
@@ -139,7 +185,7 @@ public abstract class OverlayRendererMixin {
             if (fi.dy.masa.litematica.config.Configs.Visuals.RENDER_ERROR_MARKER_SIDES.getBooleanValue()) {
                 float alpha = (float) fi.dy.masa.litematica.config.Configs.InfoOverlays.VERIFIER_ERROR_HILIGHT_ALPHA.getDoubleValue();
                 Color4f side = new Color4f(color.r, color.g, color.b, alpha);
-                buffer = ctx.start(() -> "autyism-le:container_mismatches/sides", MaLiLibPipelines.POSITION_COLOR_TRANSLUCENT_NO_DEPTH_NO_CULL);
+                buffer = ale$start(ctx, () -> "autyism-le:container_mismatches/sides", MaLiLibPipelines.POSITION_COLOR_TRANSLUCENT_NO_DEPTH_NO_CULL);
                 for (BlockPos pos : positions) fi.dy.masa.malilib.render.RenderUtils.renderAreaSidesBatched(pos, pos, side, 0.002, buffer);
                 MeshData sides = buffer.build();
                 if (sides != null) {

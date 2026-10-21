@@ -66,6 +66,9 @@ public final class FastBreakGameTest implements FabricClientGameTest {
         properties.setProperty("view-distance", "4");
         properties.setProperty("simulation-distance", "4");
         try (TestDedicatedServerContext server = context.worldBuilder().createServer(properties)) {
+            //? if >=26.2 {
+            /*try (net.fabricmc.fabric.api.client.gametest.v1.context.TestDedicatedServerConnection connection = server.connect()) {
+            *///?} else
             try (TestServerConnection connection = server.connect()) {
                 joined(context, server, connection);
                 prepare(context, server);
@@ -73,6 +76,9 @@ public final class FastBreakGameTest implements FabricClientGameTest {
             }
             // 服务端不收请求（相当于服务端没装 ALE）
             ServerPlayNetworking.unregisterGlobalReceiver(FastBreakPayload.TYPE.id());
+            //? if >=26.2 {
+            /*try (net.fabricmc.fabric.api.client.gametest.v1.context.TestDedicatedServerConnection connection = server.connect()) {
+            *///?} else
             try (TestServerConnection connection = server.connect()) {
                 joined(context, server, connection);
                 prepare(context, server);
@@ -95,7 +101,13 @@ public final class FastBreakGameTest implements FabricClientGameTest {
     private static final int[] SENT = {0};
 
     private static void joined(ClientGameTestContext context, TestServerContext server, TestServerConnection connection) {
+        //? if >=26.2 {
+        /*connection.waitForChunksRender();
+        *///?} elif >=26.1 {
+        /*connection.getClientLevel().waitForChunksRender();
+        *///?} else {
         connection.getClientWorld().waitForChunksRender();
+        //?}
         GT.waitServer(context, () -> server.computeOnServer(s -> !s.getPlayerList().getPlayers().isEmpty()
                 && s.getPlayerList().getPlayers().getFirst().connection.hasClientLoaded()), 400, "[fastbreak] the player never finished joining");
     }

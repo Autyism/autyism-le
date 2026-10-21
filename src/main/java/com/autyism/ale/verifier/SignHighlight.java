@@ -134,6 +134,10 @@ public final class SignHighlight {
     }
 
     private static boolean hasText(SignBlockEntity sign) {
+        //? if >=26.3 {
+        /*return hasText(sign.getText(net.minecraft.world.level.block.entity.SignTextSlot.FRONT))
+                || hasText(sign.getText(net.minecraft.world.level.block.entity.SignTextSlot.BACK));
+        *///?} else
         return hasText(sign.getFrontText()) || hasText(sign.getBackText());
     }
 

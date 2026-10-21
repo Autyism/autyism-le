@@ -16,9 +16,15 @@ import net.fabricmc.fabric.api.networking.v1.PayloadTypeRegistry;
 public class AleCommon implements ModInitializer {
     @Override
     public void onInitialize() {
+        //? if >=26.1 {
+        /*PayloadTypeRegistry.serverboundPlay().register(ExactRailPayload.TYPE, ExactRailPayload.CODEC);
+        ServerRails.register();
+        PayloadTypeRegistry.serverboundPlay().register(FastBreakPayload.TYPE, FastBreakPayload.CODEC);
+        *///?} else {
         PayloadTypeRegistry.playC2S().register(ExactRailPayload.TYPE, ExactRailPayload.CODEC);
         ServerRails.register();
         PayloadTypeRegistry.playC2S().register(FastBreakPayload.TYPE, FastBreakPayload.CODEC);
+        //?}
         ServerFastBreak.register();
     }
 }

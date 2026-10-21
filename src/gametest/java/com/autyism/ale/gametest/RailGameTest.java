@@ -226,6 +226,9 @@ public final class RailGameTest implements FabricClientGameTest {
         try (TestDedicatedServerContext server = context.worldBuilder().createServer(properties)) {
             build(server, false, false);
             // ALE 在服务端：照投影的形状放
+            //? if >=26.2 {
+            /*try (net.fabricmc.fabric.api.client.gametest.v1.context.TestDedicatedServerConnection connection = server.connect()) {
+            *///?} else
             try (TestServerConnection connection = server.connect()) {
                 joined(context, server, connection);
                 context.waitFor(c -> ExactRailPlacement.isAvailable(), 200);
@@ -238,6 +241,9 @@ public final class RailGameTest implements FabricClientGameTest {
             ServerPlayNetworking.unregisterGlobalReceiver(ExactRailPayload.TYPE.id());
             try {
                 build(server, false, false);
+                //? if >=26.2 {
+                /*try (net.fabricmc.fabric.api.client.gametest.v1.context.TestDedicatedServerConnection connection = server.connect()) {
+                *///?} else
                 try (TestServerConnection connection = server.connect()) {
                     joined(context, server, connection);
                     context.waitTicks(40);
@@ -257,7 +263,13 @@ public final class RailGameTest implements FabricClientGameTest {
     }
 
     private static void joined(ClientGameTestContext context, TestServerContext server, TestServerConnection connection) {
+        //? if >=26.2 {
+        /*connection.waitForChunksRender();
+        *///?} elif >=26.1 {
+        /*connection.getClientLevel().waitForChunksRender();
+        *///?} else {
         connection.getClientWorld().waitForChunksRender();
+        //?}
         GT.waitServer(context, () -> server.computeOnServer(s -> !s.getPlayerList().getPlayers().isEmpty()
                 && s.getPlayerList().getPlayers().getFirst().connection.hasClientLoaded()), 400, "[rails] the player never finished joining");
         GT.removeAllPlacements(context);

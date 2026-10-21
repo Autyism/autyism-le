@@ -37,6 +37,11 @@ stonecutter parameters {
             replace("""\bBlocks\.RED_CONCRETE\b""" to """Blocks.CONCRETE.red()""", """\bBlocks\.CONCRETE\.red\(\)""" to """Blocks.RED_CONCRETE""")
             replace("""\bBlocks\.RED_STAINED_GLASS\b""" to """Blocks.STAINED_GLASS.red()""", """\bBlocks\.STAINED_GLASS\.red\(\)""" to """Blocks.RED_STAINED_GLASS""")
             replace("""\bItems\.WHITE_SHULKER_BOX\b""" to """Items.DYED_SHULKER_BOX.white()""", """\bItems\.DYED_SHULKER_BOX\.white\(\)""" to """Items.WHITE_SHULKER_BOX""")
+            replace("""\bBlocks\.RED_SHULKER_BOX\b""" to """Blocks.DYED_SHULKER_BOX.red()""", """\bBlocks\.DYED_SHULKER_BOX\.red\(\)""" to """Blocks.RED_SHULKER_BOX""")
+            replace("""\bItems\.RED_SHULKER_BOX\b""" to """Items.DYED_SHULKER_BOX.red()""", """\bItems\.DYED_SHULKER_BOX\.red\(\)""" to """Items.RED_SHULKER_BOX""")
+            replace("""\bBlocks\.BLUE_STAINED_GLASS\b""" to """Blocks.STAINED_GLASS.blue()""", """\bBlocks\.STAINED_GLASS\.blue\(\)""" to """Blocks.BLUE_STAINED_GLASS""")
+            replace("""\bBlocks\.WHITE_WALL_BANNER\b""" to """Blocks.WALL_BANNER.white()""", """\bBlocks\.WALL_BANNER\.white\(\)""" to """Blocks.WHITE_WALL_BANNER""")
+            replace("""\bBlocks\.WHITE_BANNER\b""" to """Blocks.BANNER.white()""", """\bBlocks\.BANNER\.white\(\)""" to """Blocks.WHITE_BANNER""")
         }
         // 26.3: blaze3d API classes moved to renderpearl
         string(current.parsed >= "26.3") {
@@ -57,6 +62,10 @@ stonecutter parameters {
             replace("com.mojang.blaze3d.GpuFormat", "com.mojang.renderpearl.api.GpuFormat")
             replace("com.mojang.blaze3d.IndexType", "com.mojang.renderpearl.api.pipeline.IndexType")
             replace("com.mojang.blaze3d.PrimitiveTopology", "com.mojang.renderpearl.api.pipeline.PrimitiveTopology")
+        }
+        // 26.1: ChunkPos is a record (asLong -> pack)
+        regex(current.parsed >= "26.1") {
+            replace("""\bChunkPos\.asLong\(""" to """ChunkPos.pack(""", """\bChunkPos\.pack\(""" to """ChunkPos.asLong(""")
         }
         // 26.1: GUI drawing moved to an extract pass
         string(current.parsed >= "26.1") {

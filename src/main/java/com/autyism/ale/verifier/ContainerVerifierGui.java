@@ -57,22 +57,61 @@ public final class ContainerVerifierGui {
         }
     }
 
-    /** 一种容器：数量和代表状态放在 BlockMismatch 里（排序、列宽用 Litematica 原来的逻辑） */
-    public static final class ContainerMismatch extends BlockMismatch {
-        public final Block block;
+    // 一种容器：数量和代表状态放在 BlockMismatch 里（排序、列宽用 Litematica 原来的逻辑）
+    //? if >=26.2 {
+    /*// 26.2 起 BlockMismatch 是 record，不能继承：照样用它，记下哪几个是这一类的（预期和实际一样的错误状态 Litematica 自己不会有）
+    private static final java.util.Set<BlockMismatch> OURS = java.util.Collections.newSetFromMap(new java.util.IdentityHashMap<>());
 
+    public static BlockMismatch containerMismatch(Block block, int count) {
+        if (OURS.size() > 4096) OURS.clear();
+        BlockMismatch m = new BlockMismatch(MismatchType.WRONG_STATE, block.defaultBlockState(), block.defaultBlockState(), count);
+        OURS.add(m);
+        return m;
+    }
+
+    public static boolean isContainerMismatch(BlockMismatch m) {
+        return m != null && OURS.contains(m);
+    }
+
+    public static net.minecraft.world.level.block.state.BlockState expectedOf(BlockMismatch m) {
+        return m.stateExpected();
+    }
+
+    public static int countOf(BlockMismatch m) {
+        return m.count();
+    }
+    *///?} else {
+    public static final class ContainerMismatch extends BlockMismatch {
         public ContainerMismatch(Block block, int count) {
             super(MismatchType.WRONG_STATE, block.defaultBlockState(), block.defaultBlockState(), count);
-            this.block = block;
         }
     }
 
-    public static final class DataEntry extends BlockMismatchEntry {
-        public final ContainerMismatch mismatch;
+    public static BlockMismatch containerMismatch(Block block, int count) {
+        return new ContainerMismatch(block, count);
+    }
 
-        public DataEntry(ContainerMismatch mismatch) {
+    public static boolean isContainerMismatch(BlockMismatch m) {
+        return m instanceof ContainerMismatch;
+    }
+
+    public static net.minecraft.world.level.block.state.BlockState expectedOf(BlockMismatch m) {
+        return m.stateExpected;
+    }
+
+    public static int countOf(BlockMismatch m) {
+        return m.count;
+    }
+    //?}
+
+    public static final class DataEntry extends BlockMismatchEntry {
+        public final BlockMismatch mismatch;
+        public final Block block;
+
+        public DataEntry(BlockMismatch mismatch) {
             super(MismatchType.WRONG_STATE, mismatch);
             this.mismatch = mismatch;
+            this.block = expectedOf(mismatch).getBlock();
         }
     }
 
@@ -95,9 +134,9 @@ public final class ContainerVerifierGui {
         List<BlockMismatchEntry> ours = new ArrayList<>();
         ours.add(new CategoryEntry());
         List<BlockMismatch> rows = new ArrayList<>();
-        for (var e : overview.entrySet()) rows.add(new ContainerMismatch(e.getKey(), e.getValue()));
+        for (var e : overview.entrySet()) rows.add(containerMismatch(e.getKey(), e.getValue()));
         rows.sort(new VerifierResultSorter(verifier));
-        for (BlockMismatch m : rows) ours.add(new DataEntry((ContainerMismatch) m));
+        for (BlockMismatch m : rows) ours.add(new DataEntry(m));
         // “全部”里排在“错误状态”后面（“多余方块”、“缺失方块”往往很长，放在它们后面要翻很久）
         int at = list.size();
         for (int i = 0; i < list.size(); i++) {
@@ -114,7 +153,7 @@ public final class ContainerVerifierGui {
     public static boolean onSelection(GuiSchematicVerifier gui, BlockMismatchEntry entry) {
         if (!isOurs(entry)) return false;
         SchematicVerifier verifier = gui.getPlacement().getSchematicVerifier();
-        if (entry instanceof DataEntry data) ContainerVerifier.toggleEntry(verifier, data.mismatch.block);
+        if (entry instanceof DataEntry data) ContainerVerifier.toggleEntry(verifier, data.block);
         else ContainerVerifier.toggleCategory(verifier);
         ((com.autyism.ale.mixin.litematica.SchematicVerifierInvoker) verifier).ale$updateMismatchOverlays();
         if (!Configs.InfoOverlays.VERIFIER_OVERLAY_ENABLED.getBooleanValue()) {
@@ -128,8 +167,8 @@ public final class ContainerVerifierGui {
 
     /** 忽略一条（结果列表里的“忽略”按钮） */
     public static boolean onIgnore(SchematicVerifier verifier, BlockMismatch mismatch) {
-        if (!(mismatch instanceof ContainerMismatch c)) return false;
-        ContainerVerifier.ignore(verifier, c.block);
+        if (!isContainerMismatch(mismatch)) return false;
+        ContainerVerifier.ignore(verifier, expectedOf(mismatch).getBlock());
         ((com.autyism.ale.mixin.litematica.SchematicVerifierInvoker) verifier).ale$updateMismatchOverlays();
         return true;
     }
@@ -227,7 +266,7 @@ public final class ContainerVerifierGui {
 
         @Override
         protected boolean shouldRenderAsSelected() {
-            if (this.myEntry instanceof DataEntry data) return ContainerVerifier.isEntrySelected(this.verifier, data.mismatch.block);
+            if (this.myEntry instanceof DataEntry data) return ContainerVerifier.isEntrySelected(this.verifier, data.block);
             return ContainerVerifier.isCategorySelected(this.verifier);
         }
 
@@ -242,11 +281,11 @@ public final class ContainerVerifierGui {
             RenderUtils.drawRect(ctx, this.x, this.y, this.width, this.height, color);
             if (selected) RenderUtils.drawOutline(ctx, this.x, this.y, this.width, this.height, 0xFFE0E0E0);
             int x1 = this.getColumnPosX(0), x2 = this.getColumnPosX(1), x3 = this.getColumnPosX(2);
-            ItemStack icon = new ItemStack(data.mismatch.block);
-            String name = WidgetSchematicVerificationResult.BlockMismatchInfo.getDisplayName(data.mismatch.stateExpected, icon);
+            ItemStack icon = new ItemStack(data.block);
+            String name = WidgetSchematicVerificationResult.BlockMismatchInfo.getDisplayName(expectedOf(data.mismatch), icon);
             this.drawString(ctx, x1 + 20, this.y + 7, 0xFFFFFFFF, name);
             this.drawString(ctx, x2 + 20, this.y + 7, 0xFFFFFFFF, TEXT_COLOR + StringUtils.translate("autyism-le.gui.label.schematic_verifier.contents_differ") + GuiBase.TXT_RST);
-            this.drawString(ctx, x3, this.y + 7, 0xFFFFFFFF, String.valueOf(data.mismatch.count));
+            this.drawString(ctx, x3, this.y + 7, 0xFFFFFFFF, String.valueOf(countOf(data.mismatch)));
             RenderUtils.drawRect(ctx, x1, this.y + 3, 16, 16, 0x20FFFFFF);
             RenderUtils.drawRect(ctx, x2, this.y + 3, 16, 16, 0x20FFFFFF);
             ctx.renderItem(icon, x1, this.y + 3);
@@ -262,7 +301,7 @@ public final class ContainerVerifierGui {
             }
             boolean overButton = false;
             for (WidgetBase w : this.subWidgets) overButton |= w.isMouseOver(mouseX, mouseY);
-            if (!overButton) renderTooltip(ctx, mouseX, mouseY, data.mismatch.block);
+            if (!overButton) renderTooltip(ctx, mouseX, mouseY, data.block);
             this.drawHoveredSubWidget(ctx, mouseX, mouseY);
         }
 
