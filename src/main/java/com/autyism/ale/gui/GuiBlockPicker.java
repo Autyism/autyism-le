@@ -425,7 +425,7 @@ public class GuiBlockPicker extends GuiBase {
     //? if >=1.21.9 {
     @Override
     public boolean onMouseClicked(MouseButtonEvent click, boolean doubleClick) {
-        //? if >=1.21.11 <26.1 {
+        //? if >=1.21.11 {
         // 选取方块（鼠标中键）：指着右边的一条时加入它；在界面外时加入鼠标所指的世界里的方块；其他地方取准星对着的方块
         if (WorldPick.isPickButton(click)) {
             pickAt(click.x(), click.y());
@@ -485,7 +485,7 @@ public class GuiBlockPicker extends GuiBase {
         return true;
     }
 
-    //? if >=1.21.11 <26.1 {
+    //? if >=1.21.11 {
     private void pickAt(double mx, double my) {
         int rightX = panelX + 10 + colW + 10;
         int rows = visibleRows();

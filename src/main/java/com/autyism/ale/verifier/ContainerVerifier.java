@@ -75,7 +75,7 @@ public final class ContainerVerifier {
     /**
      * 有结果列表里的“容器内容不同”一类（1.21.11）时，只框选中的；其他版本暂时没有这一类，照以前框出全部不一致的容器
      */
-    //? if >=1.21.11 <26.1 {
+    //? if >=1.21.11 {
     public static final boolean SELECT_IN_VERIFIER = true;
     //?} else
     //public static final boolean SELECT_IN_VERIFIER = false;
@@ -344,7 +344,7 @@ public final class ContainerVerifier {
             if (be == null || be != k.blockEntity().get() || mc.level.getBlockState(pos).getBlock() != k.block()) forget(e.getKey());
         }
         boolean local = mc.getSingleplayerServer() != null;
-        //? if >=1.21.11 <26.1 {
+        //? if >=1.21.11 {
         boolean remote = !local && ServerContainerData.available();
         //?} else
         //boolean remote = false;
@@ -389,7 +389,7 @@ public final class ContainerVerifier {
     private static void checkFillCandidates(@Nullable WorldSchematic ws) {
         if (FILL_CANDIDATES.isEmpty() || ws == null || mc.level == null || mc.player == null) return;
         boolean local = mc.getSingleplayerServer() != null;
-        //? if >=1.21.11 <26.1 {
+        //? if >=1.21.11 {
         boolean remote = !local && ServerContainerData.available();
         //?} else
         //boolean remote = false;
@@ -432,7 +432,7 @@ public final class ContainerVerifier {
             SignHighlight.onWorldChange(mc.level);
             validateCursor = null;
             REBUILD_CHUNKS.clear();
-            //? if >=1.21.11 <26.1
+            //? if >=1.21.11
             ServerContainerData.clear();
         }
         if (mc.level == null) {
@@ -507,16 +507,9 @@ public final class ContainerVerifier {
         }
         // 多人游戏：只用服务端真正发来的数据（Litematica 的实体数据同步：服务端装了 Servux，或者 OP 的备用查询）。
         // Litematica 自己的缓存在等回复时放的是客户端世界里的方块实体（里面没有物品），大箱子还会两半合起来，都不能拿来比
-        //? if >=1.21.11 <26.1 {
+        //? if >=1.21.11 {
         return ServerContainerData.get(worldClient, pos);
-        //?} elif >=1.21.11 {
-        /*Container c = EntityDataManager.getInstance().getBlockInventoryWrapped(worldClient, pos, false);
-        if (c == null) {
-            EntityDataManager.getInstance().requestBlockEntityWrapped(worldClient, pos);
-            return null;
-        }
-        return nonEmpty(c);
-        *///?} else {
+        //?} else {
         /*Container c = EntitiesDataStorage.getInstance().getBlockInventory(worldClient, pos, false);
         if (c == null) {
             EntitiesDataStorage.getInstance().requestBlockEntity(worldClient, pos);

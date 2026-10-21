@@ -81,7 +81,15 @@ val previewFilesWithConditions = listOf(
     "com/autyism/ale/preview/MeshVertexSink.java", "com/autyism/ale/preview/PreviewCamera.java",
     "com/autyism/ale/preview/PreviewInput.java", "com/autyism/ale/preview/PreviewRenderer.java",
     "com/autyism/ale/preview/PreviewTarget.java", "com/autyism/ale/preview/SceneMesher.java",
-    "com/autyism/ale/preview/SchematicView.java", "com/autyism/ale/replace/ReplaceBlockScreen.java"
+    "com/autyism/ale/preview/SchematicView.java", "com/autyism/ale/replace/ReplaceBlockScreen.java",
+    // no conditions of their own, but they need the ones above (were whole-file >=1.21.11 conditions)
+    "com/autyism/ale/browser/BrowserEntryWidget.java", "com/autyism/ale/browser/BrowserLayout.java", "com/autyism/ale/browser/FolderIcons.java",
+    "com/autyism/ale/browser/SchematicBrowserWidget.java", "com/autyism/ale/config/AleHotkeys.java", "com/autyism/ale/mixin/malilib/GuiListBaseAccess.java",
+    "com/autyism/ale/mixin/malilib/WidgetContainerAccess.java", "com/autyism/ale/mixin/without/schematicpreview/**",
+    "com/autyism/ale/preview/MeshLayer.java", "com/autyism/ale/preview/PreviewModel.java", "com/autyism/ale/preview/PreviewPanel.java",
+    "com/autyism/ale/preview/Previews.java", "com/autyism/ale/preview/PreviewSession.java", "com/autyism/ale/preview/PreviewWorkers.java",
+    "com/autyism/ale/preview/SchematicFiles.java", "com/autyism/ale/preview/ThumbnailCache.java", "com/autyism/ale/replace/MaterialRefresh.java",
+    "com/autyism/ale/replace/MaterialReplacer.java"
 )
 if (sc.current.parsed < "1.21.11") {
     sourceSets.named("main") { java.exclude(previewFilesWithConditions) }
@@ -230,7 +238,10 @@ if (providers.gradleProperty("aleGameTest").isPresent) {
     if (sc.current.parsed < "1.21.11") {
         sourceSets.matching { it.name == "gametest" }.configureEach {
             java.exclude("com/autyism/ale/gametest/PreviewFixtures.java", "com/autyism/ale/gametest/UiDriver.java",
-                "com/autyism/ale/gametest/mixin/FrameCounterMixin.java")
+                "com/autyism/ale/gametest/mixin/FrameCounterMixin.java", "com/autyism/ale/gametest/BrowserPreviewGameTest.java",
+                "com/autyism/ale/gametest/CompareGameTest.java", "com/autyism/ale/gametest/FolderIconGameTest.java",
+                "com/autyism/ale/gametest/MaterialReplaceGameTest.java", "com/autyism/ale/gametest/SpBlackBoxGameTest.java",
+                "com/autyism/ale/gametest/StepAsideGameTest.java")
         }
         val previewTests = listOf("SpBlackBoxGameTest", "BrowserPreviewGameTest", "FolderIconGameTest", "MaterialReplaceGameTest",
             "StepAsideGameTest", "CompareGameTest", "FrameCounterMixin")
@@ -243,7 +254,8 @@ if (providers.gradleProperty("aleGameTest").isPresent) {
     // The 1.2.0 tests run on 1.21.11 and 26.x for now
     if (sc.current.parsed < "1.21.11") {
         val newTests = listOf("OverlayVisibilityGameTest", "MarkerGameTest", "VerifierContentsGameTest", "FillMarkerGameTest", "ReplaceUiGameTest", "StillFramesMixin", "NoParticlesMixin",
-            "RailGameTest", "RailPacketCounterMixin", "GuiOverlayAccessor", "FastBreakGameTest")
+            "RailGameTest", "RailPacketCounterMixin", "GuiOverlayAccessor", "FastBreakGameTest", "DoubleChestFillGameTest",
+            "SignHighlightGameTest")
         sourceSets.matching { it.name == "gametest" }.configureEach {
             java.exclude(newTests.map { "com/autyism/ale/gametest/**/$it.java" } + "com/autyism/ale/gametest/ViewShots.java")
         }

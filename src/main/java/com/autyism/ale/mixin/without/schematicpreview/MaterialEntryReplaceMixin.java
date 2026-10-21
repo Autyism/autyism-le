@@ -1,5 +1,3 @@
-//? if >=1.21.11 {
-// 投影浏览器预览、图标和“替换”：1.21.10 及更早以后再移植
 package com.autyism.ale.mixin.without.schematicpreview;
 
 import com.autyism.ale.mixin.malilib.WidgetContainerAccess;
@@ -54,4 +52,3 @@ public abstract class MaterialEntryReplaceMixin {
         self.ale$addButton(replace, (b, mouseButton) -> GuiBase.openGui(new ReplaceBlockScreen(list, stack, com.autyism.ale.preview.GuiCompat.screen())));
     }
 }
-//?}

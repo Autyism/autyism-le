@@ -1,5 +1,3 @@
-//? if >=1.21.11 {
-// 投影浏览器预览、图标和“替换”：1.21.10 及更早以后再移植
 package com.autyism.ale.gametest;
 
 import com.autyism.ale.browser.SchematicBrowserWidget;
@@ -98,4 +96,3 @@ public final class StepAsideGameTest implements FabricClientGameTest {
         if (n != 1) throw new AssertionError("[stepaside] " + n + " Replace buttons in the row of " + item);
     }
 }
-//?}

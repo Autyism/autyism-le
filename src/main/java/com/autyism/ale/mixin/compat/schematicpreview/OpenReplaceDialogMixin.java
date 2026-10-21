@@ -14,6 +14,10 @@ import ru.dimaskama.schematicpreview.gui.GuiBlockSelect;
  * Schematic Preview 的材料列表“替换”打开它的对话框时，默认换成 ALE 的替换对话框（右上角按钮可以回到原来的）。
  * 只在装了 Schematic Preview 时应用。
  */
+// 26.2 起打开界面的是 Gui.setScreen（Minecraft 上没有了）
+//? if >=26.2 {
+/*@Mixin(net.minecraft.client.gui.Gui.class)
+*///?} else
 @Mixin(Minecraft.class)
 public abstract class OpenReplaceDialogMixin {
     @Inject(method = "setScreen", at = @At("HEAD"), cancellable = true)

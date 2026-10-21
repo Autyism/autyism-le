@@ -37,7 +37,7 @@ public abstract class ChunkRendererSchematicVboMixin {
     @Shadow
     protected ChunkCacheSchematic clientWorldView;
 
-    //? if >=1.21.11 <26.1 {
+    //? if >=1.21.11 {
     @Shadow
     protected ChunkCacheSchematic schematicWorldView;
 
@@ -79,7 +79,7 @@ public abstract class ChunkRendererSchematicVboMixin {
             colors[glyphs.size()] = AleConfigs.Generic.WATERLOGGED_MARKER_COLOR.getIntegerValue();
             glyphs.add(WaterloggedMarker.STROKES);
         }
-        //? if >=1.21.11 <26.1 {
+        //? if >=1.21.11 {
         if (glyphs.isEmpty()) return;
         // 需要填充的容器同时状态也不对时，F 和 D / W 一起并排画
         if (ale$needsFilling(pos, stateSchematic)) {
@@ -103,13 +103,29 @@ public abstract class ChunkRendererSchematicVboMixin {
         WaterloggedMarker.emitRow(buffer, this.getChunkRelativePosition(pos).immutable(), glyphs, colors);
     }
 
-    //? if >=1.21.11 <26.1 {
-    /** 其他格子（状态没错、缺失、错误方块……）：投影里装着东西的容器单独画 F */
+    // 其他格子（状态没错、缺失、错误方块……）：投影里装着东西的容器单独画 F。26.1 起 Litematica 这个方法的参数换了
+    //? if >=26.1 {
+    /*@Inject(method = "renderBlocksAndOverlay", at = @At("RETURN"))
+    private void ale$fillMarker(fi.dy.masa.litematica.render.schematic.BlockModelRendererSchematic blockRenderer,
+                                fi.dy.masa.litematica.render.schematic.FluidModelRendererSchematic fluidRenderer, BlockPos pos,
+                                ChunkRenderDataSchematic data, ChunkMeshDataSchematic chunkMeshData, ChunkRenderDispatcherBuffers pack,
+                                fi.dy.masa.litematica.render.schematic.IBlockOutputSchematic output, net.minecraft.world.phys.Vec3 offset,
+                                net.minecraft.client.renderer.chunk.VisGraph visGraph, CallbackInfo ci) {
+        this.ale$drawFillMarker(pos, data, pack);
+    }
+    *///?} elif >=1.21.11 {
     @Inject(method = "renderBlocksAndOverlay", at = @At("RETURN"))
     private void ale$fillMarker(BlockPos pos, ChunkRenderDataSchematic data, ChunkMeshDataSchematic chunkMeshData,
                                 ChunkRenderDispatcherBuffers pack, java.util.Set<net.minecraft.client.renderer.chunk.ChunkSectionLayer> usedBlockLayers,
                                 java.util.Set<net.minecraft.client.renderer.rendertype.RenderType> usedRenderLayers,
                                 com.mojang.blaze3d.vertex.PoseStack matrixStack, net.minecraft.client.renderer.chunk.VisGraph visGraph, CallbackInfo ci) {
+        this.ale$drawFillMarker(pos, data, pack);
+    }
+    //?}
+
+    //? if >=1.21.11 {
+    @Unique
+    private void ale$drawFillMarker(BlockPos pos, ChunkRenderDataSchematic data, ChunkRenderDispatcherBuffers pack) {
         long[] marked = ALE_MARKED.get();
         if (marked[0] == pos.asLong()) {
             marked[0] = Long.MIN_VALUE;

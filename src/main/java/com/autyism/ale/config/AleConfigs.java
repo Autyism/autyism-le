@@ -84,7 +84,7 @@ public class AleConfigs implements IConfigHandler {
                 ORIENTATION_MARKER,
                 ORIENTATION_MARKER_COLOR,
                 MARKER_PRIORITY,
-                //? if >=1.21.11 <26.1 {
+                //? if >=1.21.11 {
                 FILL_MARKER,
                 FILL_MARKER_COLOR,
                 FILL_MARKER_SKIP,
@@ -153,7 +153,7 @@ public class AleConfigs implements IConfigHandler {
 
     public static void init() {
         INSTANCE.load();
-        //? if >=1.21.11 <26.1 {
+        //? if >=1.21.11 {
         // 标记的设置改了以后，投影的渲染数据马上重建，不用等方块变化
         Generic.WATERLOGGED_MARKER.setValueChangeCallback(c -> refreshSchematicRender());
         Generic.WATERLOGGED_MARKER_COLOR.setValueChangeCallback(c -> refreshSchematicRender());
@@ -167,7 +167,7 @@ public class AleConfigs implements IConfigHandler {
         // 装了 Sodium 时这个设置决定玻璃画在哪一层（见 SodiumGlassPassMixin）：改了以后世界的区块重建
         Generic.RENDER_THROUGH_GLASS.setValueChangeCallback(c -> {
             var mc = net.minecraft.client.Minecraft.getInstance();
-            if (net.fabricmc.loader.api.FabricLoader.getInstance().isModLoaded("sodium") && mc.level != null) mc.levelRenderer.allChanged();
+            if (net.fabricmc.loader.api.FabricLoader.getInstance().isModLoaded("sodium") && mc.level != null) reloadWorldChunks(mc);
         });
         //?}
         ConfigManager.getInstance().registerConfigHandler(AleMod.MOD_ID, INSTANCE);
@@ -184,11 +184,19 @@ public class AleConfigs implements IConfigHandler {
     }
     //?}
 
-    //? if >=1.21.11 <26.1 {
+    //? if >=1.21.11 {
     private static void refreshSchematicRender() {
         fi.dy.masa.litematica.util.SchematicWorldRefresher.INSTANCE.updateAll();
     }
     //?}
+
+    // 世界的区块全部重建（26.2 起在 LevelExtractor 上）
+    private static void reloadWorldChunks(net.minecraft.client.Minecraft mc) {
+        //? if >=26.2 {
+        /*mc.levelExtractor.allChanged();
+        *///?} else
+        mc.levelRenderer.allChanged();
+    }
 
     @Override
     public void load() {
