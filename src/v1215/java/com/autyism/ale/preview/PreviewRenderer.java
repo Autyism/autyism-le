@@ -136,12 +136,16 @@ public final class PreviewRenderer {
         FogParameters oldFog = RenderSystem.getShaderFog();
         Vector3f[] lights = RenderSystem.getShaderLights();
         Vector3f oldLight0 = lights[0], oldLight1 = lights[1];
+        // 界面有时把着色颜色改成半透明或带颜色（淡入之类）：预览按原色画
+        float[] color = RenderSystem.getShaderColor();
+        float oldR = color[0], oldG = color[1], oldB = color[2], oldA = color[3];
         Matrix4fStack modelView = RenderSystem.getModelViewStack();
         RenderSystem.backupProjectionMatrix();
         modelView.pushMatrix();
         try {
             RenderSystem.setProjectionMatrix(projection, ProjectionType.PERSPECTIVE);
             RenderSystem.setShaderFog(FogParameters.NO_FOG);
+            RenderSystem.setShaderColor(1.0F, 1.0F, 1.0F, 1.0F);
             // 方块：相机平移放进模型视图矩阵（半透明方块的着色器不加 ModelOffset）
             modelView.set(view).translate(-eye.x, -eye.y, -eye.z);
             drawOpaque(encoder, pages, target);
@@ -160,6 +164,7 @@ public final class PreviewRenderer {
             RenderSystem.restoreProjectionMatrix();
             if (oldFog != null) RenderSystem.setShaderFog(oldFog);
             RenderSystem.setShaderLights(oldLight0, oldLight1);
+            RenderSystem.setShaderColor(oldR, oldG, oldB, oldA);
         }
     }
 
