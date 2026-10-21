@@ -224,10 +224,11 @@ public final class GT {
     }
 
     /**
-     * 测试截图。加 -PframeShot 时改为保存游戏正常循环里画出的最后一帧，不用 gametest 额外渲染的那一帧
-     * （26.1.2 上那次额外渲染会在 Sodium 里崩溃）。
+     * 测试截图。26.1 起、或加 -PframeShot 时，改为保存游戏正常循环里画出的最后一帧，不用 gametest 额外渲染的那一帧
+     * （26.1 起那次额外渲染里 Litematica 不画覆盖层和半透明层，开着 Sodium 时还会崩溃）。
      */
     public static java.nio.file.Path shot(ClientGameTestContext context, String name) {
+        //? if <26.1
         if (!Boolean.getBoolean("ale.frameshot")) return context.takeScreenshot(name);
         context.waitTicks(2);
         java.util.concurrent.CompletableFuture<com.mojang.blaze3d.platform.NativeImage> image = new java.util.concurrent.CompletableFuture<>();

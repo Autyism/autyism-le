@@ -170,6 +170,9 @@ public final class RailGameTest implements FabricClientGameTest {
         int drops = server.computeOnServer(s -> s.overworld().getEntitiesOfClass(net.minecraft.world.entity.item.ItemEntity.class,
                 new net.minecraft.world.phys.AABB(MIN).minmax(new net.minecraft.world.phys.AABB(MAX)).inflate(2)).size());
         String message = context.computeOnClient(c -> {
+            //? if >=26.2 {
+            /*Component m = ((GuiOverlayAccessor) c.gui.hud).aleGt$overlayMessage();
+            *///?} else
             Component m = ((GuiOverlayAccessor) c.gui).aleGt$overlayMessage();
             return m == null ? "" : m.getString();
         });
