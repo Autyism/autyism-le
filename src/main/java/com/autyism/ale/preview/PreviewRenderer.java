@@ -13,7 +13,6 @@ import com.mojang.blaze3d.systems.RenderPass;
 import com.mojang.blaze3d.systems.RenderSystem;
 import com.mojang.blaze3d.systems.ScissorState;
 import com.mojang.blaze3d.textures.FilterMode;
-import com.mojang.blaze3d.textures.GpuSampler;
 import com.mojang.blaze3d.textures.GpuTextureView;
 import com.mojang.blaze3d.vertex.PoseStack;
 import com.mojang.blaze3d.vertex.VertexFormat;
@@ -134,17 +133,31 @@ public final class PreviewRenderer {
 
     private static RenderPipeline pipeline(MeshLayer layer) {
         return switch (layer) {
+            //? if >=26.1 {
+            /*case SOLID -> RenderPipelines.SOLID_BLOCK;
+            case CUTOUT, TRIPWIRE -> RenderPipelines.CUTOUT_BLOCK;
+            case TRANSLUCENT -> RenderPipelines.TRANSLUCENT_BLOCK;
+            *///?} elif >=1.21.11 {
             case SOLID -> RenderPipelines.SOLID_BLOCK;
             case CUTOUT -> RenderPipelines.CUTOUT_BLOCK;
-            //? if >=26.1 {
-            /*case TRIPWIRE -> RenderPipelines.CUTOUT_BLOCK;
-            case TRANSLUCENT -> RenderPipelines.TRANSLUCENT_BLOCK;
-            *///?} else {
             case TRIPWIRE -> RenderPipelines.TRIPWIRE_BLOCK;
             case TRANSLUCENT -> RenderPipelines.TRANSLUCENT_MOVING_BLOCK;
-            //?}
+            //?} else {
+            /*// 1.21.10 及更早：原版区段的地形管线（ModelOffset 为 0，相机平移在模型视图矩阵里）
+            case SOLID -> RenderPipelines.SOLID;
+            case CUTOUT_MIPPED -> RenderPipelines.CUTOUT_MIPPED;
+            case CUTOUT -> RenderPipelines.CUTOUT;
+            case TRIPWIRE -> RenderPipelines.TRIPWIRE;
+            case TRANSLUCENT -> RenderPipelines.TRANSLUCENT_MOVING_BLOCK;
+            *///?}
         };
     }
+
+    /** 实心、镂空和绊线层（半透明层最后单独画），按这个顺序 */
+    //? if >=1.21.11 {
+    private static final MeshLayer[] OPAQUE_LAYERS = {MeshLayer.SOLID, MeshLayer.CUTOUT, MeshLayer.TRIPWIRE};
+    //?} else
+    //private static final MeshLayer[] OPAQUE_LAYERS = {MeshLayer.SOLID, MeshLayer.CUTOUT_MIPPED, MeshLayer.CUTOUT, MeshLayer.TRIPWIRE};
 
     /** 把模型按相机画进目标纹理（会先清空目标） */
     public static void render(PreviewModel model, PreviewCamera camera, PreviewTarget target, boolean blockEntities) {
@@ -165,19 +178,23 @@ public final class PreviewRenderer {
         Matrix4f view = camera.viewRotation();
         Vector3f eye = camera.eye();
         GpuBufferSlice projectionSlice = projectionBuffer.getBuffer(projection);
-        GpuBufferSlice fogSlice = noFogBuffer.slice(0L, FogRenderer.FOG_UBO_SIZE);
+        GpuBufferSlice fogSlice = noFogBuffer.slice(0, FogRenderer.FOG_UBO_SIZE);
         // 相机平移放进模型视图矩阵（半透明方块的着色器不加 ModelOffset）
+        //? if >=1.21.11 {
         GpuBufferSlice transforms = RenderSystem.getDynamicUniforms()
                 .writeTransform(new Matrix4f(view).translate(-eye.x, -eye.y, -eye.z), new Vector4f(1.0F, 1.0F, 1.0F, 1.0F), new Vector3f(), new Matrix4f());
+        //?} else {
+        /*// 1.21.10 及更早还有统一的线宽
+        GpuBufferSlice transforms = RenderSystem.getDynamicUniforms()
+                .writeTransform(new Matrix4f(view).translate(-eye.x, -eye.y, -eye.z), new Vector4f(1.0F, 1.0F, 1.0F, 1.0F), new Vector3f(), new Matrix4f(), 1.0F);
+        *///?}
         Minecraft mc = Minecraft.getInstance();
         GpuTextureView atlas = mc.getTextureManager().getTexture(TextureAtlas.LOCATION_BLOCKS).getTextureView();
-        GpuSampler atlasSampler = RenderSystem.getSamplerCache().getRepeat(FilterMode.NEAREST, true);
         //? if >=26.1 {
         /*GpuTextureView lightmap = mc.gameRenderer.lightmap();
         *///?} else {
         GpuTextureView lightmap = mc.gameRenderer.lightTexture().getTextureView();
         //?}
-        GpuSampler lightSampler = RenderSystem.getSamplerCache().getClampToEdge(FilterMode.LINEAR);
 
         int maxIndices = 0;
         for (Page p : pages) if (p.layer != MeshLayer.TRANSLUCENT) maxIndices = Math.max(maxIndices, p.quads * 6);
@@ -185,15 +202,15 @@ public final class PreviewRenderer {
             RenderSystem.AutoStorageIndexBuffer quadIndices = quadIndexBuffer();
             GpuBuffer indexBuffer = quadIndices.getBuffer(maxIndices);
             try (RenderPass pass = openPass(encoder, "ALE schematic preview", target)) {
-                usePipeline(pass, RenderPipelines.SOLID_BLOCK);
+                usePipeline(pass, pipeline(MeshLayer.SOLID));
                 pass.setUniform("Projection", projectionSlice);
                 pass.setUniform("Fog", fogSlice);
                 pass.setUniform("DynamicTransforms", transforms);
-                bindTexture(pass, "Sampler0", atlas, atlasSampler);
-                bindTexture(pass, "Sampler2", lightmap, lightSampler);
+                bindLightmap(pass, lightmap);
                 pass.setIndexBuffer(indexBuffer, quadIndices.type());
-                for (MeshLayer layer : new MeshLayer[]{MeshLayer.SOLID, MeshLayer.CUTOUT, MeshLayer.TRIPWIRE}) {
+                for (MeshLayer layer : OPAQUE_LAYERS) {
                     usePipeline(pass, pipeline(layer));
+                    bindAtlas(pass, atlas, layer);
                     for (Page p : pages) {
                         if (p.layer != layer || p.quads == 0) continue;
                         bindVertices(pass, p.vertices);
@@ -225,8 +242,8 @@ public final class PreviewRenderer {
                 pass.setUniform("Projection", projectionSlice);
                 pass.setUniform("Fog", fogSlice);
                 pass.setUniform("DynamicTransforms", transforms);
-                bindTexture(pass, "Sampler0", atlas, atlasSampler);
-                bindTexture(pass, "Sampler2", lightmap, lightSampler);
+                bindAtlas(pass, atlas, MeshLayer.TRANSLUCENT);
+                bindLightmap(pass, lightmap);
                 for (Page p : translucent) {
                     bindVertices(pass, p.vertices);
                     if (p.sortedIndices != null) {
@@ -252,12 +269,27 @@ public final class PreviewRenderer {
         //?}
     }
 
-    private static void bindTexture(RenderPass pass, String name, GpuTextureView view, GpuSampler sampler) {
+    // 方块图集。1.21.11 起采样方式是单独的采样器（方块一律带 mipmap）；之前是贴图自己的设置，和原版区段一样按层开关 mipmap
+    private static void bindAtlas(RenderPass pass, GpuTextureView atlas, MeshLayer layer) {
         //? if >=26.3 {
-        /*pass.setUniform(name, view, sampler);
-        *///?} else {
-        pass.bindTexture(name, view, sampler);
-        //?}
+        /*pass.setUniform("Sampler0", atlas, RenderSystem.getSamplerCache().getRepeat(FilterMode.NEAREST, true));
+        *///?} elif >=1.21.11 {
+        pass.bindTexture("Sampler0", atlas, RenderSystem.getSamplerCache().getRepeat(FilterMode.NEAREST, true));
+        //?} else {
+        /*Minecraft.getInstance().getTextureManager().getTexture(TextureAtlas.LOCATION_BLOCKS).setUseMipmaps(layer != MeshLayer.CUTOUT);
+        pass.bindSampler("Sampler0", atlas);
+        *///?}
+    }
+
+    // 光照贴图（线性过滤、不重复）
+    private static void bindLightmap(RenderPass pass, GpuTextureView lightmap) {
+        //? if >=26.3 {
+        /*pass.setUniform("Sampler2", lightmap, RenderSystem.getSamplerCache().getClampToEdge(FilterMode.LINEAR));
+        *///?} elif >=1.21.11 {
+        pass.bindTexture("Sampler2", lightmap, RenderSystem.getSamplerCache().getClampToEdge(FilterMode.LINEAR));
+        //?} else {
+        /*pass.bindSampler("Sampler2", lightmap);
+        *///?}
     }
 
     private static RenderSystem.AutoStorageIndexBuffer quadIndexBuffer() {
@@ -385,7 +417,7 @@ public final class PreviewRenderer {
         try {
             RenderSystem.setProjectionMatrix(projection, ProjectionType.PERSPECTIVE);
             RenderSystem.setShaderFog(fog);
-            RenderSystem.setShaderLights(lightsBuffer.slice(0L, Lighting.UBO_SIZE));
+            RenderSystem.setShaderLights(lightsBuffer.slice(0, Lighting.UBO_SIZE));
             if (scissorOn) RenderSystem.disableScissorForRenderTypeDraws();
             modelView.set(view);
             //? if >=26.3 {

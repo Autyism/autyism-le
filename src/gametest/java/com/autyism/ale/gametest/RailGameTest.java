@@ -270,8 +270,14 @@ public final class RailGameTest implements FabricClientGameTest {
         *///?} else {
         connection.getClientWorld().waitForChunksRender();
         //?}
+        // 1.21.11 起“客户端载入完成”记在连接上，之前在玩家身上
+        //? if >=1.21.11 {
         GT.waitServer(context, () -> server.computeOnServer(s -> !s.getPlayerList().getPlayers().isEmpty()
                 && s.getPlayerList().getPlayers().getFirst().connection.hasClientLoaded()), 400, "[rails] the player never finished joining");
+        //?} else {
+        /*GT.waitServer(context, () -> server.computeOnServer(s -> !s.getPlayerList().getPlayers().isEmpty()
+                && s.getPlayerList().getPlayers().getFirst().hasClientLoaded()), 400, "[rails] the player never finished joining");
+        *///?}
         GT.removeAllPlacements(context);
         placeFromFile(context);
         GT.waitSchematicBlock(context, byName("rail-ascending").pos(), Blocks.RAIL);

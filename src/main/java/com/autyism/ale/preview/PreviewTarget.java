@@ -45,6 +45,11 @@ public final class PreviewTarget implements AutoCloseable {
         GpuDevice device = RenderSystem.getDevice();
         this.color = device.createTexture(() -> "ALE schematic preview", GpuTexture.USAGE_TEXTURE_BINDING | GpuTexture.USAGE_RENDER_ATTACHMENT | GpuTexture.USAGE_COPY_DST,
                 COLOR_FORMAT, width, height, 1, 1);
+        //? if <1.21.11 {
+        /*// 1.21.10 及更早：采样方式是贴图自己的设置（之后的版本在贴到界面时给采样器）
+        this.color.setTextureFilter(FilterMode.NEAREST, false);
+        this.color.setAddressMode(com.mojang.blaze3d.textures.AddressMode.CLAMP_TO_EDGE);
+        *///?}
         this.colorView = device.createTextureView(this.color);
         this.depth = device.createTexture(() -> "ALE schematic preview depth", GpuTexture.USAGE_RENDER_ATTACHMENT | GpuTexture.USAGE_COPY_DST, DEPTH_FORMAT, width, height, 1, 1);
         this.depthView = device.createTextureView(this.depth);
@@ -88,8 +93,11 @@ public final class PreviewTarget implements AutoCloseable {
     /** 把纹理贴到界面的 (x0, y0)-(x1, y1)（界面坐标）；纹理里的颜色是预乘透明度的 */
     public void blit(GuiGraphics g, int x0, int y0, int x1, int y1) {
         if (this.colorView == null) return;
-        BlitRenderState blit = new BlitRenderState(RenderPipelines.GUI_TEXTURED_PREMULTIPLIED_ALPHA,
-                TextureSetup.singleTexture(this.colorView, RenderSystem.getSamplerCache().getClampToEdge(FilterMode.NEAREST)),
+        //? if >=1.21.11 {
+        TextureSetup texture = TextureSetup.singleTexture(this.colorView, RenderSystem.getSamplerCache().getClampToEdge(FilterMode.NEAREST));
+        //?} else
+        //TextureSetup texture = TextureSetup.singleTexture(this.colorView);
+        BlitRenderState blit = new BlitRenderState(RenderPipelines.GUI_TEXTURED_PREMULTIPLIED_ALPHA, texture,
                 new Matrix3x2f(g.pose()), x0, y0, x1, y1, 0.0F, 1.0F, 1.0F, 0.0F, -1, g.scissorStack.peek());
         //? if >=26.1 {
         /*g.guiRenderState.addGuiElement(blit);

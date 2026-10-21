@@ -24,6 +24,15 @@ stonecutter parameters {
             replace("""net\.minecraft\.world\.entity\.decoration\.painting\.Painting\b""" to """net.minecraft.world.entity.decoration.Painting""", """(?!)""" to """unused""")
             replace("""\bSheets\.translucentBlockItemSheet\(\)""" to """Sheets.translucentItemSheet()""", """(?!)""" to """unused""")
         }
+        // Before 1.21.11 Litematica keeps schematic block entity data as vanilla CompoundTag (MaLiLib's CompoundData came
+        // with 1.21.11); the conversion to vanilla tags is then not needed. One way only, like above.
+        regex(current.parsed < "1.21.11") {
+            // (an empty replacement is not allowed: the import becomes a second, ignored import of CompoundTag)
+            replace("""\bimport fi\.dy\.masa\.malilib\.util\.data\.tag\.converter\.DataConverterNbt;""" to """import net.minecraft.nbt.CompoundTag;""", """(?!)""" to """unused""")
+            replace("""\bDataConverterNbt\.toVanillaCompound\((\w+)\)""" to """$1""", """(?!)""" to """unused""")
+            replace("""\bfi\.dy\.masa\.malilib\.util\.data\.tag\.CompoundData\b""" to """net.minecraft.nbt.CompoundTag""", """(?!)""" to """unused""")
+            replace("""\bCompoundData\b""" to """CompoundTag""", """(?!)""" to """unused""")
+        }
         // 1.21.5: MaLiLib draws GUI rectangles immediately, without the GuiGraphics (see gui/GuiRects). One way only.
         regex(current.parsed < "1.21.6") {
             replace("""\bRenderUtils\.(drawRect|drawOutlinedBox)\(ctx,""" to """com.autyism.ale.gui.GuiRects.$1(ctx,""", """(?!)""" to """unused""")

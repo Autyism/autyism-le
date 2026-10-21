@@ -32,14 +32,12 @@ public class AleMixinPlugin implements IMixinConfigPlugin {
                     && AleMixinPlugin.class.getClassLoader().getResource(targetClassName.replace('.', '/') + ".class") != null;
         }
         // without.<modid>.*：只在那个模组没装时应用（ALE 自己实现、装了原作时让给原作的功能）
-        //? if >=1.21.11 {
         int j = mixinClassName.indexOf(".without.");
         if (j >= 0) {
             String rest = mixinClassName.substring(j + ".without.".length());
             String modId = rest.substring(0, rest.indexOf('.'));
             return !FabricLoader.getInstance().isModLoaded(modId);
         }
-        //?}
         return true;
     }
 

@@ -68,10 +68,16 @@ public class FolderIconScreen extends GuiBase implements Previews.PreviewOwnedSc
         int x = this.left + 10, y = this.top + 30;
 
         this.field = new GuiTextFieldGeneric(x, y, FIELD_W, 18, this.font);
+        //? if >=1.21.11 {
         this.field.setValueWrapper(this.text);
+        //?} else
+        //this.field.setTextWrapper(this.text);
         this.field.setFocused(true);
         this.addTextField(this.field, f -> {
+            //? if >=1.21.11 {
             this.text = f.getValueWrapper();
+            //?} else
+            //this.text = f.getTextWrapper();
             return true;
         });
         ButtonGeneric pick = new ButtonGeneric(x + W - 20 - 60, y - 1, 60, 20, StringUtils.translate("autyism-le.gui.button.pick_item"));

@@ -56,7 +56,7 @@ public abstract class OverlayRendererMixin {
         ci.cancel();
     }
 
-    // 验证器界面打开了“高亮告示牌”：有字的告示牌透墙画框（已放置亮绿、未放置深绿）。1.21.11 和 26.x（更早的版本还没有这一功能）
+    // 验证器界面打开了“高亮告示牌”：有字的告示牌透墙画框（已放置亮绿、未放置深绿）
     @Inject(method = "renderSchematicVerifierMismatches", at = @At("TAIL"))
     //? if >=26.1 {
     /*private void ale$renderSigns(ProfilerFiller profiler, CallbackInfo ci) {
@@ -65,7 +65,6 @@ public abstract class OverlayRendererMixin {
         ale$drawSigns();
     }
 
-    //? if >=1.21.11 {
     @org.spongepowered.asm.mixin.Unique
     private static void ale$drawSigns() {
         if (!com.autyism.ale.verifier.SignHighlight.enabled) return;
@@ -76,11 +75,19 @@ public abstract class OverlayRendererMixin {
         BufferBuilder buffer = ctx.getBuilder();
         Color4f placedColor = Color4f.fromColor(com.autyism.ale.verifier.SignHighlight.placedColor(), 1f);
         Color4f missingColor = Color4f.fromColor(com.autyism.ale.verifier.SignHighlight.missingColor(), 1f);
+        // 1.21.11 起线宽写在顶点里；之前是绘制时统一设置
+        //? if >=1.21.11 {
         for (BlockPos pos : placed) fi.dy.masa.malilib.render.RenderUtils.drawBlockBoundingBoxOutlinesBatchedLinesSimple(pos, placedColor, 0.004, 3.0f, buffer);
         for (BlockPos pos : missing) fi.dy.masa.malilib.render.RenderUtils.drawBlockBoundingBoxOutlinesBatchedLinesSimple(pos, missingColor, 0.004, 3.0f, buffer);
+        //?} else {
+        /*for (BlockPos pos : placed) fi.dy.masa.malilib.render.RenderUtils.drawBlockBoundingBoxOutlinesBatchedLinesSimple(pos, placedColor, 0.004, buffer);
+        for (BlockPos pos : missing) fi.dy.masa.malilib.render.RenderUtils.drawBlockBoundingBoxOutlinesBatchedLinesSimple(pos, missingColor, 0.004, buffer);
+        *///?}
         try {
             MeshData meshData = buffer.build();
             if (meshData != null) {
+                //? if <1.21.11
+                //ctx.lineWidth(3.0f);
                 ctx.draw(meshData, false, true);
                 meshData.close();
             }
@@ -99,11 +106,6 @@ public abstract class OverlayRendererMixin {
         } catch (Exception ignored) {
         }
     }
-    //?} else {
-    /*@org.spongepowered.asm.mixin.Unique
-    private static void ale$drawSigns() {
-    }
-    *///?}
 
     // malilib 的 RenderContext：26.2 起构造和 start 都多一个参数（Litematica 自己传 0）；1.21.5 只认管线
     //? if >=26.2 {

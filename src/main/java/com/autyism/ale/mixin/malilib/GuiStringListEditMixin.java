@@ -44,13 +44,8 @@ public abstract class GuiStringListEditMixin {
         ButtonGeneric button = new ButtonGeneric(0, 0, -1, false, key);
         button.setPosition(this.dialogLeft + this.dialogWidth - button.getWidth() - 4, this.dialogTop + 2);
         button.setHoverStrings(StringUtils.translate("autyism-le.gui.button.pick_blocks.hover"));
-        //? if >=1.21.11 {
         // 换回 ALE 的选择界面（代替这个编辑框，关掉后回到原来的上一层界面）
         gui.addButton(button, (b, mouseButton) ->
                 GuiBase.openGui(new GuiBlockPicker(this.config, this.configGui.getModId(), mode, gui.getParent(), this.configGui)));
-        //?} else {
-        /*gui.addButton(button, (b, mouseButton) ->
-                GuiBase.openGui(new GuiBlockPicker(this.config, this.configGui.getModId(), mode, gui)));
-        *///?}
     }
 }

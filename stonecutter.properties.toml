@@ -9,8 +9,6 @@ mod.loader_compat = ">=0.17.0"
 deps.fabric_loader = "0.19.3"
 
 ["1.21.5"]
-# stays at 1.1.0 until 1.2.0 is ported to it
-mod.version = "1.1.0"
 mod.mc_compat = "1.21.5"
 mod.malilib_compat = ">=0.24.3"
 mod.litematica_compat = ">=0.22.5"
@@ -22,8 +20,6 @@ deps.modmenu = "14.0.2"
 deps.schematicpreview = ""
 
 ["1.21.8"]
-# stays at 1.1.0 until 1.2.0 is ported to it
-mod.version = "1.1.0"
 mod.mc_compat = ">=1.21.6 <=1.21.8"
 mod.malilib_compat = ">=0.25.7"
 mod.litematica_compat = ">=0.23.7"
@@ -34,8 +30,6 @@ deps.modmenu = "15.0.2"
 deps.schematicpreview = "0.0.15+1.21.8"
 
 ["1.21.10"]
-# stays at 1.1.0 until 1.2.0 is ported to it
-mod.version = "1.1.0"
 mod.mc_compat = ">=1.21.9 <=1.21.10"
 mod.malilib_compat = ">=0.26.8"
 mod.litematica_compat = ">=0.24.9"

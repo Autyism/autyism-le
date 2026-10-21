@@ -37,14 +37,12 @@ public abstract class ChunkRendererSchematicVboMixin {
     @Shadow
     protected ChunkCacheSchematic clientWorldView;
 
-    //? if >=1.21.11 {
     @Shadow
     protected ChunkCacheSchematic schematicWorldView;
 
     /** 这一格的字母已经在 renderOverlay 里画过（各个重建线程各记各的） */
     @Unique
     private static final ThreadLocal<long[]> ALE_MARKED = ThreadLocal.withInitial(() -> new long[]{Long.MIN_VALUE});
-    //?}
 
     @Shadow
     //? if >=1.21.11 {
@@ -79,7 +77,6 @@ public abstract class ChunkRendererSchematicVboMixin {
             colors[glyphs.size()] = AleConfigs.Generic.WATERLOGGED_MARKER_COLOR.getIntegerValue();
             glyphs.add(WaterloggedMarker.STROKES);
         }
-        //? if >=1.21.11 {
         if (glyphs.isEmpty()) return;
         // 需要填充的容器同时状态也不对时，F 和 D / W 一起并排画
         if (ale$needsFilling(pos, stateSchematic)) {
@@ -87,8 +84,6 @@ public abstract class ChunkRendererSchematicVboMixin {
             glyphs.add(com.autyism.ale.render.FillMarker.STROKES);
         }
         ALE_MARKED.get()[0] = pos.asLong();
-        //?} else
-        //if (glyphs.isEmpty()) return;
         // “标记只显示一个”：列表的顺序就是重要程度（D、W、F），只留第一个
         if (AleConfigs.Generic.MARKER_PRIORITY.getBooleanValue() && glyphs.size() > 1) {
             glyphs.subList(1, glyphs.size()).clear();
@@ -121,11 +116,41 @@ public abstract class ChunkRendererSchematicVboMixin {
                                 com.mojang.blaze3d.vertex.PoseStack matrixStack, net.minecraft.client.renderer.chunk.VisGraph visGraph, CallbackInfo ci) {
         this.ale$drawFillMarker(pos, data, pack);
     }
-    //?}
+    //?} elif >=1.21.6 {
+    /*@Inject(method = "renderBlocksAndOverlay", at = @At("RETURN"))
+    private void ale$fillMarker(BlockPos pos, ChunkRenderDataSchematic data, BufferAllocatorCache allocators,
+                                java.util.Set<net.minecraft.client.renderer.chunk.ChunkSectionLayer> usedBlockLayers,
+                                java.util.Set<net.minecraft.client.renderer.rendertype.RenderType> usedRenderLayers,
+                                com.mojang.blaze3d.vertex.PoseStack matrixStack, CallbackInfo ci) {
+        this.ale$drawFillMarker(pos, data, allocators);
+    }
+    *///?} else {
+    /*@Inject(method = "renderBlocksAndOverlay", at = @At("RETURN"))
+    private void ale$fillMarker(BlockPos pos, ChunkRenderDataSchematic data, BufferAllocatorCache allocators,
+                                java.util.Set<net.minecraft.client.renderer.rendertype.RenderType> usedLayers,
+                                com.mojang.blaze3d.vertex.PoseStack matrixStack, CallbackInfo ci) {
+        this.ale$drawFillMarker(pos, data, allocators);
+    }
+    *///?}
 
+    // 画字母的那一层（四边形覆盖层）的缓冲
     //? if >=1.21.11 {
     @Unique
+    private BufferBuilder ale$quads(ChunkRenderDispatcherBuffers pack) {
+        return this.preRenderOverlay(pack, OverlayRenderType.QUAD);
+    }
+    //?} else {
+    /*@Unique
+    private BufferBuilder ale$quads(BufferAllocatorCache allocators) {
+        return this.preRenderOverlay(OverlayRenderType.QUAD, allocators);
+    }
+    *///?}
+
+    @Unique
+    //? if >=1.21.11 {
     private void ale$drawFillMarker(BlockPos pos, ChunkRenderDataSchematic data, ChunkRenderDispatcherBuffers pack) {
+    //?} else
+    //private void ale$drawFillMarker(BlockPos pos, ChunkRenderDataSchematic data, BufferAllocatorCache pack) {
         long[] marked = ALE_MARKED.get();
         if (marked[0] == pos.asLong()) {
             marked[0] = Long.MIN_VALUE;
@@ -144,7 +169,7 @@ public abstract class ChunkRendererSchematicVboMixin {
                 // 两半都要算（顺便都记成要检查的容器）
                 boolean need = ale$needsFilling(pos, stateSchematic) | ale$needsFilling(other, otherSchematic);
                 if (!need || (toOther != net.minecraft.core.Direction.EAST && toOther != net.minecraft.core.Direction.SOUTH)) return;
-                BufferBuilder buffer = this.preRenderOverlay(pack, OverlayRenderType.QUAD);
+                BufferBuilder buffer = this.ale$quads(pack);
                 if (!data.isOverlayTypeStarted(OverlayRenderType.QUAD)) {
                     ((ChunkRenderDataSchematicInvoker) data).ale$setOverlayTypeStarted(OverlayRenderType.QUAD);
                 }
@@ -154,7 +179,7 @@ public abstract class ChunkRendererSchematicVboMixin {
             }
         }
         if (!ale$needsFilling(pos, stateSchematic)) return;
-        BufferBuilder buffer = this.preRenderOverlay(pack, OverlayRenderType.QUAD);
+        BufferBuilder buffer = this.ale$quads(pack);
         if (!data.isOverlayTypeStarted(OverlayRenderType.QUAD)) {
             ((ChunkRenderDataSchematicInvoker) data).ale$setOverlayTypeStarted(OverlayRenderType.QUAD);
         }
@@ -181,5 +206,4 @@ public abstract class ChunkRendererSchematicVboMixin {
         com.autyism.ale.verifier.ContainerVerifier.noteFillCandidate(pos);
         return true;
     }
-    //?}
 }

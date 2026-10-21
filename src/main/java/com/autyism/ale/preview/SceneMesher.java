@@ -225,6 +225,8 @@ final class SceneMesher {
     static MeshLayer layer(ChunkSectionLayer layer) {
         return switch (layer) {
             case SOLID -> MeshLayer.SOLID;
+            //? if <1.21.11
+            //case CUTOUT_MIPPED -> MeshLayer.CUTOUT_MIPPED;
             case CUTOUT -> MeshLayer.CUTOUT;
             case TRANSLUCENT -> MeshLayer.TRANSLUCENT;
             //? if <26.1

@@ -78,14 +78,22 @@ public final class ViewShots {
     public static void rebuild(ClientGameTestContext context, SchematicPlacement placement) {
         context.runOnClient(c -> {
             DataManager.getSchematicPlacementManager().markAllPlacementsOfSchematicForRebuild(placement.getSchematic());
+            // 1.21.11 之前 Litematica 每帧自己读这些设置
+            //? if >=1.21.11
             fi.dy.masa.litematica.render.LitematicaRenderer.getInstance().updateConfigState();
         });
         context.waitTicks(5);
-        // Litematica 在后台线程重新放投影方块（设置的回调也会触发）：等它做完，再给区块重画几 tick。
-        // 固定等 15 tick 偶尔不够，会截到投影刚被清空的那一帧
+        // Litematica 重新放投影方块（1.21.11 起在后台线程，设置的回调也会触发；之前在主线程上分几 tick 做）：等它做完，
+        // 再给区块重画几 tick。固定等 15 tick 偶尔不够，会截到投影刚被清空的那一帧
+        //? if >=1.21.11 {
         for (int i = 0; i < 200 && context.computeOnClient(c -> fi.dy.masa.litematica.schematic.placement.PlacementManagerDaemonHandler.INSTANCE.hasAnyTasks()); i++) {
             context.waitTick();
         }
+        //?} else {
+        /*for (int i = 0; i < 200 && context.computeOnClient(c -> DataManager.getSchematicPlacementManager().hasPendingRebuilds()); i++) {
+            context.waitTick();
+        }
+        *///?}
         context.waitTicks(10);
     }
 

@@ -27,7 +27,6 @@ public final class GlassRenderState {
         translucentDrawnEarly = false;
         overlaysDrawnEarly = false;
         translucentDrawnThisFrame = false;
-        //? if >=1.21.11
         OverlayDepth.newFrame();
     }
 }

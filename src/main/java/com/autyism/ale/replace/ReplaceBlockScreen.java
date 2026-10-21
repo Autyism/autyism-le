@@ -142,10 +142,16 @@ public class ReplaceBlockScreen extends GuiBase {
         this.gridX = this.left + 10;
         this.gridY = this.top + 44;
         GuiTextFieldGeneric field = new GuiTextFieldGeneric(this.left + 10, this.top + 20, W - 20, 18, this.font);
+        //? if >=1.21.11 {
         field.setValueWrapper(this.search);
+        //?} else
+        //field.setTextWrapper(this.search);
         field.setFocused(true);
         this.addTextField(field, f -> {
+            //? if >=1.21.11 {
             this.search = f.getValueWrapper();
+            //?} else
+            //this.search = f.getTextWrapper();
             applyFilter();
             return true;
         });
@@ -353,7 +359,10 @@ public class ReplaceBlockScreen extends GuiBase {
         for (Option o : this.filtered) visible |= o.block() == primary;
         if (!visible) {
             this.search = "";
+            //? if >=1.21.11 {
             for (var tf : ((com.autyism.ale.mixin.malilib.GuiBaseAccessor) this).ale$getTextFields()) tf.textField().setValue("");
+            //?} else
+            //for (var tf : ((com.autyism.ale.mixin.malilib.GuiBaseAccessor) this).ale$getTextFields()) tf.getTextField().setValue("");
             applyFilter();
         }
         this.selected = primary;

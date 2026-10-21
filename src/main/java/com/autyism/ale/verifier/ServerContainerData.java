@@ -1,6 +1,9 @@
 package com.autyism.ale.verifier;
 
+//? if >=1.21.11 {
 import fi.dy.masa.litematica.data.EntityDataManager;
+//?} else
+//import fi.dy.masa.litematica.data.EntitiesDataStorage;
 import net.minecraft.core.BlockPos;
 import net.minecraft.world.Container;
 import net.minecraft.world.item.ItemStack;
@@ -44,8 +47,14 @@ public final class ServerContainerData {
      * 查不到时没有回复，这些容器就不检查）。Litematica 自己限制每 tick 发出的请求数
      */
     public static boolean available() {
+        //? if >=1.21.11 {
         EntityDataManager manager = EntityDataManager.getInstance();
         return (manager.isEnabled() && manager.hasServuxServer()) || manager.isBackupEnabled();
+        //?} else {
+        /*// 1.21.10 及更早：同一套设置，数据类叫 EntitiesDataStorage
+        return (fi.dy.masa.litematica.config.Configs.Generic.ENTITY_DATA_SYNC.getBooleanValue() && EntitiesDataStorage.getInstance().hasServuxServer())
+                || fi.dy.masa.litematica.config.Configs.Generic.ENTITY_DATA_SYNC_BACKUP.getBooleanValue();
+        *///?}
     }
 
     /** Litematica 收到了服务端发来的这个方块实体的数据（并已经读进了客户端的方块实体） */
@@ -78,7 +87,10 @@ public final class ServerContainerData {
         boolean waiting = asked != null && now - asked <= REQUEST_RETRY_TICKS && (snapshot == null || snapshot.tick() < asked);
         if (!waiting) {
             REQUESTED.put(key, now);
+            //? if >=1.21.11 {
             EntityDataManager.getInstance().requestBlockEntityWrapped(world, pos);
+            //?} else
+            //EntitiesDataStorage.getInstance().requestBlockEntity(world, pos);
         }
         return null;
     }

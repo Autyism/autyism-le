@@ -168,6 +168,8 @@ final class MeshVertexSink implements VertexConsumer {
         return this;
     }
 
+    // 1.21.11 起顶点格式里有线宽（方块格式里没有，忽略）
+    //? if >=1.21.11
     @Override
     public VertexConsumer setLineWidth(float width) {
         return this;
