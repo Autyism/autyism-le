@@ -21,4 +21,15 @@ public abstract class EasyPlaceRailMixin {
                                                    Operation<InteractionResult> original) {
         return EasyPlaceRails.useItemOn(player, hand, hit, () -> original.call(gameMode, player, hand, hit));
     }
+
+    // 铁轨放不住时的提示别被 Litematica 自己的失败提示盖掉（见 EasyPlaceRails.pendingHint）
+    @org.spongepowered.asm.mixin.injection.Inject(method = "handleEasyPlaceWithMessage", at = @At("HEAD"))
+    private static void ale$railHintStart(org.spongepowered.asm.mixin.injection.callback.CallbackInfoReturnable<Boolean> cir) {
+        EasyPlaceRails.clearPendingHint();
+    }
+
+    @org.spongepowered.asm.mixin.injection.Inject(method = "handleEasyPlaceWithMessage", at = @At("RETURN"))
+    private static void ale$railHintAgain(org.spongepowered.asm.mixin.injection.callback.CallbackInfoReturnable<Boolean> cir) {
+        EasyPlaceRails.showPendingHint();
+    }
 }
