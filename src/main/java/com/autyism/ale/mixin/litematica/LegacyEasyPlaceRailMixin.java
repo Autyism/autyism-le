@@ -21,4 +21,17 @@ public abstract class LegacyEasyPlaceRailMixin {
                                                    Operation<InteractionResult> original) {
         return EasyPlaceRails.useItemOn(player, hand, hit, () -> original.call(gameMode, player, hand, hit));
     }
+
+    // 放不住的铁轨：Litematica 在 handleEasyPlace 里写完自己的失败提示以后，再显示铁轨的提示（见 EasyPlaceRails.pendingHint）
+    @org.spongepowered.asm.mixin.injection.Inject(method = "handleEasyPlace", at = @At("HEAD"))
+    private static void ale$railHintStart(net.minecraft.client.Minecraft mc,
+                                          org.spongepowered.asm.mixin.injection.callback.CallbackInfoReturnable<Boolean> cir) {
+        EasyPlaceRails.clearPendingHint();
+    }
+
+    @org.spongepowered.asm.mixin.injection.Inject(method = "handleEasyPlace", at = @At("RETURN"))
+    private static void ale$railHintAgain(net.minecraft.client.Minecraft mc,
+                                          org.spongepowered.asm.mixin.injection.callback.CallbackInfoReturnable<Boolean> cir) {
+        EasyPlaceRails.showPendingHint();
+    }
 }
