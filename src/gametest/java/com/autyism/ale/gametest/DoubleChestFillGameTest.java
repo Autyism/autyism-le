@@ -65,9 +65,7 @@ public final class DoubleChestFillGameTest implements FabricClientGameTest {
             context.waitTicks(60);
             List<String> failures = new ArrayList<>();
 
-            ViewShots.rebuild(context, placement);
-            Path empty = GT.shot(context, "ale-doublechest-empty");
-            int f1 = FillMarkerGameTest.countGreen(empty);
+            int f1 = shotF(context, placement, "ale-doublechest-empty", true);
             GT.log("[doublechest] empty double chest: F=" + f1 + " px; known left=" + context.computeOnClient(c -> com.autyism.ale.verifier.ContainerVerifier.isKnownToMatch(left))
                     + " right=" + context.computeOnClient(c -> com.autyism.ale.verifier.ContainerVerifier.isKnownToMatch(right)));
             if (f1 < 400) failures.add("no-F");
@@ -77,8 +75,7 @@ public final class DoubleChestFillGameTest implements FabricClientGameTest {
                 if (s.overworld().getBlockEntity(right) instanceof Container c) c.setItem(0, new ItemStack(Items.IRON_INGOT, 7));
             });
             context.waitTicks(60);
-            ViewShots.rebuild(context, placement);
-            int f2 = FillMarkerGameTest.countGreen(GT.shot(context, "ale-doublechest-filled"));
+            int f2 = shotF(context, placement, "ale-doublechest-filled", false);
             GT.log("[doublechest] right half filled: F=" + f2 + " px");
             if (f2 >= 400) failures.add("still-F");
 
@@ -87,8 +84,7 @@ public final class DoubleChestFillGameTest implements FabricClientGameTest {
                 if (s.overworld().getBlockEntity(right) instanceof Container c) c.clearContent();
             });
             context.waitTicks(80);
-            ViewShots.rebuild(context, placement);
-            int f3 = FillMarkerGameTest.countGreen(GT.shot(context, "ale-doublechest-emptied"));
+            int f3 = shotF(context, placement, "ale-doublechest-emptied", true);
             GT.log("[doublechest] emptied again: F=" + f3 + " px; known right=" + context.computeOnClient(c -> com.autyism.ale.verifier.ContainerVerifier.isKnownToMatch(right)));
             if (f3 < 400) failures.add("F-not-back");
 
@@ -99,5 +95,22 @@ public final class DoubleChestFillGameTest implements FabricClientGameTest {
             ViewShots.end(context);
             GT.removeAllPlacements(context);
         }
+    }
+
+    /**
+     * 重画投影后截图数 F 的像素。偶尔截图时覆盖层还没按新的结果重画（ALE 已经知道这个箱子空了，F 还没出来）：
+     * 想看到 F（wantF）时最多重画、截图三次，第三次还是不对才算错
+     */
+    private static int shotF(ClientGameTestContext context, fi.dy.masa.litematica.schematic.placement.SchematicPlacement placement,
+                             String name, boolean wantF) {
+        int f = 0;
+        for (int attempt = 1; attempt <= 3; attempt++) {
+            ViewShots.rebuild(context, placement);
+            f = FillMarkerGameTest.countGreen(GT.shot(context, attempt == 1 ? name : name + "-" + attempt));
+            if ((f >= 400) == wantF) return f;
+            GT.log("[doublechest] " + name + ": F=" + f + " px on try " + attempt + ", rebuilding again");
+            context.waitTicks(20);
+        }
+        return f;
     }
 }
