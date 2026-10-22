@@ -1,6 +1,6 @@
 # Changelog
 
-## 1.2.0 — 2026-10-14
+## 1.2.0 — 2026-10-22
 
 For Minecraft 1.21.5–26.3. On 1.21.5–1.21.10 it also brings 1.1.0: 3D previews in the schematic browser, folder icons and Replace in material lists.
 

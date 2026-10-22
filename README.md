@@ -282,7 +282,7 @@ ALE runs on your client and needs nothing on the server. Only for rails in the s
 <details>
 <summary><b>Compatibility</b> (click to open)</summary>
 
-- **Sodium and Iris:** ALE's rendering features, including the 3D previews, were tested with Sodium and Iris installed on 1.21.11, and with Sodium on 26.1.2. With a shader pack on, the overlays on water and other see-through blocks are drawn the way they were before 1.2.0.
+- **Sodium and Iris:** ALE's rendering features, including the 3D previews, were tested with Sodium and Iris installed on 1.21.11, and with Sodium on 1.21.5, 1.21.8, 1.21.10 and 26.1.2. With a shader pack on, the overlays on water and other see-through blocks are drawn the way they were before 1.2.0.
 - **Other rendering mods:** Render Through Glass changes when Litematica draws its see-through parts. If another mod changes world rendering so that this is not possible, ALE falls back to Litematica's normal drawing and only the see-through-glass effect is lost.
 - **Schematic Preview:** optional. When it is installed, ALE turns its own browser previews, icons and **Replace** off and Schematic Preview provides them; ALE still keeps signs intact when sign wood is replaced with its **Replace**.
 - **Litematica Printer Autyism Edition:** optional and independent; neither mod needs the other. With both installed, the printer's block lists get the picker.
@@ -633,7 +633,7 @@ ALE 在客户端运行，服务器不需要安装任何东西。只有想让轻�
 <details>
 <summary><b>兼容性</b>（点开查看）</summary>
 
-- **Sodium 和 Iris**：ALE 的渲染功能（包括 3D 预览）在 1.21.11 上和 Sodium、Iris 一起测试过，在 26.1.2 上和 Sodium 一起测试过。开着光影包时，水等半透明方块上的覆盖层按 1.2.0 以前的方式画。
+- **Sodium 和 Iris**：ALE 的渲染功能（包括 3D 预览）在 1.21.11 上和 Sodium、Iris 一起测试过，在 1.21.5、1.21.8、1.21.10 和 26.1.2 上和 Sodium 一起测试过。开着光影包时，水等半透明方块上的覆盖层按 1.2.0 以前的方式画。
 - **其他渲染类模组**：“透过玻璃显示投影”会调整 Litematica 半透明部分的绘制时机。如果其他模组改动了世界渲染、导致无法这样做，ALE 会退回 Litematica 原本的绘制方式，只是失去透过玻璃显示的效果。
 - **Schematic Preview**：可选。装了它时，ALE 会关掉自己的浏览器预览、图标和“替换”，由 Schematic Preview 提供；用它的“替换”更换告示牌木材时，ALE 仍然会保留告示牌。
 - **Litematica Printer Autyism Edition（打印机）**：可选，两个模组互不依赖。一起安装时，打印机的方块列表也能用选择界面。
