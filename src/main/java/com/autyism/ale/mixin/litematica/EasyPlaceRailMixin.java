@@ -22,6 +22,16 @@ public abstract class EasyPlaceRailMixin {
         return EasyPlaceRails.useItemOn(player, hand, hit, () -> original.call(gameMode, player, hand, hit));
     }
 
+    // Litematica 自己先看放不放得住（26.3 的 0.29 起）：放不住的铁轨在这里就停了，记下铁轨的提示
+    @WrapOperation(method = "handleEasyPlace", require = 0, at = @At(value = "INVOKE", remap = true,
+            target = "Lnet/minecraft/world/level/block/state/BlockState;canSurvive(Lnet/minecraft/world/level/LevelReader;Lnet/minecraft/core/BlockPos;)Z"))
+    private static boolean ale$railCanSurvive(net.minecraft.world.level.block.state.BlockState state, net.minecraft.world.level.LevelReader level,
+                                              net.minecraft.core.BlockPos pos, Operation<Boolean> original) {
+        boolean ok = original.call(state, level, pos);
+        if (!ok) EasyPlaceRails.noteCannotStay(state, pos);
+        return ok;
+    }
+
     // 铁轨放不住时的提示别被 Litematica 自己的失败提示盖掉（见 EasyPlaceRails.pendingHint）
     @org.spongepowered.asm.mixin.injection.Inject(method = "handleEasyPlaceWithMessage", at = @At("HEAD"))
     private static void ale$railHintStart(org.spongepowered.asm.mixin.injection.callback.CallbackInfoReturnable<Boolean> cir) {

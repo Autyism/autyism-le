@@ -55,6 +55,17 @@ public final class EasyPlaceRails {
      */
     private static Component pendingHint;
 
+    /**
+     * 新版 Litematica（26.3 的 0.29）放之前自己先看方块放不放得住：放不住就直接停下，写它自己的提示，
+     * 不会走到上面的 useItemOn。这时也给出铁轨的提示（Litematica 写完以后显示，见 showPendingHint）
+     */
+    public static void noteCannotStay(BlockState state, BlockPos pos) {
+        if (!AleConfigs.Generic.EASY_PLACE_EXACT_RAILS.getBooleanValue() || !ClientRails.isAvailable()) return;
+        Property<RailShape> property = ExactRails.shapeProperty(state);
+        if (property == null) return;
+        pendingHint = needsSupportMessage(pos, state, property);
+    }
+
     /** Litematica 开始处理一次轻松放置点击 */
     public static void clearPendingHint() {
         pendingHint = null;
