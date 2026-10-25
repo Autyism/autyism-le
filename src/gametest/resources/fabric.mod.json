@@ -11,6 +11,7 @@
       "com.autyism.ale.gametest.OverlayVisibilityGameTest",
       "com.autyism.ale.gametest.VerifierContentsGameTest",
       "com.autyism.ale.gametest.FillMarkerGameTest",
+      "com.autyism.ale.gametest.FillServuxGameTest",
       "com.autyism.ale.gametest.SignHighlightGameTest",
       "com.autyism.ale.gametest.DoubleChestFillGameTest",
       "com.autyism.ale.gametest.ReplaceUiGameTest",

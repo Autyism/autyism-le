@@ -95,6 +95,18 @@ public final class ServerContainerData {
         return null;
     }
 
+    /** 测试用：这一格的请求和收到的数据 */
+    public static String debug(BlockPos pos) {
+        long key = pos.asLong();
+        Snapshot sn = RECEIVED.get(key);
+        //? if >=1.21.11 {
+        EntityDataManager m = EntityDataManager.getInstance();
+        String mgr = " enabled=" + m.isEnabled() + " servux=" + m.hasServuxServer() + " backup=" + m.isBackupEnabled();
+        //?} else
+        //String mgr = "";
+        return "requested=" + REQUESTED.get(key) + " received=" + (sn == null ? null : sn.items() + "@" + sn.tick()) + " now=" + ContainerVerifier.now() + mgr;
+    }
+
     public static void clear() {
         RECEIVED.clear();
         REQUESTED.clear();

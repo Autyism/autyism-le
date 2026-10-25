@@ -374,6 +374,11 @@ public final class ContainerVerifier {
     private static final int CANDIDATE_RECHECK_INTERVAL = 20;
     private static final int MAX_CANDIDATES = 8192;
 
+    /** 这一格画着 F、等着主线程去查世界里填好了没有（测试用） */
+    public static boolean isFillCandidate(BlockPos pos) {
+        return FILL_CANDIDATES.containsKey(pos.asLong());
+    }
+
     /** 区块重建线程：这一格画了 F */
     public static void noteFillCandidate(BlockPos pos) {
         if (FILL_CANDIDATES.size() >= MAX_CANDIDATES) return;
@@ -391,10 +396,21 @@ public final class ContainerVerifier {
             var e = it.next();
             if (e.getValue() > tickCounter) continue;
             BlockPos pos = BlockPos.of(e.getKey());
-            if (KNOWN.containsKey(e.getKey()) || !(ws.getBlockEntity(pos) instanceof Container wanted)
-                    || ws.getBlockState(pos).getBlock() != mc.level.getBlockState(pos).getBlock()) {
-                // 已经确认过、投影里不再是容器、或者世界里还没放这个方块（放了以后区块重建会再记一次）
+            if (KNOWN.containsKey(e.getKey()) || !(ws.getBlockEntity(pos) instanceof Container wanted)) {
+                // 已经确认过、或者投影里不再是容器
                 it.remove();
+                continue;
+            }
+            double far = (mc.options.getEffectiveRenderDistance() + 2) * 16.0;
+            if (Math.abs(pos.getX() - mc.player.getX()) > far || Math.abs(pos.getZ() - mc.player.getZ()) > far) {
+                // 远到投影的区块都不画了：回来时区块重画，会再记一次
+                it.remove();
+                continue;
+            }
+            if (ws.getBlockState(pos).getBlock() != mc.level.getBlockState(pos).getBlock()) {
+                // 世界里这一格还不是这个方块：还没放，或者世界的区块还没载入（进服务器、走过去时投影常常先画出来）。
+                // 以前这里直接不管了，之后区块载入、F 还画着却再也没人去查，要打开一次才消失。过一会儿再看
+                e.setValue((long) tickCounter + CANDIDATE_RECHECK_INTERVAL);
                 continue;
             }
             if (remote && mc.player.distanceToSqr(net.minecraft.world.phys.Vec3.atCenterOf(pos)) > REMOTE_RECHECK_RADIUS * REMOTE_RECHECK_RADIUS) continue;
@@ -418,7 +434,8 @@ public final class ContainerVerifier {
             // 换世界 / 离开世界：之前知道的都不算了
             knownLevel = mc.level;
             KNOWN.clear();
-            FILL_CANDIDATES.clear();
+            // 画着 F 的格子不清：进世界时投影的区块常常在这之前就画好、记下了（之后不会再画一遍），清掉就再也没人去查，
+            // 退出重进后 F 一直不消失。留着的每一格查之前都会再核对投影和世界，换了世界的不会查错
             FETCHES.clear(); // 上一个世界里要的内容不能拿来比
             SignHighlight.onWorldChange(mc.level);
             validateCursor = null;
