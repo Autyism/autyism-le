@@ -14,7 +14,7 @@ For Minecraft 1.21.5–26.3. On 1.21.5–1.21.10 it also brings 1.1.0: 3D previe
 - Easy Place puts rails down in the schematic's shape, ascending rails and curves included, when ALE is on the server too (or in single player).
 - Pick block in the Replace dialog and the block picker; wall and standing forms are one entry, and ALE's screens open first.
 - With a shader pack and LitematicaPass, the mismatch colours no longer disappear.
-- Works with Litefastica on 1.21.11 (fast schematic moving): W and D show on the placements it draws, and Render Through Glass works for them too.
+- Works with Litefastica on 1.21.11 (fast schematic moving): W, D and F show on the placements it draws, F also right after a move, and Render Through Glass works for them too.
 - With ALE on the server too, the printer (Litematica Printer Autyism Edition 1.2.0) mines deepslate over an area like an instant block. Mining by hand stays vanilla.
 
 More: open "Details" below.

@@ -206,6 +206,8 @@ public final class ContainerVerifier {
      */
     private static void markRebuild(long pos) {
         REBUILD_CHUNKS.add(net.minecraft.world.level.ChunkPos.asLong(BlockPos.getX(pos) >> 4, BlockPos.getZ(pos) >> 4));
+        // Litefastica 画的投影：它的网格不跟着 Litematica 的区块重画，F 在这里也要重建
+        com.autyism.ale.render.FastMoveFill.markChunkDirty(BlockPos.getX(pos) >> 4, BlockPos.getZ(pos) >> 4);
         WorldSchematic ws = fi.dy.masa.litematica.world.SchematicWorldHandler.getSchematicWorld();
         if (ws == null) return;
         net.minecraft.world.level.block.state.BlockState state = ws.getBlockState(BlockPos.of(pos));
@@ -385,6 +387,22 @@ public final class ContainerVerifier {
         FILL_CANDIDATES.putIfAbsent(pos.asLong(), 0L);
     }
 
+    /**
+     * 投影文件里这一格该放的东西（Litefastica 画的投影：F 按投影文件来画，投影世界可能还没写好，主线程查的时候拿这个比）。
+     * 投影世界里有这个容器时还是以投影世界为准
+     */
+    private record Wanted(Block block, List<ItemStack> items) {
+    }
+
+    private static final Map<Long, Wanted> FILL_WANTED = new java.util.concurrent.ConcurrentHashMap<>();
+
+    /** 区段建网格的线程：这一格画了 F，投影文件里该放的是 wanted */
+    public static void noteFillCandidate(BlockPos pos, Block block, Container wanted) {
+        if (FILL_CANDIDATES.size() >= MAX_CANDIDATES) return;
+        FILL_WANTED.put(pos.asLong(), new Wanted(block, nonEmpty(wanted)));
+        FILL_CANDIDATES.putIfAbsent(pos.asLong(), 0L);
+    }
+
     private static void checkFillCandidates(@Nullable WorldSchematic ws) {
         if (FILL_CANDIDATES.isEmpty() || ws == null || mc.level == null || mc.player == null) return;
         boolean local = mc.getSingleplayerServer() != null;
@@ -396,18 +414,32 @@ public final class ContainerVerifier {
             var e = it.next();
             if (e.getValue() > tickCounter) continue;
             BlockPos pos = BlockPos.of(e.getKey());
-            if (KNOWN.containsKey(e.getKey()) || !(ws.getBlockEntity(pos) instanceof Container wanted)) {
+            List<ItemStack> wantedItems;
+            Block wantedBlock;
+            if (ws.getBlockEntity(pos) instanceof Container wanted) {
+                wantedItems = nonEmpty(wanted);
+                wantedBlock = ws.getBlockState(pos).getBlock();
+            } else if (FILL_WANTED.get(e.getKey()) instanceof Wanted w) {
+                wantedItems = w.items();
+                wantedBlock = w.block();
+            } else {
+                wantedItems = null;
+                wantedBlock = null;
+            }
+            if (KNOWN.containsKey(e.getKey()) || wantedItems == null) {
                 // 已经确认过、或者投影里不再是容器
                 it.remove();
+                FILL_WANTED.remove(e.getKey());
                 continue;
             }
             double far = (mc.options.getEffectiveRenderDistance() + 2) * 16.0;
             if (Math.abs(pos.getX() - mc.player.getX()) > far || Math.abs(pos.getZ() - mc.player.getZ()) > far) {
                 // 远到投影的区块都不画了：回来时区块重画，会再记一次
                 it.remove();
+                FILL_WANTED.remove(e.getKey());
                 continue;
             }
-            if (ws.getBlockState(pos).getBlock() != mc.level.getBlockState(pos).getBlock()) {
+            if (wantedBlock != mc.level.getBlockState(pos).getBlock()) {
                 // 世界里这一格还不是这个方块：还没放，或者世界的区块还没载入（进服务器、走过去时投影常常先画出来）。
                 // 以前这里直接不管了，之后区块载入、F 还画着却再也没人去查，要打开一次才消失。过一会儿再看
                 e.setValue((long) tickCounter + CANDIDATE_RECHECK_INTERVAL);
@@ -420,9 +452,10 @@ public final class ContainerVerifier {
                 e.setValue(tickCounter + 5L); // 在等服务端发数据
                 continue;
             }
-            if (sameContents(nonEmpty(wanted), actual)) {
+            if (sameContents(wantedItems, actual)) {
                 noteWorldContents(pos, true);
                 it.remove();
+                FILL_WANTED.remove(e.getKey());
             } else {
                 e.setValue((long) tickCounter + CANDIDATE_RECHECK_INTERVAL);
             }
