@@ -7,6 +7,7 @@ For Minecraft 1.21.5–26.3. On 1.21.5–1.21.10 it also brings 1.1.0: 3D previe
 - Mismatch colours stay clear on water, bubble columns, ice, slime and other see-through blocks, and W and D show up for every wrong property.
 - Container contents are a category in the Schematic Verifier and only get highlighted when you select them.
 - A green F on containers that still need filling. It disappears by itself once the container is filled right (single player, or Servux with Litematica's Entity Data Sync) and comes back when it no longer matches. A double chest gets one F in the middle.
+- Fix (on servers with Servux): an F sometimes stayed after the container was filled, and always after rejoining, until the container was opened once. It now goes away by itself in both cases.
 - **One Marker per Block** (on by default): only the most important letter is drawn, D before W before F.
 - **Highlight Signs** button in the Schematic Verifier: signs with text are marked through walls, bright green when placed, dark green when still missing.
 - With Sodium, Render Through Glass works behind clear glass too.
