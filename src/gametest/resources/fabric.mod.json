@@ -14,6 +14,7 @@
       "com.autyism.ale.gametest.ContainerCheckGameTest",
       "com.autyism.ale.gametest.ContainerCheckServuxGameTest",
       "com.autyism.ale.gametest.ContainerSearcherGameTest",
+      "com.autyism.ale.gametest.PasteServuxGameTest",
       "com.autyism.ale.gametest.FillServuxGameTest",
       "com.autyism.ale.gametest.SignHighlightGameTest",
       "com.autyism.ale.gametest.DoubleChestFillGameTest",
