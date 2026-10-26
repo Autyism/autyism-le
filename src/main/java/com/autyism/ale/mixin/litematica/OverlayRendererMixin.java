@@ -65,6 +65,57 @@ public abstract class OverlayRendererMixin {
         ale$drawSigns();
     }
 
+    // “检查容器内容”查出内容不对的容器：一直透墙画框（不用开验证器），看着的那个框加粗
+    @Inject(method = "renderBoxes", at = @At("TAIL"), require = 0)
+    //? if >=26.1 {
+    /*private void ale$renderWrongContainers(ProfilerFiller profiler, CallbackInfo ci) {
+    *///?} else
+    private void ale$renderWrongContainers(Matrix4f posMatrix, Matrix4f projMatrix, ProfilerFiller profiler, CallbackInfo ci) {
+        ale$drawWrongContainers();
+    }
+
+    @org.spongepowered.asm.mixin.Unique
+    private static void ale$drawWrongContainers() {
+        if (!com.autyism.ale.config.AleConfigs.Generic.CONTAINER_CHECK.getBooleanValue()) return;
+        List<BlockPos> wrong = com.autyism.ale.verifier.ContainerCheck.wrong();
+        if (wrong.isEmpty()) return;
+        Color4f color = Color4f.fromColor(com.autyism.ale.config.AleConfigs.Generic.CONTAINER_CHECK_COLOR.getIntegerValue(), 1f);
+        //? if >=1.21.11 {
+        net.minecraft.world.phys.BlockHitResult trace = fi.dy.masa.litematica.util.RayTraceUtils.traceToPositions(wrong,
+                fi.dy.masa.malilib.util.EntityUtils.getCameraEntity(), 128);
+        BlockPos lookPos = trace != null && trace.getType() == net.minecraft.world.phys.HitResult.Type.BLOCK ? trace.getBlockPos() : null;
+        //?}
+        RenderContext ctx = ale$context(() -> "autyism-le:wrong_containers", MaLiLibPipelines.DEBUG_LINES_MASA_SIMPLE_NO_DEPTH_NO_CULL);
+        BufferBuilder buffer = ctx.getBuilder();
+        for (BlockPos pos : wrong) {
+            //? if >=1.21.11 {
+            fi.dy.masa.malilib.render.RenderUtils.drawBlockBoundingBoxOutlinesBatchedLinesSimple(pos, color, 0.004, pos.equals(lookPos) ? 6.0f : 3.0f, buffer);
+            //?} else
+            //fi.dy.masa.malilib.render.RenderUtils.drawBlockBoundingBoxOutlinesBatchedLinesSimple(pos, color, 0.004, buffer);
+        }
+        try {
+            MeshData meshData = buffer.build();
+            if (meshData != null) {
+                //? if <1.21.11
+                //ctx.lineWidth(3.0f);
+                ctx.draw(meshData, false, true);
+                meshData.close();
+            }
+            ctx.reset();
+            buffer = ale$start(ctx, () -> "autyism-le:wrong_containers/sides", MaLiLibPipelines.POSITION_COLOR_TRANSLUCENT_NO_DEPTH_NO_CULL);
+            Color4f side = new Color4f(color.r, color.g, color.b, 0.28f);
+            for (BlockPos pos : wrong) fi.dy.masa.malilib.render.RenderUtils.renderAreaSidesBatched(pos, pos, side, 0.002, buffer);
+            MeshData sides = buffer.build();
+            if (sides != null) {
+                ctx.draw(sides, false, false);
+                sides.close();
+            }
+            ctx.reset();
+            ctx.close();
+        } catch (Exception ignored) {
+        }
+    }
+
     @org.spongepowered.asm.mixin.Unique
     private static void ale$drawSigns() {
         if (!com.autyism.ale.verifier.SignHighlight.enabled) return;

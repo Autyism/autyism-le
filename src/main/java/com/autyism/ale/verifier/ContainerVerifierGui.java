@@ -355,6 +355,10 @@ public final class ContainerVerifierGui {
                 for (int j = 0; j < Math.min(TOOLTIP_ITEMS, diff.size()); j++) {
                     var e = diff.get(j);
                     String item = e.getKey().getHoverName().getString();
+                    if (e.getValue() == 0) {
+                        lines.add("  " + GuiBase.TXT_LIGHT_PURPLE + StringUtils.translate("autyism-le.gui.label.schematic_verifier.contents_wrong_slot", item) + GuiBase.TXT_RST);
+                        continue;
+                    }
                     lines.add(e.getValue() > 0
                             ? "  " + GuiBase.TXT_RED + StringUtils.translate("autyism-le.gui.label.schematic_verifier.contents_missing", e.getValue(), item) + GuiBase.TXT_RST
                             : "  " + GuiBase.TXT_GOLD + StringUtils.translate("autyism-le.gui.label.schematic_verifier.contents_extra", -e.getValue(), item) + GuiBase.TXT_RST);

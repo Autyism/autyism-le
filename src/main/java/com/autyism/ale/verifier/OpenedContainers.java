@@ -39,6 +39,13 @@ public final class OpenedContainers {
     private OpenedContainers() {
     }
 
+    /** 现在打开着的界面属于的方块（打开时刚点的那一格）；没有时 null */
+    @Nullable
+    public static BlockPos currentPos() {
+        Minecraft mc = Minecraft.getInstance();
+        return mc.player != null && mc.player.containerMenu == menu ? menuPos : null;
+    }
+
     /** 客户端对一个方块按了使用键 */
     public static void onUseItemOn(BlockPos pos) {
         lastUsed = pos.immutable();
@@ -75,7 +82,11 @@ public final class OpenedContainers {
             if (slot.container instanceof Inventory) continue;
             if (block == null) block = slot.container;
             if (slot.container != block) continue;
-            slots.add(slot.getItem());
+            // 每一格按它在容器里的位置放；合成器里被禁用的格子放占位（和投影那边一样）
+            int index = slot.getContainerSlot();
+            while (slots.size() <= index) slots.add(ItemStack.EMPTY);
+            boolean disabled = current instanceof net.minecraft.world.inventory.CrafterMenu crafter && crafter.isSlotDisabled(slot.index);
+            slots.set(index, disabled ? ContainerVerifier.DISABLED_SLOT : slot.getItem().isEmpty() ? ItemStack.EMPTY : slot.getItem().copy());
         }
         if (block == null) return;
         BlockState state = mc.level.getBlockState(menuPos);
@@ -95,11 +106,7 @@ public final class OpenedContainers {
         if (!(schematic.getBlockEntity(pos) instanceof Container wanted)) return;
         if (schematic.getBlockState(pos).getBlock() != mc.level.getBlockState(pos).getBlock()) return;
         if (slots.size() != wanted.getContainerSize()) return;
-        List<ItemStack> actual = new ArrayList<>();
-        for (ItemStack stack : slots) {
-            if (!stack.isEmpty()) actual.add(stack.copy());
-        }
-        ContainerVerifier.noteWorldContents(pos, ContainerVerifier.sameContents(ContainerVerifier.nonEmpty(wanted), actual));
+        ContainerVerifier.noteWorldContents(pos, ContainerVerifier.sameContents(ContainerVerifier.nonEmpty(wanted), new ArrayList<>(slots)));
     }
 
     /** 世界里拼成大箱子的另一半（和原版判断能不能拼的条件一样），单个箱子返回 null */

@@ -60,8 +60,13 @@ public final class ContainerVerifier {
     /** 每条已确认的容器多久重新比较一次内容（tick） */
     private static final int RECHECK_INTERVAL = 40;
     private static final int CONTENT_RECHECKS_PER_TICK = 16;
-    /** 多人游戏里只重新比较玩家附近的（每次都要向服务端要数据） */
-    private static final double REMOTE_RECHECK_RADIUS = 64.0;
+    /**
+     * 多人游戏里只重新比较玩家附近的（每次都要向服务端要数据）：客户端载入的区块都算（以前固定 64 格，远一点的 F 不会自己消失）。
+     * 要的只是画着 F 的、或者验证器查出不一样的容器，每 tick 只要几个
+     */
+    private static double remoteRadius() {
+        return (mc.options.getEffectiveRenderDistance() + 1) * 16.0;
+    }
     @Nullable
     private static Iterator<Map.Entry<Long, Known>> validateCursor;
     /** 已知结果变了、要重建渲染数据的区块（每 tick 处理几个，不一次全部重建） */
@@ -351,7 +356,7 @@ public final class ContainerVerifier {
             Known k = e.getValue();
             if (tickCounter - k.checkedAt() < RECHECK_INTERVAL) continue;
             BlockPos pos = BlockPos.of(e.getKey());
-            if (remote && mc.player.distanceToSqr(net.minecraft.world.phys.Vec3.atCenterOf(pos)) > REMOTE_RECHECK_RADIUS * REMOTE_RECHECK_RADIUS) continue;
+            if (remote && mc.player.distanceToSqr(net.minecraft.world.phys.Vec3.atCenterOf(pos)) > remoteRadius() * remoteRadius()) continue;
             budget--;
             if (!(ws.getBlockEntity(pos) instanceof Container wanted)) {
                 forget(e.getKey());
@@ -445,7 +450,7 @@ public final class ContainerVerifier {
                 e.setValue((long) tickCounter + CANDIDATE_RECHECK_INTERVAL);
                 continue;
             }
-            if (remote && mc.player.distanceToSqr(net.minecraft.world.phys.Vec3.atCenterOf(pos)) > REMOTE_RECHECK_RADIUS * REMOTE_RECHECK_RADIUS) continue;
+            if (remote && mc.player.distanceToSqr(net.minecraft.world.phys.Vec3.atCenterOf(pos)) > remoteRadius() * remoteRadius()) continue;
             budget--;
             List<ItemStack> actual = actualContents(mc.level, pos);
             if (actual == null) {
@@ -474,6 +479,7 @@ public final class ContainerVerifier {
             validateCursor = null;
             REBUILD_CHUNKS.clear();
             ServerContainerData.clear();
+            ContainerCheck.clear();
         }
         if (mc.level == null) {
             FETCHES.clear();
@@ -493,6 +499,7 @@ public final class ContainerVerifier {
         WorldSchematic ws = fi.dy.masa.litematica.world.SchematicWorldHandler.getSchematicWorld();
         maintainKnown(ws);
         checkFillCandidates(ws);
+        ContainerCheck.tick(ws);
         SignHighlight.tick();
         for (var entry : new ArrayList<>(RESULTS.entrySet())) {
             SchematicVerifier verifier = entry.getKey();
@@ -509,7 +516,7 @@ public final class ContainerVerifier {
             Results r = entry.getValue();
             for (BlockPos pos : new ArrayList<>(r.mismatches.keySet())) {
                 if (remote && mc.player != null && mc.player.distanceToSqr(net.minecraft.world.phys.Vec3.atCenterOf(pos))
-                        > REMOTE_RECHECK_RADIUS * REMOTE_RECHECK_RADIUS) continue;
+                        > remoteRadius() * remoteRadius()) continue;
                 if (budget-- <= 0) return;
                 if (ws.getBlockEntity(pos) instanceof Container c && ws.getBlockState(pos) == mc.level.getBlockState(pos)) {
                     evaluate(entry.getKey(), mc.level, pos, ws.getBlockState(pos), nonEmpty(c));
@@ -523,7 +530,7 @@ public final class ContainerVerifier {
 
     /** 世界中容器的实际内容；暂时拿不到返回 null */
     @Nullable
-    private static List<ItemStack> actualContents(Level worldClient, BlockPos pos) {
+    static List<ItemStack> actualContents(Level worldClient, BlockPos pos) {
         IntegratedServer server = mc.getSingleplayerServer();
         if (server != null) {
             Fetch fetch = FETCHES.get(pos);
@@ -555,19 +562,46 @@ public final class ContainerVerifier {
         return tickCounter;
     }
 
-    /** 容器里不空的格子（复制） */
+    /**
+     * 合成器里被禁用（点成红叉）的格子：在格子列表里用这个占位，和真的物品永远不一样，禁用的格子不同也算内容不同
+     */
+    public static final ItemStack DISABLED_SLOT = new ItemStack(net.minecraft.world.item.Items.BARRIER);
+
+    /** 容器每一格的内容（复制，空格是空的物品，合成器禁用的格子是 DISABLED_SLOT），格子顺序和容器一样 */
     static List<ItemStack> nonEmpty(Container c) {
-        List<ItemStack> list = new ArrayList<>();
+        List<ItemStack> list = new ArrayList<>(c.getContainerSize());
+        boolean crafter = c instanceof net.minecraft.world.level.block.entity.CrafterBlockEntity;
         for (int i = 0; i < c.getContainerSize(); i++) {
+            if (crafter && ((net.minecraft.world.level.block.entity.CrafterBlockEntity) c).isSlotDisabled(i)) {
+                list.add(DISABLED_SLOT);
+                continue;
+            }
             ItemStack s = c.getItem(i);
-            if (!s.isEmpty()) list.add(s.copy());
+            list.add(s.isEmpty() ? ItemStack.EMPTY : s.copy());
         }
         return list;
     }
 
-    /** 不计顺序比较（同种物品的数量合并后比较） */
+    /** 有没有要放的东西（不算空格和禁用的格子） */
+    public static boolean hasItems(List<ItemStack> slots) {
+        for (ItemStack s : slots) if (!s.isEmpty() && s != DISABLED_SLOT) return true;
+        return false;
+    }
+
+    /**
+     * 逐格比较：每一格的物品、组件和数量都一样才算一样（分拣器的过滤格、投掷器的顺序都看格子）。
+     * 两边格数不同（不是同一种容器）时按物品总数比较
+     */
     public static boolean sameContents(List<ItemStack> a, List<ItemStack> b) {
-        return totals(a).equals(totals(b));
+        if (a.size() != b.size()) return totals(a).equals(totals(b));
+        for (int i = 0; i < a.size(); i++) {
+            ItemStack x = a.get(i), y = b.get(i);
+            if ((x == DISABLED_SLOT) != (y == DISABLED_SLOT)) return false;
+            if (x == DISABLED_SLOT) continue;
+            if (x.isEmpty() && y.isEmpty()) continue;
+            if (!ItemStack.matches(x, y)) return false;
+        }
+        return true;
     }
 
     /**
@@ -577,11 +611,13 @@ public final class ContainerVerifier {
         Map<String, ItemStack> samples = new LinkedHashMap<>();
         Map<String, Integer> diff = new LinkedHashMap<>();
         for (ItemStack s : detail.wanted()) {
+            if (s.isEmpty() || s == DISABLED_SLOT) continue;
             String key = key(s);
             samples.putIfAbsent(key, s.copyWithCount(1));
             diff.merge(key, s.getCount(), Integer::sum);
         }
         for (ItemStack s : detail.actual()) {
+            if (s.isEmpty() || s == DISABLED_SLOT) continue;
             String key = key(s);
             samples.putIfAbsent(key, s.copyWithCount(1));
             diff.merge(key, -s.getCount(), Integer::sum);
@@ -590,12 +626,23 @@ public final class ContainerVerifier {
         for (var e : diff.entrySet()) {
             if (e.getValue() != 0) list.add(Map.entry(samples.get(e.getKey()), e.getValue()));
         }
+        // 总数一样、只是格子放错了（或合成器禁用的格子不同）：列出放错的格子里该放的东西
+        if (list.isEmpty()) {
+            List<ItemStack> w = detail.wanted(), a = detail.actual();
+            for (int i = 0; i < Math.min(w.size(), a.size()); i++) {
+                ItemStack x = w.get(i), y = a.get(i);
+                boolean same = (x == DISABLED_SLOT) == (y == DISABLED_SLOT) && (x == DISABLED_SLOT || x.isEmpty() && y.isEmpty() || ItemStack.matches(x, y));
+                if (!same && !x.isEmpty()) list.add(Map.entry(x.copyWithCount(1), 0));
+            }
+        }
         return list;
     }
 
     private static Map<String, Integer> totals(List<ItemStack> list) {
         Map<String, Integer> m = new HashMap<>();
-        for (ItemStack s : list) m.merge(key(s), s.getCount(), Integer::sum);
+        for (ItemStack s : list) {
+            if (!s.isEmpty() && s != DISABLED_SLOT) m.merge(key(s), s.getCount(), Integer::sum);
+        }
         return m;
     }
 

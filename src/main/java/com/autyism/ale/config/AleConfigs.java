@@ -60,6 +60,11 @@ public class AleConfigs implements IConfigHandler {
         // 需求 9：材料列表中的容器内容物、实体；验证器检查容器内容物
         public static final ConfigBoolean MATERIAL_LIST_ENTITIES = new ConfigBoolean("materialListEntities", true).apply(PREFIX);
         public static final ConfigBoolean VERIFIER_CONTAINERS = new ConfigBoolean("verifierContainerContents", true).apply(PREFIX);
+        // 不开验证器也一直检查附近投影里的容器（多人游戏要服务端装 Servux），内容不对的隔着墙框出来
+        public static final ConfigBoolean CONTAINER_CHECK = new ConfigBoolean("containerCheck", true).apply(PREFIX);
+        public static final ConfigColor CONTAINER_CHECK_COLOR = new ConfigColor("containerCheckColor", "#FFB4FF14").apply(PREFIX);
+        // 打开投影里的容器时，每一格和投影比：缺的画半透明的虚影，放错 / 多出 / 数量不对的格子标颜色
+        public static final ConfigBoolean CONTAINER_SLOT_HINTS = new ConfigBoolean("containerSlotHints", true).apply(PREFIX);
         // 需求 10：告示牌替换保持形态/朝向/文字
         public static final ConfigBoolean SIGN_REPLACE_FIX = new ConfigBoolean("signReplaceFix", true).apply(PREFIX);
         // 需求 12：透过玻璃也能看到投影渲染
@@ -90,6 +95,9 @@ public class AleConfigs implements IConfigHandler {
                 EASY_PLACE_EXACT_RAILS,
                 MATERIAL_LIST_ENTITIES,
                 VERIFIER_CONTAINERS,
+                CONTAINER_CHECK,
+                CONTAINER_CHECK_COLOR,
+                CONTAINER_SLOT_HINTS,
                 SIGN_REPLACE_FIX,
                 RENDER_THROUGH_GLASS
                 , BROWSER_PREVIEWS,

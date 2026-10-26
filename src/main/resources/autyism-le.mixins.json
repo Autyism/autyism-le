@@ -50,7 +50,8 @@
     "litematica.EntityDataReceivedMixin",
     "litematica.ChunkManagerSchematicMixin",
     "compat.sodium.SodiumGlassPassMixin",
-    "litematica.WorldRendererSchematicMixin"
+    "litematica.WorldRendererSchematicMixin",
+    "render.ContainerSlotHintsMixin"
   ],
   "injectors": {
     "defaultRequire": 1
