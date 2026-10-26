@@ -108,7 +108,7 @@ public final class ContainerCheckServuxGameTest implements FabricClientGameTest 
         return p.getX() + " " + p.getY() + " " + p.getZ();
     }
 
-    private static boolean waitFor(ClientGameTestContext context, java.util.function.BooleanSupplier done, int ticks) {
+    static boolean waitFor(ClientGameTestContext context, java.util.function.BooleanSupplier done, int ticks) {
         for (int i = 0; i < ticks; i++) {
             if (done.getAsBoolean()) return true;
             context.waitTick();
@@ -116,14 +116,14 @@ public final class ContainerCheckServuxGameTest implements FabricClientGameTest 
         return done.getAsBoolean();
     }
 
-    private static void connect(ClientGameTestContext context) {
+    static void connect(ClientGameTestContext context) {
         context.runOnClient(client -> ConnectScreen.startConnecting(new TitleScreen(), client, ServerAddress.parseString(ADDRESS),
                 new ServerData("ale test", ADDRESS, ServerData.Type.OTHER), false, null));
         context.waitFor(client -> client.player != null && client.level != null && client.screen == null, 1200);
         context.waitTicks(40);
     }
 
-    private static void disconnect(ClientGameTestContext context) {
+    static void disconnect(ClientGameTestContext context) {
         context.runOnClient(client -> {
             if (client.level != null) client.disconnect(new TitleScreen(), false);
         });
@@ -131,7 +131,7 @@ public final class ContainerCheckServuxGameTest implements FabricClientGameTest 
         context.waitTicks(20);
     }
 
-    private static void command(ClientGameTestContext context, String cmd) {
+    static void command(ClientGameTestContext context, String cmd) {
         context.runOnClient(client -> client.player.connection.sendCommand(cmd));
         context.waitTicks(5);
     }

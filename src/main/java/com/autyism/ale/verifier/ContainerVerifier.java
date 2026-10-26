@@ -501,6 +501,7 @@ public final class ContainerVerifier {
         checkFillCandidates(ws);
         ContainerCheck.tick(ws);
         SignHighlight.tick();
+        com.autyism.ale.compat.ContainerSearcherServux.tick();
         for (var entry : new ArrayList<>(RESULTS.entrySet())) {
             SchematicVerifier verifier = entry.getKey();
             for (var p : new ArrayList<>(entry.getValue().pending.entrySet())) {
@@ -530,7 +531,7 @@ public final class ContainerVerifier {
 
     /** 世界中容器的实际内容；暂时拿不到返回 null */
     @Nullable
-    static List<ItemStack> actualContents(Level worldClient, BlockPos pos) {
+    public static List<ItemStack> actualContents(Level worldClient, BlockPos pos) {
         IntegratedServer server = mc.getSingleplayerServer();
         if (server != null) {
             Fetch fetch = FETCHES.get(pos);

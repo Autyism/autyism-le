@@ -65,6 +65,8 @@ public class AleConfigs implements IConfigHandler {
         public static final ConfigColor CONTAINER_CHECK_COLOR = new ConfigColor("containerCheckColor", "#FFB4FF14").apply(PREFIX);
         // 打开投影里的容器时，每一格和投影比：缺的画半透明的虚影，放错 / 多出 / 数量不对的格子标颜色
         public static final ConfigBoolean CONTAINER_SLOT_HINTS = new ConfigBoolean("containerSlotHints", true).apply(PREFIX);
+        // 装了 Container Searcher 时，附近容器的内容（单人直接拿，多人经 Servux）不用打开就记进它的缓存
+        public static final ConfigBoolean CONTAINER_SEARCHER_SERVUX = new ConfigBoolean("containerSearcherServux", true).apply(PREFIX);
         // 需求 10：告示牌替换保持形态/朝向/文字
         public static final ConfigBoolean SIGN_REPLACE_FIX = new ConfigBoolean("signReplaceFix", true).apply(PREFIX);
         // 需求 12：透过玻璃也能看到投影渲染
@@ -98,6 +100,7 @@ public class AleConfigs implements IConfigHandler {
                 CONTAINER_CHECK,
                 CONTAINER_CHECK_COLOR,
                 CONTAINER_SLOT_HINTS,
+                CONTAINER_SEARCHER_SERVUX,
                 SIGN_REPLACE_FIX,
                 RENDER_THROUGH_GLASS
                 , BROWSER_PREVIEWS,
