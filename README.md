@@ -16,7 +16,8 @@
 - Marks blocks that face the wrong way or are wrongly waterlogged; schematic overlays stay visible behind glass.
 - Material lists count entities and container contents, and containers get checked too.
 - 3D previews in the schematic browser, folder icons and a Replace button in material lists.
-- New in 1.2.0: an F on containers that still need filling, clear overlays on water and other see-through blocks, and Easy Place puts rails down in the schematic's shape when ALE is on the server too.
+- New in 1.3.0: containers of nearby schematics are checked slot by slot all the time and the wrong ones are boxed through walls; opened containers show ghost items for what is missing; Container Searcher learns nearby containers without opening them.
+- 1.2.0: an F on containers that still need filling, clear overlays on water and other see-through blocks, and Easy Place puts rails down in the schematic's shape when ALE is on the server too.
 
 Everything else is in the folded sections below (features, how to use, settings, FAQ): click a title to open it.
 
@@ -268,13 +269,13 @@ There is a separate jar for each Minecraft version:
 
 | Minecraft | Jar | Java | Fabric Loader | MaLiLib | Litematica |
 |---|---|---|---|---|---|
-| 1.21.5 | `autyism-litematica-enhancement-1.2.0+1.21.5.jar` | 21 or newer | 0.17.0 or newer | 0.24.3 or newer | 0.22.5 or newer |
-| 1.21.6, 1.21.7, 1.21.8 | `autyism-litematica-enhancement-1.2.0+1.21.8.jar` | 21 or newer | 0.17.0 or newer | 0.25.7 or newer | 0.23.7 or newer |
-| 1.21.9, 1.21.10 | `autyism-litematica-enhancement-1.2.0+1.21.10.jar` | 21 or newer | 0.17.0 or newer | 0.26.8 or newer | 0.24.9 or newer |
-| 1.21.11 | `autyism-litematica-enhancement-1.2.0+1.21.11.jar` | 21 or newer | 0.17.0 or newer | 0.27.0 or newer | 0.26.0 or newer |
-| 26.1, 26.1.1, 26.1.2 | `autyism-litematica-enhancement-1.2.0+26.1.2.jar` | 25 or newer | 0.19.3 or newer | 0.28.12 or newer | 0.27.14 or newer |
-| 26.2 | `autyism-litematica-enhancement-1.2.0+26.2.jar` | 25 or newer | 0.19.3 or newer | 0.29.6 or newer | 0.28.8 or newer |
-| 26.3 | `autyism-litematica-enhancement-1.2.0+26.3.jar` | 25 or newer | 0.19.3 or newer | 0.30.2 or newer | 0.29.1 or newer |
+| 1.21.5 | `autyism-litematica-enhancement-1.3.0+1.21.5.jar` | 21 or newer | 0.17.0 or newer | 0.24.3 or newer | 0.22.5 or newer |
+| 1.21.6, 1.21.7, 1.21.8 | `autyism-litematica-enhancement-1.3.0+1.21.8.jar` | 21 or newer | 0.17.0 or newer | 0.25.7 or newer | 0.23.7 or newer |
+| 1.21.9, 1.21.10 | `autyism-litematica-enhancement-1.3.0+1.21.10.jar` | 21 or newer | 0.17.0 or newer | 0.26.8 or newer | 0.24.9 or newer |
+| 1.21.11 | `autyism-litematica-enhancement-1.3.0+1.21.11.jar` | 21 or newer | 0.17.0 or newer | 0.27.0 or newer | 0.26.0 or newer |
+| 26.1, 26.1.1, 26.1.2 | `autyism-litematica-enhancement-1.3.0+26.1.2.jar` | 25 or newer | 0.19.3 or newer | 0.28.12 or newer | 0.27.14 or newer |
+| 26.2 | `autyism-litematica-enhancement-1.3.0+26.2.jar` | 25 or newer | 0.19.3 or newer | 0.29.6 or newer | 0.28.8 or newer |
+| 26.3 | `autyism-litematica-enhancement-1.3.0+26.3.jar` | 25 or newer | 0.19.3 or newer | 0.30.2 or newer | 0.29.1 or newer |
 
 Fabric API, MaLiLib and Litematica are required, each in the build for your Minecraft version.
 
@@ -374,7 +375,8 @@ Made by **Autyism**. Source code and bug reports: [GitHub](https://github.com/Au
 - 标出朝向错、含水不对的方块；隔着玻璃也能看到投影。
 - 材料列表会统计实体和箱子里的东西，还能检查容器内容。
 - 投影浏览器里的 3D 预览、文件夹图标、材料列表的“替换”按钮。
-- 1.2.0 新增：还需要放东西的容器显示 F，水等半透明方块上的标记清楚了；服务端也装了 ALE 时，轻松放置直接把铁轨放成投影里的形状。
+- 1.3.0 新增：附近投影里的容器一直逐格检查，放错东西的隔墙框出来；打开投影里的容器时缺的东西显示成虚影；Container Searcher 不用打开容器就记住附近容器。
+- 1.2.0：还需要放东西的容器显示 F，水等半透明方块上的标记清楚了；服务端也装了 ALE 时，轻松放置直接把铁轨放成投影里的形状。
 
 详细说明都在下面折叠起来的部分（功能、使用方法、设置、常见问题），点标题就能展开。
 
@@ -626,13 +628,13 @@ ALE 没有命令，只有一个自己的热键“打开 ALE 设置”（默认�
 
 | Minecraft | jar 文件 | Java | Fabric Loader | MaLiLib | Litematica |
 |---|---|---|---|---|---|
-| 1.21.5 | `autyism-litematica-enhancement-1.2.0+1.21.5.jar` | 21 或更新 | 0.17.0 或更新 | 0.24.3 或更新 | 0.22.5 或更新 |
-| 1.21.6、1.21.7、1.21.8 | `autyism-litematica-enhancement-1.2.0+1.21.8.jar` | 21 或更新 | 0.17.0 或更新 | 0.25.7 或更新 | 0.23.7 或更新 |
-| 1.21.9、1.21.10 | `autyism-litematica-enhancement-1.2.0+1.21.10.jar` | 21 或更新 | 0.17.0 或更新 | 0.26.8 或更新 | 0.24.9 或更新 |
-| 1.21.11 | `autyism-litematica-enhancement-1.2.0+1.21.11.jar` | 21 或更新 | 0.17.0 或更新 | 0.27.0 或更新 | 0.26.0 或更新 |
-| 26.1、26.1.1、26.1.2 | `autyism-litematica-enhancement-1.2.0+26.1.2.jar` | 25 或更新 | 0.19.3 或更新 | 0.28.12 或更新 | 0.27.14 或更新 |
-| 26.2 | `autyism-litematica-enhancement-1.2.0+26.2.jar` | 25 或更新 | 0.19.3 或更新 | 0.29.6 或更新 | 0.28.8 或更新 |
-| 26.3 | `autyism-litematica-enhancement-1.2.0+26.3.jar` | 25 或更新 | 0.19.3 或更新 | 0.30.2 或更新 | 0.29.1 或更新 |
+| 1.21.5 | `autyism-litematica-enhancement-1.3.0+1.21.5.jar` | 21 或更新 | 0.17.0 或更新 | 0.24.3 或更新 | 0.22.5 或更新 |
+| 1.21.6、1.21.7、1.21.8 | `autyism-litematica-enhancement-1.3.0+1.21.8.jar` | 21 或更新 | 0.17.0 或更新 | 0.25.7 或更新 | 0.23.7 或更新 |
+| 1.21.9、1.21.10 | `autyism-litematica-enhancement-1.3.0+1.21.10.jar` | 21 或更新 | 0.17.0 或更新 | 0.26.8 或更新 | 0.24.9 或更新 |
+| 1.21.11 | `autyism-litematica-enhancement-1.3.0+1.21.11.jar` | 21 或更新 | 0.17.0 或更新 | 0.27.0 或更新 | 0.26.0 或更新 |
+| 26.1、26.1.1、26.1.2 | `autyism-litematica-enhancement-1.3.0+26.1.2.jar` | 25 或更新 | 0.19.3 或更新 | 0.28.12 或更新 | 0.27.14 或更新 |
+| 26.2 | `autyism-litematica-enhancement-1.3.0+26.2.jar` | 25 或更新 | 0.19.3 或更新 | 0.29.6 或更新 | 0.28.8 或更新 |
+| 26.3 | `autyism-litematica-enhancement-1.3.0+26.3.jar` | 25 或更新 | 0.19.3 或更新 | 0.30.2 或更新 | 0.29.1 或更新 |
 
 Fabric API、MaLiLib 和 Litematica 都是必需的，各自下载你的 Minecraft 版本对应的那一版。
 
