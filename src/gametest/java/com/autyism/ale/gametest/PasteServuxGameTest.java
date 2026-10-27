@@ -14,7 +14,7 @@ import net.minecraft.core.Direction;
 import net.minecraft.server.level.ServerLevel;
 import net.minecraft.world.Container;
 import net.minecraft.world.entity.decoration.ArmorStand;
-import net.minecraft.world.entity.animal.pig.Pig;
+import net.minecraft.world.entity.EntityType;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.item.Items;
 import net.minecraft.world.level.block.Blocks;
@@ -98,7 +98,7 @@ public final class PasteServuxGameTest implements FabricClientGameTest {
                 return p;
             });
             boolean servux = ContainerCheckServuxGameTest.waitFor(context,
-                    () -> context.computeOnClient(c -> fi.dy.masa.litematica.data.EntityDataManager.getInstance().hasServuxServer()), 400);
+                    () -> context.computeOnClient(c -> com.autyism.ale.verifier.ServerContainerData.available()), 400);
             GT.log("[pasteservux] Litematica found Servux: " + servux);
             if (!servux) failures.add("no-servux");
             GT.waitSchematicBlock(context, T, Blocks.STONE);
@@ -145,7 +145,7 @@ public final class PasteServuxGameTest implements FabricClientGameTest {
             int[] entities = context.computeOnClient(c -> {
                 AABB area = new AABB(T.getX() - 1, T.getY() - 1, T.getZ() - 1, T.getX() + SX + 1, T.getY() + SY + 3, T.getZ() + SZ + 1);
                 int stands = c.level.getEntitiesOfClass(ArmorStand.class, area).size();
-                int pigs = c.level.getEntitiesOfClass(Pig.class, area).size();
+                int pigs = c.level.getEntities((net.minecraft.world.entity.Entity) null, area, e -> EntityType.getKey(e.getType()).getPath().equals("pig")).size();
                 return new int[]{stands, pigs};
             });
             GT.log("[pasteservux] entities in the area: armor stands " + entities[0] + " (want 1), pigs " + entities[1] + " (want 0)");

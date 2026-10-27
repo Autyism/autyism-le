@@ -564,17 +564,24 @@ public final class ContainerVerifier {
     }
 
     /**
-     * 合成器里被禁用（点成红叉）的格子：在格子列表里用这个占位，和真的物品永远不一样，禁用的格子不同也算内容不同
+     * 合成器里被禁用（点成红叉）的格子：在格子列表里用这个占位，和真的物品永远不一样，禁用的格子不同也算内容不同。
+     * 第一次用到时才创建（26.x 在主菜单时物品组件还没准备好，那时创建物品会崩）
      */
-    public static final ItemStack DISABLED_SLOT = new ItemStack(net.minecraft.world.item.Items.BARRIER);
+    public static ItemStack disabledSlot() {
+        return DisabledSlot.STACK;
+    }
 
-    /** 容器每一格的内容（复制，空格是空的物品，合成器禁用的格子是 DISABLED_SLOT），格子顺序和容器一样 */
+    private static final class DisabledSlot {
+        static final ItemStack STACK = new ItemStack(net.minecraft.world.item.Items.BARRIER);
+    }
+
+    /** 容器每一格的内容（复制，空格是空的物品，合成器禁用的格子是 disabledSlot()），格子顺序和容器一样 */
     static List<ItemStack> nonEmpty(Container c) {
         List<ItemStack> list = new ArrayList<>(c.getContainerSize());
         boolean crafter = c instanceof net.minecraft.world.level.block.entity.CrafterBlockEntity;
         for (int i = 0; i < c.getContainerSize(); i++) {
             if (crafter && ((net.minecraft.world.level.block.entity.CrafterBlockEntity) c).isSlotDisabled(i)) {
-                list.add(DISABLED_SLOT);
+                list.add(disabledSlot());
                 continue;
             }
             ItemStack s = c.getItem(i);
@@ -585,7 +592,7 @@ public final class ContainerVerifier {
 
     /** 有没有要放的东西（不算空格和禁用的格子） */
     public static boolean hasItems(List<ItemStack> slots) {
-        for (ItemStack s : slots) if (!s.isEmpty() && s != DISABLED_SLOT) return true;
+        for (ItemStack s : slots) if (!s.isEmpty() && s != disabledSlot()) return true;
         return false;
     }
 
@@ -597,8 +604,8 @@ public final class ContainerVerifier {
         if (a.size() != b.size()) return totals(a).equals(totals(b));
         for (int i = 0; i < a.size(); i++) {
             ItemStack x = a.get(i), y = b.get(i);
-            if ((x == DISABLED_SLOT) != (y == DISABLED_SLOT)) return false;
-            if (x == DISABLED_SLOT) continue;
+            if ((x == disabledSlot()) != (y == disabledSlot())) return false;
+            if (x == disabledSlot()) continue;
             if (x.isEmpty() && y.isEmpty()) continue;
             if (!ItemStack.matches(x, y)) return false;
         }
@@ -612,13 +619,13 @@ public final class ContainerVerifier {
         Map<String, ItemStack> samples = new LinkedHashMap<>();
         Map<String, Integer> diff = new LinkedHashMap<>();
         for (ItemStack s : detail.wanted()) {
-            if (s.isEmpty() || s == DISABLED_SLOT) continue;
+            if (s.isEmpty() || s == disabledSlot()) continue;
             String key = key(s);
             samples.putIfAbsent(key, s.copyWithCount(1));
             diff.merge(key, s.getCount(), Integer::sum);
         }
         for (ItemStack s : detail.actual()) {
-            if (s.isEmpty() || s == DISABLED_SLOT) continue;
+            if (s.isEmpty() || s == disabledSlot()) continue;
             String key = key(s);
             samples.putIfAbsent(key, s.copyWithCount(1));
             diff.merge(key, -s.getCount(), Integer::sum);
@@ -632,7 +639,7 @@ public final class ContainerVerifier {
             List<ItemStack> w = detail.wanted(), a = detail.actual();
             for (int i = 0; i < Math.min(w.size(), a.size()); i++) {
                 ItemStack x = w.get(i), y = a.get(i);
-                boolean same = (x == DISABLED_SLOT) == (y == DISABLED_SLOT) && (x == DISABLED_SLOT || x.isEmpty() && y.isEmpty() || ItemStack.matches(x, y));
+                boolean same = (x == disabledSlot()) == (y == disabledSlot()) && (x == disabledSlot() || x.isEmpty() && y.isEmpty() || ItemStack.matches(x, y));
                 if (!same && !x.isEmpty()) list.add(Map.entry(x.copyWithCount(1), 0));
             }
         }
@@ -642,7 +649,7 @@ public final class ContainerVerifier {
     private static Map<String, Integer> totals(List<ItemStack> list) {
         Map<String, Integer> m = new HashMap<>();
         for (ItemStack s : list) {
-            if (!s.isEmpty() && s != DISABLED_SLOT) m.merge(key(s), s.getCount(), Integer::sum);
+            if (!s.isEmpty() && s != disabledSlot()) m.merge(key(s), s.getCount(), Integer::sum);
         }
         return m;
     }

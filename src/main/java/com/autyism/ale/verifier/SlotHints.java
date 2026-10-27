@@ -102,7 +102,7 @@ public final class SlotHints {
             int index = slot.getContainerSlot();
             while (found.size() <= index) found.add(ItemStack.EMPTY);
             boolean disabled = menu instanceof net.minecraft.world.inventory.CrafterMenu crafter && crafter.isSlotDisabled(slot.index);
-            found.set(index, disabled ? ContainerVerifier.DISABLED_SLOT : slot.getItem());
+            found.set(index, disabled ? ContainerVerifier.disabledSlot() : slot.getItem());
         }
         if (block == null) return;
         // 投影里该放的：大箱子是两半拼起来的，RIGHT 那半边在前（和原版界面一样）
@@ -131,7 +131,7 @@ public final class SlotHints {
 
     @Nullable
     private static Hint compare(ItemStack want, ItemStack found) {
-        boolean wantOff = want == ContainerVerifier.DISABLED_SLOT, foundOff = found == ContainerVerifier.DISABLED_SLOT;
+        boolean wantOff = want == ContainerVerifier.disabledSlot(), foundOff = found == ContainerVerifier.disabledSlot();
         if (wantOff || foundOff) return wantOff == foundOff ? null : new Hint(Status.COUNT, wantOff ? ItemStack.EMPTY : want);
         if (want.isEmpty() && found.isEmpty()) return null;
         if (found.isEmpty()) return new Hint(Status.MISSING, want);

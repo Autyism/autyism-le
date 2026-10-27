@@ -1,5 +1,27 @@
 # Changelog
 
+## 1.3.0 — 2026-10-27
+
+For Minecraft 1.21.5–26.3.
+
+- **Container check** without opening the verifier: containers of the schematics around you are compared slot by slot all the time, and the ones holding the wrong things get a bright box you can see through walls. Empty ones keep their F. Works in single player, and on servers with Servux (Litematica's Entity Data Sync on).
+- **Slot hints**: open a container of the schematic and every slot is compared. Missing items show as faded ghosts (hover to see what goes there), wrong ones are marked red, extra ones purple, wrong counts orange.
+- **Container Searcher** (Loxoz's mod) learns the containers around you without opening them, in single player or through Servux.
+- On servers the checks now reach as far as your render distance instead of 64 blocks.
+- Crafters: disabled slots count, so a crafter with the wrong slots disabled is wrong.
+- New settings: **Check container contents** (with its box colour), **Container slot hints**, **Container Searcher without opening**.
+
+### 中文
+
+适用于 Minecraft 1.21.5–26.3。
+
+- **检查容器内容**，不用开验证器：附近投影里的容器一直逐格对照，放错东西的容器用亮色框出来，隔着墙也能看到。还空着的照旧显示 F。单人游戏可用；服务器上要装 Servux，并打开投影的“实体数据同步”。
+- **容器格子提示**：打开投影里的容器时每一格都和投影比，缺的东西画成半透明虚影（鼠标移上去看该放什么），放错的标红，多出来的标紫，数量不对的标橙。
+- **Container Searcher**（Loxoz 的模组）不用打开容器就能记住附近的容器，单人或者经 Servux。
+- 服务器上的检查范围从 64 格改成你的渲染距离。
+- 合成器：禁用的格子也算，禁用格不对的合成器算放错。
+- 新设置：**检查容器内容**（含框的颜色）、**容器格子提示**、**Container Searcher 不用打开**。
+
 ## 1.2.0 — 2026-10-22
 
 For Minecraft 1.21.5–26.3. On 1.21.5–1.21.10 it also brings 1.1.0: 3D previews in the schematic browser, folder icons and Replace in material lists.

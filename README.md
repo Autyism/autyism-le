@@ -44,6 +44,9 @@ All features except the scrollable button rows can be turned off in ALE's settin
 - **Blue "W": wrong waterlogging.** When a placed block is waterlogged and the schematic's isn't (or the other way round), a blue W is drawn on all six faces, on top of Litematica's wrong-state overlay. You can see at once that the block needs water, or must not have any.
 - **Red "D": wrong orientation.** When the block is turned the wrong way, a red D is drawn on all six faces. This covers facing, axis, rotation, rail shape, floor/wall/ceiling attachment, door hinge side, top/bottom half and crafter orientation. Every letter that applies is shown, also when other properties are wrong too.
 - **Green "F": needs filling.** Containers whose schematic block holds items, such as hoppers, droppers, chests and furnaces, get a green F, so you don't have to open each one. The F goes away once the Schematic Verifier or opening the container shows the right contents; in single player, or on a server with Servux and Litematica's *Entity Data Sync* turned on, ALE also checks the containers near you by itself, so a filled container loses its F without opening it. The F comes back when the container is emptied, broken or replaced. Optionally, containers that hold only items from a skip list (all shulker boxes by default) are left out.
+- **Wrong container contents.** Containers of the schematics around you are compared slot by slot all the time (no verifier needed); one that holds the wrong things (wrong items, too many or too few, wrong slots, different disabled crafter slots) gets a bright box you can see through walls. Same conditions as the F: single player, or a server with Servux and *Entity Data Sync*.
+- **Slot hints.** Open a container of the schematic and every slot is compared: missing items are drawn as faded ghosts (hover to see what goes there), wrong items are marked red, extra ones purple, wrong counts orange.
+- **Container Searcher.** With Loxoz's Container Searcher installed, the containers around you go into its list without opening them (same conditions as above).
 - **One marker per block.** When a block is wrong in several ways, only the most important letter is drawn: D (facing) before W (waterlogged) before F (needs filling). Turn **One Marker per Block** off to see them side by side.
 - **Highlight signs.** A **Highlight Signs** button in the Schematic Verifier marks signs with text inside the selected schematic through walls, because many schematics leave hints on signs where things need filling: bright green when the sign is placed, dark green when it is still missing.
 - **Render Through Glass.** Litematica's overlays and translucent ghost blocks normally disappear behind glass. With ALE they stay visible behind glass and stained glass, which helps when you build windows or greenhouses. Water, bubble columns, ice, slime, honey, kelp and waterlogged blocks no longer wash out the overlay colours either.
@@ -240,6 +243,10 @@ ALE has no commands and one hotkey of its own, **Open ALE Settings** (not bound 
 | Needs Filling: Skip Listed Items | OFF | No F on containers that hold only items from the list below. |
 | Needs Filling: Skip Items | all shulker boxes | The items for the option above. |
 | One Marker per Block | ON | Only the most important letter on a block: D, then W, then F. |
+| Check Container Contents | ON | Boxes containers of nearby schematics that hold the wrong things, through walls. |
+| Wrong Container Box Color | `#FFB4FF14` (lime) | Colour of those boxes. |
+| Container Slot Hints | ON | Ghost items and coloured slots in opened containers of the schematic. |
+| Container Searcher Without Opening | ON | With Container Searcher installed, nearby containers go into its list without opening them. |
 | Sign Highlight: Placed Color | `#FF55FF55` (bright green) | Placed signs while **Highlight Signs** is on. |
 | Sign Highlight: Missing Color | `#FF0E7A2E` (dark green) | Signs that are still missing. |
 | Easy Place: Exact Rail Shapes | ON | With ALE on the server too, Easy Place puts rails down in the schematic's shape. |
@@ -395,6 +402,9 @@ Autyism 的投影增强（Autyism's Litematica Enhancement，简称 ALE）是 [L
 - **蓝色“W”：含水不对**：放好的方块含水而投影里的不含水（或者反过来）时，会在 Litematica 的“错误状态”覆盖层上，在方块六个面各画一个蓝色的 W，一眼就能看出这个方块需要（或者不该）含水。
 - **红色“D”：朝向错误**：方块方向不对时，六个面各画一个红色的 D。包括朝向、轴向、旋转角度、铁轨方向、贴地/贴墙/贴天花板、门轴左右、上半/下半以及合成器的朝向。符合的字母都会显示，别的属性也不对时同样显示。
 - **绿色“F”：需要填充**：投影里装着东西的容器（漏斗、投掷器、箱子、熔炉等）显示绿色的 F，不用一个个打开看。原理图验证器或者打开容器确认内容物对了以后，F 就不显示了；单人游戏里，或者服务器装了 Servux 并且打开了投影的“实体数据同步”时，ALE 还会自己检查你附近的容器，填好了不用打开 F 也会消失。之后容器被拿空、敲掉或换掉，F 会重新显示。也可以不标只装着跳过列表里物品的容器（默认列表是各色潜影盒）。
+- **容器内容不对**：附近投影里的容器一直逐格对照（不用开验证器），放错东西的容器（物品不对、多了少了、放错格子、合成器禁用格不同）用亮色框出来，隔着墙也能看到。条件和 F 一样：单人游戏，或者服务器有 Servux 并打开了“实体数据同步”。
+- **容器格子提示**：打开投影里的容器时每一格都和投影比：缺的东西画成半透明虚影（鼠标移上去看该放什么），放错的标红，多出来的标紫，数量不对的标橙。
+- **Container Searcher**：装了 Loxoz 的 Container Searcher 时，附近的容器不用打开就记进它的列表（条件同上）。
 - **标记只显示一个**：一个方块同时有几种问题时只画最重要的字母：朝向 D 优先，其次含水 W，最后需要填充 F。关掉 **标记只显示一个** 就并排显示。
 - **高亮告示牌**：原理图验证器界面的 **高亮告示牌** 按钮会把选中投影里有字的告示牌透墙标出来（很多投影在要填充的地方放了写着提示的告示牌）：已放置的亮绿色，还没放的深绿色。
 - **透过玻璃显示投影**：原本 Litematica 的覆盖层和半透明投影方块在玻璃后面会看不见。开启后，隔着玻璃和染色玻璃也能正常看到，做窗户、温室时很方便。水、气泡柱、冰、粘液块、蜂蜜块、海带和含水方块也不会再把覆盖层的颜色冲淡。
@@ -591,6 +601,10 @@ ALE 没有命令，只有一个自己的热键“打开 ALE 设置”（默认�
 | 需要填充：跳过列表里的物品 | 关 | 只装着下面列表里物品的容器不显示 F。 |
 | 需要填充：跳过的物品 | 各色潜影盒 | 上一项用的物品列表。 |
 | 标记只显示一个 | 开 | 一个方块只画最重要的字母：D，其次 W，最后 F。 |
+| 检查容器内容 | 开 | 附近投影里放错东西的容器隔墙框出来。 |
+| 容器内容不对的框颜色 | `#FFB4FF14`（黄绿） | 这些框的颜色。 |
+| 容器格子提示 | 开 | 打开投影里的容器时显示虚影和格子颜色。 |
+| Container Searcher 不用打开 | 开 | 装了 Container Searcher 时，附近容器不用打开就记进它的列表。 |
 | 高亮告示牌：已放置的颜色 | `#FF55FF55`（亮绿） | 打开“高亮告示牌”时，已经放了的告示牌。 |
 | 高亮告示牌：未放置的颜色 | `#FF0E7A2E`（深绿） | 还没放的告示牌。 |
 | 轻松放置：铁轨按投影形状 | 开 | 服务端也装了 ALE 时，轻松放置把铁轨放成投影里的形状。 |

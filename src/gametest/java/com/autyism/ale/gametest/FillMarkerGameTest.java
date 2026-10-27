@@ -155,7 +155,8 @@ public final class FillMarkerGameTest implements FabricClientGameTest {
             });
             context.waitFor(c -> c.screen instanceof net.minecraft.client.gui.screens.inventory.AbstractContainerScreen<?>, 100);
             sp.getServer().runOnServer(s -> {
-                if (s.overworld().getBlockEntity(dropper) instanceof Container c) c.setItem(4, new ItemStack(Items.ARROW, 64));
+                // 和投影同一格（1.3.0 起按格子比较）
+                if (s.overworld().getBlockEntity(dropper) instanceof Container c) c.setItem(0, new ItemStack(Items.ARROW, 64));
             });
             context.waitTicks(10);
             context.runOnClient(c -> c.setScreen(null));

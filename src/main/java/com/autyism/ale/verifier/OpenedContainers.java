@@ -86,7 +86,7 @@ public final class OpenedContainers {
             int index = slot.getContainerSlot();
             while (slots.size() <= index) slots.add(ItemStack.EMPTY);
             boolean disabled = current instanceof net.minecraft.world.inventory.CrafterMenu crafter && crafter.isSlotDisabled(slot.index);
-            slots.set(index, disabled ? ContainerVerifier.DISABLED_SLOT : slot.getItem().isEmpty() ? ItemStack.EMPTY : slot.getItem().copy());
+            slots.set(index, disabled ? ContainerVerifier.disabledSlot() : slot.getItem().isEmpty() ? ItemStack.EMPTY : slot.getItem().copy());
         }
         if (block == null) return;
         BlockState state = mc.level.getBlockState(menuPos);

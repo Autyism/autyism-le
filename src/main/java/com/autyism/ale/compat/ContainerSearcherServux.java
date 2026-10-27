@@ -112,7 +112,7 @@ public final class ContainerSearcherServux {
         List<ItemStack> slots = ContainerVerifier.actualContents(mc.level, pos);
         if (slots == null) return null;
         List<ItemStack> out = new ArrayList<>(slots.size());
-        for (ItemStack s : slots) out.add(s == ContainerVerifier.DISABLED_SLOT ? ItemStack.EMPTY : s);
+        for (ItemStack s : slots) out.add(s == ContainerVerifier.disabledSlot() ? ItemStack.EMPTY : s);
         return out;
     }
 
