@@ -30,7 +30,8 @@ import java.util.Map;
  * 单人直接从世界里拿，多人经 Servux 从服务端拿（和容器检查同一条路，ContainerVerifier.actualContents）。
  * 记的方式和打开容器一样，调它自己的 updateCachedContainer（按名字反射调用，不复制也不改它的代码）。
  * <p>
- * 只查客户端已加载的区块，近的先查；每 tick 几个，每个查完隔一段时间再查。
+ * 只查客户端已加载的区块，近的先查；每 tick 几个，每个查完隔一段时间再查。多人时 Litematica 的队里最多排几十个，
+ * 不然附近容器很多时队太长，新放的箱子要等很久。
  */
 public final class ContainerSearcherServux {
     private static final Minecraft mc = Minecraft.getInstance();
@@ -70,6 +71,7 @@ public final class ContainerSearcherServux {
         if (mc.getSingleplayerServer() == null && !ServerContainerData.available()) return;
         if (!lookup()) return;
         if (ticks++ % COLLECT_INTERVAL == 0) collect();
+        boolean remote = mc.getSingleplayerServer() == null;
         int budget = PER_TICK, tries = queue.size();
         while (budget > 0 && tries-- > 0) {
             if (cursor >= queue.size()) cursor = 0;
@@ -81,6 +83,11 @@ public final class ContainerSearcherServux {
             if (!(mc.level.getBlockEntity(pos) instanceof Container) || !valid(state.getBlock())) {
                 NEXT.put(key, ticks + RECHECK_TICKS);
                 continue;
+            }
+            // Litematica 的队已经够长：等前面的回来再加（每次重新收集都从最近的开始，近的先排上）
+            if (remote && ServerContainerData.queueFull()) {
+                cursor--;
+                break;
             }
             budget--;
             // 大箱子在 Container Searcher 里是一条：两半合起来交给它，右半在前（和游戏里大箱子界面的格子顺序一样）。
@@ -109,7 +116,7 @@ public final class ContainerSearcherServux {
     /** 容器每一格的内容（合成器禁用的格子当空格）；还拿不到返回 null */
     @Nullable
     private static List<ItemStack> contents(BlockPos pos) {
-        List<ItemStack> slots = ContainerVerifier.actualContents(mc.level, pos);
+        List<ItemStack> slots = ContainerVerifier.actualContents(mc.level, pos, false);
         if (slots == null) return null;
         List<ItemStack> out = new ArrayList<>(slots.size());
         for (ItemStack s : slots) out.add(s == ContainerVerifier.disabledSlot() ? ItemStack.EMPTY : s);

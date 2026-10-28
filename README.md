@@ -244,7 +244,7 @@ ALE has no commands and one hotkey of its own, **Open ALE Settings** (not bound 
 | Needs Filling: Skip Listed Items | OFF | No F on containers that hold only items from the list below. |
 | Needs Filling: Skip Items | all shulker boxes | The items for the option above. |
 | One Marker per Block | ON | Only the most important letter on a block: D, then W, then F. |
-| Check Container Contents | ON | Boxes containers of nearby schematics that hold the wrong things, through walls. |
+| Check Container Contents | OFF | Boxes containers of nearby schematics that hold the wrong things, through walls. |
 | Wrong Container Box Color | `#FFB4FF14` (lime) | Colour of those boxes. |
 | Container Slot Hints | ON | Ghost items and coloured slots in opened containers of the schematic. |
 | Container Searcher Without Opening | ON | With Container Searcher installed, nearby containers go into its list without opening them. |
@@ -603,7 +603,7 @@ ALE 没有命令，只有一个自己的热键“打开 ALE 设置”（默认�
 | 需要填充：跳过列表里的物品 | 关 | 只装着下面列表里物品的容器不显示 F。 |
 | 需要填充：跳过的物品 | 各色潜影盒 | 上一项用的物品列表。 |
 | 标记只显示一个 | 开 | 一个方块只画最重要的字母：D，其次 W，最后 F。 |
-| 检查容器内容 | 开 | 附近投影里放错东西的容器隔墙框出来。 |
+| 检查容器内容 | 关 | 附近投影里放错东西的容器隔墙框出来。 |
 | 容器内容不对的框颜色 | `#FFB4FF14`（黄绿） | 这些框的颜色。 |
 | 容器格子提示 | 开 | 打开投影里的容器时显示虚影和格子颜色。 |
 | Container Searcher 不用打开 | 开 | 装了 Container Searcher 时，附近容器不用打开就记进它的列表。 |

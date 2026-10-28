@@ -80,6 +80,8 @@ public final class FillServuxGameTest implements FabricClientGameTest {
             boolean early = context.computeOnClient(c -> ContainerVerifier.isKnownToMatch(HOPPER) || ContainerVerifier.isKnownToMatch(FURNACE));
             GT.log("[fillservux] F drawn on both=" + drawn + ", known before filling=" + early);
             if (!drawn) failures.add("not-drawn");
+            context.waitTicks(20);
+            GT.shot(context, "ale-fillservux-before");
             if (early) failures.add("known-before-filling");
             context.waitTicks(60);
             // 不打开，直接用指令装好
@@ -92,8 +94,11 @@ public final class FillServuxGameTest implements FabricClientGameTest {
             }, 400);
             GT.log("[fillservux] filled with commands: F gone=" + gone + " after " + t[0] + " ticks");
             if (!gone) failures.add("not-gone-after-filling");
+            context.waitTicks(20);
+            GT.shot(context, "ale-fillservux-after");
             // 退出重进
             disconnect(context);
+            context.waitTicks(Integer.getInteger("ale.reconnectWait", 0));
             connect(context);
             context.runOnClient(c -> {
                 Configs.Visuals.ENABLE_SCHEMATIC_OVERLAY.setBooleanValue(true);

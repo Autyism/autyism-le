@@ -89,7 +89,7 @@ public final class ContainerCheck {
                 continue;
             }
             budget--;
-            List<ItemStack> actual = ContainerVerifier.actualContents(mc.level, pos);
+            List<ItemStack> actual = ContainerVerifier.actualContents(mc.level, pos, false);
             if (actual == null) {
                 NEXT.put(key, ticks + 5); // 在等服务端发数据
                 continue;

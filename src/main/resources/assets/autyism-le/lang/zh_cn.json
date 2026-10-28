@@ -85,7 +85,7 @@
   "autyism-le.config.comment.fillMarker": "投影里装着东西的容器（漏斗、投掷器、发射器、箱子、木桶、潜影盒、熔炉、酿造台、合成器……）每个面画一个绿色的“F”，不用一个个打开就知道哪些还要往里放东西。",
   "autyism-le.config.name.containerCheck": "检查容器内容",
   "autyism-le.config.prettyName.containerCheck": "检查容器内容",
-  "autyism-le.config.comment.containerCheck": "一直检查附近投影里的容器（不用开验证器）：世界里放了东西、但和投影不一样的容器（放错东西、多了、少了、放错格子、合成器禁用的格子不同）隔着墙用亮色框出来。还没放东西的照旧画 F。多人游戏里要服务端装了 Servux（容器内容从服务端拿，只查需要查的容器）。",
+  "autyism-le.config.comment.containerCheck": "默认关。打开后一直检查附近投影里的容器（不用开验证器）：世界里放了东西、但和投影不一样的容器（放错东西、多了、少了、放错格子、合成器禁用的格子不同）隔着墙用亮色框出来。还没放东西的照旧画 F。多人游戏里要服务端装了 Servux（容器内容从服务端拿，只查需要查的容器）。",
   "autyism-le.config.name.containerCheckColor": "容器内容不对的框颜色",
   "autyism-le.config.prettyName.containerCheckColor": "容器内容不对的框颜色",
   "autyism-le.config.comment.containerCheckColor": "“检查容器内容”框出内容不对的容器用的颜色。",

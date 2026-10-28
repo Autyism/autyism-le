@@ -105,13 +105,20 @@ public final class ContainerSearcherGameTest implements FabricClientGameTest {
             });
             ContainerCheckServuxGameTest.command(context, "gamemode creative");
             ContainerCheckServuxGameTest.command(context, "fill 36 -60 25 46 -55 28 air");
+            // 附近一大片容器（1024 个木桶）：Litematica 的队不能被它们占满，后放的箱子也要很快记上
+            ContainerCheckServuxGameTest.command(context, "fill 40 -60 40 71 -60 71 barrel");
+            context.waitTicks(100);
             ContainerCheckServuxGameTest.command(context, "setblock 40 -60 26 chest");
             ContainerCheckServuxGameTest.command(context, "item replace block 40 -60 26 container.13 with minecraft:lapis_lazuli 9");
             ContainerCheckServuxGameTest.command(context, "tp @s 40.5 -59 23.5 0 25");
             boolean stored = ContainerCheckServuxGameTest.waitFor(context,
-                    () -> Map.of("minecraft:lapis_lazuli", 9).equals(context.computeOnClient(c -> cached()).get(chest)), 600);
+                    () -> Map.of("minecraft:lapis_lazuli", 9).equals(context.computeOnClient(c -> cached()).get(chest)), 300);
             GT.log("[csservux] cache: " + context.computeOnClient(c -> cached()));
-            if (!stored) failures.add("chest-not-stored");
+            if (!stored) {
+                GT.log("[csservux] chest: block=" + context.computeOnClient(c -> c.level.getBlockState(chest)) + " player=" + context.computeOnClient(c -> c.player.blockPosition())
+                        + " " + context.computeOnClient(c -> com.autyism.ale.verifier.ServerContainerData.debug(chest)));
+                failures.add("chest-not-stored");
+            }
             ContainerCheckServuxGameTest.command(context, "item replace block 40 -60 26 container.13 with minecraft:air");
             boolean removed = ContainerCheckServuxGameTest.waitFor(context, () -> !context.computeOnClient(c -> cached()).containsKey(chest), 20 * 80);
             GT.log("[csservux] after emptying: " + context.computeOnClient(c -> cached()));

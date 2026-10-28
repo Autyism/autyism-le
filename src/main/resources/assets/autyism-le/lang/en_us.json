@@ -85,7 +85,7 @@
   "autyism-le.config.comment.fillMarker": "Containers whose block in the schematic holds items (hoppers, droppers, dispensers, chests, barrels, shulker boxes, furnaces, brewing stands, crafters...) get a green 'F' on every face, so you can see which ones still need filling without opening each one.",
   "autyism-le.config.name.containerCheck": "Check container contents",
   "autyism-le.config.prettyName.containerCheck": "Check container contents",
-  "autyism-le.config.comment.containerCheck": "Keeps checking the containers of nearby schematics (no verifier needed): a container that holds things but not what the schematic says (wrong items, too many or too few, wrong slots, different disabled crafter slots) gets a bright box seen through walls. Empty ones still get the F. On a server this needs Servux there (the contents come from the server; only containers that need checking are asked for).",
+  "autyism-le.config.comment.containerCheck": "Off by default. When on, keeps checking the containers of nearby schematics (no verifier needed): a container that holds things but not what the schematic says (wrong items, too many or too few, wrong slots, different disabled crafter slots) gets a bright box seen through walls. Empty ones still get the F. On a server this needs Servux there (the contents come from the server; only containers that need checking are asked for).",
   "autyism-le.config.name.containerCheckColor": "Wrong container box color",
   "autyism-le.config.prettyName.containerCheckColor": "Wrong container box color",
   "autyism-le.config.comment.containerCheckColor": "The color of the boxes around containers with wrong contents.",

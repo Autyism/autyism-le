@@ -156,6 +156,17 @@ public final class PasteServuxGameTest implements FabricClientGameTest {
             boolean chest = context.computeOnClient(c -> c.level.getBlockState(MARKER).is(Blocks.GOLD_BLOCK));
             GT.log("[pasteservux] chest has its 5 diamonds: " + chest);
             if (!chest) failures.add("chest-contents");
+            // the pasted chest holds exactly what the schematic says: its F goes away without opening it (10-28: it stayed)
+            BlockPos pasted = T.offset(2, 1, 2);
+            int[] t = {0};
+            boolean fGone = ContainerCheckServuxGameTest.waitFor(context, () -> {
+                t[0]++;
+                return context.computeOnClient(c -> com.autyism.ale.verifier.ContainerVerifier.isKnownToMatch(pasted));
+            }, 400);
+            GT.log("[pasteservux] pasted chest: F gone=" + fGone + " after " + t[0] + " ticks; candidate="
+                    + context.computeOnClient(c -> com.autyism.ale.verifier.ContainerVerifier.isFillCandidate(pasted)) + " "
+                    + context.computeOnClient(c -> com.autyism.ale.verifier.ServerContainerData.debug(pasted)));
+            if (!fGone) failures.add("pasted-chest-F-stays");
             GT.shot(context, "ale-pasteservux");
         } finally {
             context.runOnClient(c -> DataManager.getRenderLayerRange().setLayerMode(LayerMode.ALL));

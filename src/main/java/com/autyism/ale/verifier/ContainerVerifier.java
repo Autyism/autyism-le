@@ -287,7 +287,7 @@ public final class ContainerVerifier {
     }
 
     private static void evaluate(SchematicVerifier verifier, Level worldClient, BlockPos pos, BlockState state, List<ItemStack> wanted) {
-        List<ItemStack> actual = actualContents(worldClient, pos);
+        List<ItemStack> actual = actualContents(worldClient, pos, true);
         Results r = results(verifier);
         if (actual == null) {
             r.pending.put(pos, wanted);
@@ -362,7 +362,7 @@ public final class ContainerVerifier {
                 forget(e.getKey());
                 continue;
             }
-            List<ItemStack> actual = actualContents(mc.level, pos);
+            List<ItemStack> actual = actualContents(mc.level, pos, false);
             if (actual == null) continue;
             if (sameContents(nonEmpty(wanted), actual)) KNOWN.replace(e.getKey(), k, new Known(k.block(), k.blockEntity(), tickCounter));
             else forget(e.getKey());
@@ -379,7 +379,10 @@ public final class ContainerVerifier {
     private static final Map<Long, Long> FILL_CANDIDATES = new java.util.concurrent.ConcurrentHashMap<>();
     private static final int CANDIDATE_CHECKS_PER_TICK = 8;
     private static final int CANDIDATE_RECHECK_INTERVAL = 20;
-    private static final int MAX_CANDIDATES = 8192;
+    /** 多人游戏：离玩家超过 NEAR 格的、还没填好的 F 隔这么久才再查 */
+    private static final int CANDIDATE_RECHECK_FAR = 100;
+    private static final double NEAR = 24.0;
+    private static final int MAX_CANDIDATES = 32768;
 
     /** 这一格画着 F、等着主线程去查世界里填好了没有（测试用） */
     public static boolean isFillCandidate(BlockPos pos) {
@@ -413,56 +416,87 @@ public final class ContainerVerifier {
         boolean local = mc.getSingleplayerServer() != null;
         boolean remote = !local && ServerContainerData.available();
         if (!local && !remote) return;
-        int budget = CANDIDATE_CHECKS_PER_TICK;
+        // 到时间的里面先查等得最久的，离玩家近的稍微优先（每格距离算晚 1 tick）。以前按表里的顺序查：大投影里很多容器还没装、
+        // 都画着 F，排在表前面的那些每次都没填好、一直占着每 tick 的份，玩家刚填好的那个可能永远轮不到，要打开一次才消失。
+        // 现在查过的排到后面去，每个都轮得到；身边的先轮到
+        double far = (mc.options.getEffectiveRenderDistance() + 2) * 16.0;
+        double radiusSq = remoteRadius() * remoteRadius();
+        int pick = CANDIDATE_CHECKS_PER_TICK * 4;
+        long[] keys = new long[pick];
+        double[] order = new double[pick];
+        double[] distSqs = new double[pick];
+        int picked = 0;
+        // 准星对着的那个排第一（刚填好的多半正看着它）
+        long looked = mc.hitResult instanceof net.minecraft.world.phys.BlockHitResult hit
+                && hit.getType() == net.minecraft.world.phys.HitResult.Type.BLOCK ? hit.getBlockPos().asLong() : Long.MIN_VALUE;
         var it = FILL_CANDIDATES.entrySet().iterator();
-        while (it.hasNext() && budget > 0) {
+        while (it.hasNext()) {
             var e = it.next();
             if (e.getValue() > tickCounter) continue;
-            BlockPos pos = BlockPos.of(e.getKey());
+            long key = e.getKey();
+            double dx = BlockPos.getX(key) + 0.5 - mc.player.getX(), dz = BlockPos.getZ(key) + 0.5 - mc.player.getZ();
+            if (KNOWN.containsKey(key) || Math.abs(dx) > far || Math.abs(dz) > far) {
+                // 已经确认过；或者远到投影的区块都不画了（回来时区块重画，会再记一次）
+                it.remove();
+                FILL_WANTED.remove(key);
+                continue;
+            }
+            double dy = BlockPos.getY(key) + 0.5 - mc.player.getY();
+            double distSq = dx * dx + dy * dy + dz * dz;
+            if (remote && distSq > radiusSq) continue;
+            double d = key == looked ? Double.NEGATIVE_INFINITY : e.getValue() + Math.sqrt(distSq);
+            if (picked == pick && d >= order[pick - 1]) continue;
+            // 按先后插进去（只留最先的 pick 个）
+            int i = picked < pick ? picked++ : pick - 1;
+            while (i > 0 && order[i - 1] > d) {
+                keys[i] = keys[i - 1];
+                order[i] = order[i - 1];
+                distSqs[i] = distSqs[i - 1];
+                i--;
+            }
+            keys[i] = key;
+            order[i] = d;
+            distSqs[i] = distSq;
+        }
+        int budget = CANDIDATE_CHECKS_PER_TICK;
+        for (int n = 0; n < picked && budget > 0; n++) {
+            long key = keys[n];
+            BlockPos pos = BlockPos.of(key);
             List<ItemStack> wantedItems;
             Block wantedBlock;
             if (ws.getBlockEntity(pos) instanceof Container wanted) {
                 wantedItems = nonEmpty(wanted);
                 wantedBlock = ws.getBlockState(pos).getBlock();
-            } else if (FILL_WANTED.get(e.getKey()) instanceof Wanted w) {
+            } else if (FILL_WANTED.get(key) instanceof Wanted w) {
                 wantedItems = w.items();
                 wantedBlock = w.block();
             } else {
-                wantedItems = null;
-                wantedBlock = null;
-            }
-            if (KNOWN.containsKey(e.getKey()) || wantedItems == null) {
-                // 已经确认过、或者投影里不再是容器
-                it.remove();
-                FILL_WANTED.remove(e.getKey());
-                continue;
-            }
-            double far = (mc.options.getEffectiveRenderDistance() + 2) * 16.0;
-            if (Math.abs(pos.getX() - mc.player.getX()) > far || Math.abs(pos.getZ() - mc.player.getZ()) > far) {
-                // 远到投影的区块都不画了：回来时区块重画，会再记一次
-                it.remove();
-                FILL_WANTED.remove(e.getKey());
+                // 投影里不再是容器
+                FILL_CANDIDATES.remove(key);
+                FILL_WANTED.remove(key);
                 continue;
             }
             if (wantedBlock != mc.level.getBlockState(pos).getBlock()) {
                 // 世界里这一格还不是这个方块：还没放，或者世界的区块还没载入（进服务器、走过去时投影常常先画出来）。
                 // 以前这里直接不管了，之后区块载入、F 还画着却再也没人去查，要打开一次才消失。过一会儿再看
-                e.setValue((long) tickCounter + CANDIDATE_RECHECK_INTERVAL);
+                FILL_CANDIDATES.replace(key, (long) tickCounter + CANDIDATE_RECHECK_INTERVAL);
                 continue;
             }
-            if (remote && mc.player.distanceToSqr(net.minecraft.world.phys.Vec3.atCenterOf(pos)) > remoteRadius() * remoteRadius()) continue;
+            // 已经要了、在等服务端回复：不占这一 tick 的份，也不往后排（回复一到下个 tick 就查。以前往后排，
+            // 很多 F 的时候再轮到它时收到的数据已经过时，又重新要，一直这样）
+            if (remote && ServerContainerData.waiting(pos)) continue;
             budget--;
-            List<ItemStack> actual = actualContents(mc.level, pos);
-            if (actual == null) {
-                e.setValue(tickCounter + 5L); // 在等服务端发数据
-                continue;
-            }
+            List<ItemStack> actual = actualContents(mc.level, pos, true);
+            if (actual == null) continue; // 刚要了（或者这一 tick 能直接发的请求已经发完了）：排位不变
+
             if (sameContents(wantedItems, actual)) {
                 noteWorldContents(pos, true);
-                it.remove();
-                FILL_WANTED.remove(e.getKey());
+                FILL_CANDIDATES.remove(key);
+                FILL_WANTED.remove(key);
             } else {
-                e.setValue((long) tickCounter + CANDIDATE_RECHECK_INTERVAL);
+                // 多人游戏里每查一次都要问服务端：身边的（多半正在填）勤查，远的少查，把每 tick 的份留给身边的
+                boolean near = !remote || distSqs[n] <= NEAR * NEAR;
+                FILL_CANDIDATES.replace(key, (long) tickCounter + (near ? CANDIDATE_RECHECK_INTERVAL : CANDIDATE_RECHECK_FAR));
             }
         }
     }
@@ -529,9 +563,9 @@ public final class ContainerVerifier {
         }
     }
 
-    /** 世界中容器的实际内容；暂时拿不到返回 null */
+    /** 世界中容器的实际内容；暂时拿不到返回 null。urgent：玩家等着看结果（多人游戏里不排 Litematica 的队，见 ServerContainerData.get） */
     @Nullable
-    public static List<ItemStack> actualContents(Level worldClient, BlockPos pos) {
+    public static List<ItemStack> actualContents(Level worldClient, BlockPos pos, boolean urgent) {
         IntegratedServer server = mc.getSingleplayerServer();
         if (server != null) {
             Fetch fetch = FETCHES.get(pos);
@@ -555,7 +589,7 @@ public final class ContainerVerifier {
         }
         // 多人游戏：只用服务端真正发来的数据（Litematica 的实体数据同步：服务端装了 Servux，或者 OP 的备用查询）。
         // Litematica 自己的缓存在等回复时放的是客户端世界里的方块实体（里面没有物品），大箱子还会两半合起来，都不能拿来比
-        return ServerContainerData.get(worldClient, pos);
+        return ServerContainerData.get(worldClient, pos, urgent);
     }
 
     /** 主线程的 tick 计数（ServerContainerData 判断数据新旧用） */

@@ -210,6 +210,7 @@ if (providers.gradleProperty("aleGameTest").isPresent) {
         (this as JavaExec).systemProperty("ale.frameshot", (project.findProperty("frameShot") != null).toString())
         // -PmeasureOnly: tests only log their measurements (for before/after comparisons)
         (this as JavaExec).systemProperty("ale.measureonly", (project.findProperty("measureOnly") != null).toString())
+        (this as JavaExec).systemProperty("ale.reconnectWait", (project.findProperty("reconnectWait") ?: "0").toString())
         // -PtestMods=a.jar;b.jar: extra mod jars for this run, copied into the run directory's mods folder
         // (after the run directory is cleared, before the game starts)
         val extraMods = (project.findProperty("testMods") ?: "").toString().split(";").filter { it.isNotBlank() }.map { File(it) }

@@ -4,6 +4,8 @@ package com.autyism.ale.verifier;
 import fi.dy.masa.litematica.data.EntityDataManager;
 //?} else
 //import fi.dy.masa.litematica.data.EntitiesDataStorage;
+import fi.dy.masa.litematica.network.ServuxLitematicaHandler;
+import fi.dy.masa.litematica.network.ServuxLitematicaPacket;
 import net.minecraft.core.BlockPos;
 import net.minecraft.world.Container;
 import net.minecraft.world.item.ItemStack;
@@ -31,12 +33,21 @@ public final class ServerContainerData {
     private static final int REQUEST_RETRY_TICKS = 100;
     /** 太久没用的记录清掉 */
     private static final int FORGET_AFTER_TICKS = 1200;
+    /** 玩家等着看结果的请求：每 tick 最多直接发这么多个，发出后这么久没回复再发一次 */
+    private static final int URGENT_PER_TICK = 4;
+    private static final int URGENT_RETRY_TICKS = 40;
+    private static long urgentTick = -1;
+    private static int urgentSent;
+    /** 排在 Litematica 队里还没回复的最多这么多个（它每 tick 只发 2 个，排太长后来的要等很久） */
+    private static final int QUEUE_LIMIT = 32;
 
     private record Snapshot(List<ItemStack> items, long tick) {
     }
 
     private static final Map<Long, Snapshot> RECEIVED = new HashMap<>();
     private static final Map<Long, Long> REQUESTED = new HashMap<>();
+    /** 经 Litematica 的队要的、还在等的 */
+    private static final Map<Long, Long> QUEUED = new HashMap<>();
     private static long lastPrune;
 
     private ServerContainerData() {
@@ -66,6 +77,7 @@ public final class ServerContainerData {
         Runnable store = () -> {
             // 只记 ALE 要过的位置（Litematica 为别的功能要的数据不用存）
             if (REQUESTED.containsKey(key)) RECEIVED.put(key, new Snapshot(items, ContainerVerifier.now()));
+            QUEUED.remove(key);
         };
         net.minecraft.client.Minecraft mc = net.minecraft.client.Minecraft.getInstance();
         if (mc.isSameThread()) store.run();
@@ -73,10 +85,15 @@ public final class ServerContainerData {
     }
 
     /**
-     * 服务端最近发来的这个容器的内容（物品不分格子，复制过的）。没有足够新的数据时向服务端要（已经在等就不重复要），返回 null
+     * 服务端最近发来的这个容器的内容（每一格，复制过的）。没有足够新的数据时向服务端要（已经在等就不重复要），返回 null。
+     * <p>
+     * urgent：玩家等着看结果的（F 填好了没有、验证器）。Litematica 自己的请求队列每 tick 只发 2 个，Container Searcher
+     * 记附近所有容器时队伍很长（基地里能排一两分钟），F 要的数据排在后面就像永远不消失。所以有 Servux 时这些直接发给服务端
+     * （每 tick 最多 URGENT_PER_TICK 个，超出的下一 tick 再发），不排 Litematica 的队；回复照样经 Litematica 读进客户端。
+     * 别的（Container Searcher、后台复查）还是排队
      */
     @Nullable
-    public static List<ItemStack> get(Level world, BlockPos pos) {
+    public static List<ItemStack> get(Level world, BlockPos pos, boolean urgent) {
         if (!available()) return null;
         long now = ContainerVerifier.now();
         prune(now);
@@ -84,15 +101,56 @@ public final class ServerContainerData {
         Snapshot snapshot = RECEIVED.get(key);
         if (snapshot != null && now - snapshot.tick() <= FRESH_TICKS) return snapshot.items();
         Long asked = REQUESTED.get(key);
-        boolean waiting = asked != null && now - asked <= REQUEST_RETRY_TICKS && (snapshot == null || snapshot.tick() < asked);
-        if (!waiting) {
+        boolean direct = urgent && servux();
+        int retry = direct ? URGENT_RETRY_TICKS : REQUEST_RETRY_TICKS;
+        boolean waiting = asked != null && now - asked <= retry && (snapshot == null || snapshot.tick() < asked);
+        if (waiting) return null;
+        if (direct) {
+            if (urgentTick != now) {
+                urgentTick = now;
+                urgentSent = 0;
+            }
+            if (urgentSent >= URGENT_PER_TICK) return null; // 这一 tick 的份发完了：下次再要
+            urgentSent++;
             REQUESTED.put(key, now);
-            //? if >=1.21.11 {
-            EntityDataManager.getInstance().requestBlockEntityWrapped(world, pos);
-            //?} else
-            //EntitiesDataStorage.getInstance().requestBlockEntity(world, pos);
+            ServuxLitematicaHandler.getInstance().encodeClientData(ServuxLitematicaPacket.BlockEntityRequest(pos));
+            return null;
         }
+        REQUESTED.put(key, now);
+        QUEUED.put(key, now);
+        //? if >=1.21.11 {
+        EntityDataManager.getInstance().requestBlockEntityWrapped(world, pos);
+        //?} else
+        //EntitiesDataStorage.getInstance().requestBlockEntity(world, pos);
         return null;
+    }
+
+    /** Litematica 的队里 ALE 要的已经够多了：后台的（Container Searcher）先别再加，等前面的回来 */
+    public static boolean queueFull() {
+        if (QUEUED.size() < QUEUE_LIMIT) return false;
+        long now = ContainerVerifier.now();
+        QUEUED.values().removeIf(t -> now - t > REQUEST_RETRY_TICKS);
+        return QUEUED.size() >= QUEUE_LIMIT;
+    }
+
+    /** 这一格已经向服务端要了（urgent 请求），还在等回复（测试和 F 的检查排队用） */
+    public static boolean waiting(BlockPos pos) {
+        long now = ContainerVerifier.now();
+        long key = pos.asLong();
+        Long asked = REQUESTED.get(key);
+        if (asked == null) return false;
+        Snapshot snapshot = RECEIVED.get(key);
+        int retry = servux() ? URGENT_RETRY_TICKS : REQUEST_RETRY_TICKS;
+        return now - asked <= retry && (snapshot == null || snapshot.tick() < asked);
+    }
+
+    /** 实体数据同步开着而且服务端有 Servux（不是只有 OP 的备用查询） */
+    private static boolean servux() {
+        //? if >=1.21.11 {
+        EntityDataManager manager = EntityDataManager.getInstance();
+        return manager.isEnabled() && manager.hasServuxServer();
+        //?} else
+        //return fi.dy.masa.litematica.config.Configs.Generic.ENTITY_DATA_SYNC.getBooleanValue() && EntitiesDataStorage.getInstance().hasServuxServer();
     }
 
     /** 测试用：这一格的请求和收到的数据 */
@@ -101,7 +159,7 @@ public final class ServerContainerData {
         Snapshot sn = RECEIVED.get(key);
         //? if >=1.21.11 {
         EntityDataManager m = EntityDataManager.getInstance();
-        String mgr = " enabled=" + m.isEnabled() + " servux=" + m.hasServuxServer() + " backup=" + m.isBackupEnabled();
+        String mgr = " enabled=" + m.isEnabled() + " servux=" + m.hasServuxServer() + " backup=" + m.isBackupEnabled() + " queue=" + m.getPendingBlockEntitiesCount() + " ours=" + QUEUED.size();
         //?} else
         //String mgr = "";
         return "requested=" + REQUESTED.get(key) + " received=" + (sn == null ? null : sn.items() + "@" + sn.tick()) + " now=" + ContainerVerifier.now() + mgr;
@@ -110,6 +168,7 @@ public final class ServerContainerData {
     public static void clear() {
         RECEIVED.clear();
         REQUESTED.clear();
+        QUEUED.clear();
     }
 
     private static void prune(long now) {
