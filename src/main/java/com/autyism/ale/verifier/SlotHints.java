@@ -62,6 +62,7 @@ public final class SlotHints {
     @Nullable
     private static AbstractContainerMenu cachedMenu;
     private static int cachedState = -1;
+    private static long cachedTime;
     @Nullable
     private static Container cachedContainer;
     private static List<Hint> cachedHints = List.of();
@@ -80,12 +81,16 @@ public final class SlotHints {
     }
 
     private static void refresh(AbstractContainerMenu menu) {
-        if (menu == cachedMenu && menu.getStateId() == cachedState) return;
+        // 每 50 毫秒重新比一次：玩家自己往格子里放东西时客户端先摆上，服务端不会再发新的同步编号，
+        // 以前只按编号刷新，放进去的东西要关了界面重开才算（按游戏时间也不行：时间冻结的服务器上不走）
+        long now = System.nanoTime() / 1_000_000L;
+        if (menu == cachedMenu && menu.getStateId() == cachedState && now - cachedTime < 50) return;
         cachedMenu = menu;
         cachedState = menu.getStateId();
+        cachedTime = now;
+        Minecraft mc = Minecraft.getInstance();
         cachedContainer = null;
         cachedHints = List.of();
-        Minecraft mc = Minecraft.getInstance();
         BlockPos pos = OpenedContainers.currentPos();
         WorldSchematic ws = SchematicWorldHandler.getSchematicWorld();
         if (pos == null || ws == null || mc.level == null) {

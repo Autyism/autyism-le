@@ -124,6 +124,27 @@ public final class ContainerCheckGameTest implements FabricClientGameTest {
             GT.shot(context, "ale-containercheck-slots-ghost");
             GT.log("[containercheck] empty chest hints: " + slotEmpty);
             if (slotEmpty.get(0) != SlotHints.Status.MISSING) failures.add("slots-ghost");
+            // putting the missing item in by hand clears the hint right away, without reopening the chest
+            net.minecraft.world.item.ItemStack want = context.computeOnClient(c -> c.screen instanceof AbstractContainerScreen<?> s
+                    ? SlotHints.hint(s.getMenu(), s.getMenu().slots.get(0)).expected().copy() : net.minecraft.world.item.ItemStack.EMPTY);
+            // what the client shows right after the player clicks the item in: the slot changed, no new state id from the server
+            context.runOnClient(c -> {
+                if (c.screen instanceof AbstractContainerScreen<?> s) s.getMenu().slots.get(0).set(want.copy());
+            });
+            for (int i = 0; i < 40 && context.computeOnClient(c -> c.screen instanceof AbstractContainerScreen<?> sc
+                    && SlotHints.hint(sc.getMenu(), sc.getMenu().slots.get(0)) != null); i++) context.waitTicks(1);
+            Map<Integer, SlotHints.Status> afterPut = context.computeOnClient(c -> {
+                Map<Integer, SlotHints.Status> out = new java.util.TreeMap<>();
+                if (c.screen instanceof AbstractContainerScreen<?> screen) {
+                    for (Slot slot : screen.getMenu().slots) {
+                        SlotHints.Hint h = SlotHints.hint(screen.getMenu(), slot);
+                        if (h != null) out.put(slot.getContainerSlot(), h.status());
+                    }
+                }
+                return out;
+            });
+            GT.log("[containercheck] after putting " + want + " in by hand: " + afterPut + " slot0 now " + context.computeOnClient(c -> c.screen instanceof AbstractContainerScreen<?> s ? s.getMenu().slots.get(0).getItem().toString() : "no screen"));
+            if (afterPut.containsKey(0)) failures.add("slots-live-update");
 
             // the crafter in Litematica's info overlay (hold the key), for the crafter display problem
             BlockPos crafter = new BlockPos(X0 + STEP * 6, Y, Z);
