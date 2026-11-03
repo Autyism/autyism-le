@@ -2,7 +2,6 @@ package com.autyism.ale.gametest;
 
 import com.autyism.ale.config.AleConfigs;
 import com.autyism.ale.materials.SourceContainers;
-import com.mojang.blaze3d.platform.InputConstants;
 import fi.dy.masa.litematica.config.Configs;
 import fi.dy.masa.litematica.materials.MaterialListEntry;
 import fi.dy.masa.litematica.materials.MaterialListUtils;
@@ -112,7 +111,10 @@ public final class MaterialSourcesServuxGameTest implements FabricClientGameTest
     private static void press(ClientGameTestContext context, BlockPos target) {
         BlockPos hit = context.computeOnClient(c -> c.hitResult instanceof BlockHitResult b ? b.getBlockPos() : null);
         if (!target.equals(hit)) throw new AssertionError("[matsourcesservux] looking at " + hit + " instead of " + target);
-        context.getInput().pressKey(InputConstants.KEY_F15);
+        // (MaLiLib 26.3 reads the real keyboard state: GT.setHotkeyHeld feeds it the simulated key too)
+        GT.setHotkeyHeld(context, AleConfigs.Generic.MATERIAL_SOURCE_CONTAINER_KEY.getKeybind(), true);
+        context.waitTicks(1);
+        GT.setHotkeyHeld(context, AleConfigs.Generic.MATERIAL_SOURCE_CONTAINER_KEY.getKeybind(), false);
         context.waitTicks(3);
     }
 

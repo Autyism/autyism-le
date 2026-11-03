@@ -4,7 +4,6 @@ import com.autyism.ale.config.AleConfigs;
 import com.autyism.ale.materials.SourceContainerMarker;
 import com.autyism.ale.materials.SourceContainers;
 import com.autyism.ale.materials.SourceContainersGui;
-import com.mojang.blaze3d.platform.InputConstants;
 import fi.dy.masa.litematica.data.DataManager;
 import fi.dy.masa.litematica.gui.GuiMaterialList;
 import fi.dy.masa.litematica.materials.MaterialListEntry;
@@ -230,7 +229,10 @@ public final class MaterialSourcesGameTest implements FabricClientGameTest {
 
     private static void pressHotkey(ClientGameTestContext context) {
         int before = context.computeOnClient(c -> SourceContainers.version());
-        context.getInput().pressKey(InputConstants.KEY_F15);
+        // (MaLiLib 26.3 reads the real keyboard state: GT.setHotkeyHeld feeds it the simulated key too)
+        GT.setHotkeyHeld(context, AleConfigs.Generic.MATERIAL_SOURCE_CONTAINER_KEY.getKeybind(), true);
+        context.waitTicks(1);
+        GT.setHotkeyHeld(context, AleConfigs.Generic.MATERIAL_SOURCE_CONTAINER_KEY.getKeybind(), false);
         context.waitTicks(2);
         int after = context.computeOnClient(c -> SourceContainers.version());
         if (after == before) throw new AssertionError("[matsources] the hotkey (F15) did nothing");
