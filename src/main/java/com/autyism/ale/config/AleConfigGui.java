@@ -13,7 +13,8 @@ public class AleConfigGui extends GuiConfigsBase {
     public enum Tab {
         GENERIC("autyism-le.gui.tab.generic"),
         BROWSER("autyism-le.gui.tab.browser"),
-        PREVIEW("autyism-le.gui.tab.preview");
+        PREVIEW("autyism-le.gui.tab.preview"),
+        TOOLS("autyism-le.gui.tab.tools");
 
         private final String key;
 
@@ -26,6 +27,7 @@ public class AleConfigGui extends GuiConfigsBase {
                 case GENERIC -> AleConfigs.Generic.OPTIONS;
                 case BROWSER -> AleConfigs.Browser.OPTIONS;
                 case PREVIEW -> AleConfigs.Preview.OPTIONS;
+                case TOOLS -> AleToolsConfigs.OPTIONS;
             };
         }
     }

@@ -17,6 +17,8 @@ public class AleMod implements ClientModInitializer {
     @Override
     public void onInitializeClient() {
         InitializationHandler.getInstance().registerInitializationHandler(AleConfigs::init);
+        // the wrong block guide and the schematic diff
+        com.autyism.ale.locate.ToolsInit.init();
         net.fabricmc.fabric.api.client.event.lifecycle.v1.ClientTickEvents.END_CLIENT_TICK.register(
                 client -> com.autyism.ale.verifier.ContainerVerifier.tick());
         // 打开着的容器和投影比一比（“需要填充”标记用）

@@ -51,7 +51,11 @@
     "litematica.ChunkManagerSchematicMixin",
     "compat.sodium.SodiumGlassPassMixin",
     "litematica.WorldRendererSchematicMixin",
-    "render.ContainerSlotHintsMixin"
+    "render.ContainerSlotHintsMixin",
+    "litematica.OverlayToolBoxesMixin",
+    "litematica.WorldSchematicLocateMixin",
+    "litematica.GuiPlacementConfigurationDiffMixin",
+    "client.LevelBlockChangeMixin"
   ],
   "injectors": {
     "defaultRequire": 1
