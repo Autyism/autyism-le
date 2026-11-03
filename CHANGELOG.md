@@ -5,7 +5,7 @@
 For Minecraft 1.21.5–26.3.
 
 - **Wrong block guide**: a hotkey takes you to the nearest wrong or missing block of your schematics. An arrow under the crosshair points the way, with the distance and what should be there vs what is there, and the block gets a box you can see through walls. Press again for the next one, or go back to the previous one. It goes away once the block is right. Follows Litematica's layer range; looks for missing blocks, wrong ones, or both. Big schematics are checked a little every tick, so it never stutters. Hotkeys are not bound by default.
-- **Schematic diff**: "Compare with..." in a placement's settings compares it with another version of the schematic. Added, removed and changed blocks get their own colour right on the placement, through walls, with the counts in the corner and a list (nearest first; click one and the guide takes you there). Line them up by origin or by region, or move the other version by hand. Hide and show with a hotkey.
+- **Schematic diff**: "Compare with..." in a placement's settings compares it with another version of the schematic. Added, removed and changed blocks get their own colour right on the placement, through walls, with the counts at the top of the screen and a list (nearest first; click one and the guide takes you there). Line them up by origin or by region, or move the other version by hand. Hide and show with a hotkey.
 - New settings tab **Guide & diff**.
 
 ### 中文
@@ -13,7 +13,7 @@ For Minecraft 1.21.5–26.3.
 适用于 Minecraft 1.21.5–26.3。
 
 - **错误方块引导**：按一个热键就带你去投影里离你最近的放错或缺失的方块。准星下面的箭头指路，写着距离和“应该是什么 / 实际是什么”，方块本身框出来，隔着墙也看得到。再按一次去下一个，也能回到上一个。方块改对了就自动消失。跟着投影的渲染层范围；可以只找缺失、只找放错，或者都找。大投影每 tick 只查一点，不会卡。热键默认没有绑定。
-- **投影对比**：投影放置设置里的“对比…”把它和另一个版本的投影比较。新增、删除、改动的方块各用一种颜色直接标在放置上，隔着墙也看得到；角落显示数量，还有差异列表（近的在前，点一条就用引导带你过去）。可以按原点或按区域对齐，也可以手动挪另一个版本。用热键显示 / 隐藏。
+- **投影对比**：投影放置设置里的“对比…”把它和另一个版本的投影比较。新增、删除、改动的方块各用一种颜色直接标在放置上，隔着墙也看得到；屏幕上方显示数量，还有差异列表（近的在前，点一条就用引导带你过去）。可以按原点或按区域对齐，也可以手动挪另一个版本。用热键显示 / 隐藏。
 - 设置里新增 **引导与对比** 分页。
 
 ## 1.3.0 — 2026-10-27

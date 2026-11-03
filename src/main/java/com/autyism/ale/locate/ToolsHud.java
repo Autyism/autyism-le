@@ -20,7 +20,7 @@ import java.util.List;
 /**
  * On-screen part of the wrong block guide: an arrow under the crosshair turning towards the target (in view space: up
  * on the screen is "look up", a target behind you points down), the distance, and what the schematic wants there vs
- * what is there. Also the small summary of the schematic diff in the top right corner.
+ * what is there. Also the small summary of the schematic diff at the top of the screen.
  */
 public final class ToolsHud implements IRenderer {
     public static final ToolsHud INSTANCE = new ToolsHud();
@@ -218,7 +218,8 @@ public final class ToolsHud implements IRenderer {
         if (s == null) return;
         var font = c.font;
         int w = GuiUtils.getScaledWindowWidth();
-        int x = w - font.width(s) - 6;
+        // top centre: the top corners belong to MiniHUD / Litematica's info overlays
+        int x = (w - font.width(s)) / 2;
         RenderUtils.drawRect(ctx, x - 3, 3, font.width(s) + 6, 12, 0x90000000);
         ctx.drawString(font, s, x, 5, 0xFFFFFFFF, true);
     }
