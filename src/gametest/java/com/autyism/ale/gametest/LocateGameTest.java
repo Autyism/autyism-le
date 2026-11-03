@@ -178,7 +178,7 @@ public final class LocateGameTest implements FabricClientGameTest {
     private static void tp(ClientGameTestContext context, TestSingleplayerContext sp, double x, int y, double z, float yaw, float pitch) {
         sp.getServer().runCommand(String.format(Locale.ROOT, "tp @a %.2f %d %.2f %.1f %.1f", x, y, z, yaw, pitch));
         context.waitFor(c -> c.player != null && Math.abs(c.player.getX() - x) < 0.01 && Math.abs(c.player.getZ() - z) < 0.01
-                && Math.abs(c.player.getYRot() - yaw) < 0.5f, 200);
+                && Math.abs(net.minecraft.util.Mth.wrapDegrees(c.player.getYRot() - yaw)) < 0.5f, 200);
     }
 
     /** Press "next" and wait for the guide to settle on a target */
@@ -226,11 +226,15 @@ public final class LocateGameTest implements FabricClientGameTest {
             context.waitTicks(20);
             sp.getServer().runCommand(String.format(Locale.ROOT, "tp @a %d %d %d", bx + 20, by + sy + 4, bz + 20));
             context.waitTicks(20);
+            // start cold: nothing scanned yet (the index stays warm for a while after the last use)
             context.runOnClient(c -> {
                 WrongBlockGuide.clear(false);
+                LocateIndex.reset();
                 LocateIndex.longestTickNs = 0;
             });
             long pressNs = context.computeOnClient(c -> {
+                LocateIndex.reset(); // (in the same tick as the press: no scanning in between)
+                LocateIndex.longestTickNs = 0;
                 long s0 = System.nanoTime();
                 WrongBlockGuide.next();
                 return System.nanoTime() - s0;
@@ -260,8 +264,13 @@ public final class LocateGameTest implements FabricClientGameTest {
             });
             sp.getServer().runCommand(String.format(Locale.ROOT, "tp @a %d %d %d", bx + 300 + 64, by + sy + 4, bz + 64));
             context.waitTicks(60);
-            context.runOnClient(c -> LocateIndex.longestTickNs = 0);
+            context.runOnClient(c -> {
+                LocateIndex.reset();
+                LocateIndex.longestTickNs = 0;
+            });
             long press2 = context.computeOnClient(c -> {
+                LocateIndex.reset(); // (in the same tick as the press: no scanning in between)
+                LocateIndex.longestTickNs = 0;
                 long s0 = System.nanoTime();
                 WrongBlockGuide.next();
                 return System.nanoTime() - s0;

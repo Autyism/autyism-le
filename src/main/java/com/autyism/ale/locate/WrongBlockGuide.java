@@ -302,11 +302,16 @@ public final class WrongBlockGuide {
 
     /** The properties that differ between two states of the same block, "name=value" */
     public static List<String> differingProperties(BlockState a, BlockState b) {
+        return differingProperties(a, b, " / ");
+    }
+
+    /** The same with another separator between the two values ("facing=south -> north") */
+    public static List<String> differingProperties(BlockState a, BlockState b, String separator) {
         List<String> out = new ArrayList<>();
         if (a.getBlock() != b.getBlock()) return out;
         for (var prop : a.getProperties()) {
             Object va = a.getValue(prop), vb = b.getValue(prop);
-            if (!va.equals(vb)) out.add(prop.getName() + "=" + valueName(prop, va) + " / " + valueName(prop, vb));
+            if (!va.equals(vb)) out.add(prop.getName() + "=" + valueName(prop, va) + separator + valueName(prop, vb));
         }
         return out;
     }

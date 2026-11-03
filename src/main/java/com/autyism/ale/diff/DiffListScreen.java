@@ -192,7 +192,12 @@ public class DiffListScreen extends GuiBase {
             };
             this.drawString(ctx, tag, 14, y, 0xFFFFFFFF);
             this.drawString(ctx, w.getX() + " " + w.getY() + " " + w.getZ(), 90, y, 0xFFCCCCCC);
-            String change = describe(this.session.oldState(e)) + " §7->§r " + describe(this.session.newState(e));
+            BlockState before = this.session.oldState(e), after = this.session.newState(e);
+            String change = describe(before) + " §7->§r " + describe(after);
+            if (before.getBlock() == after.getBlock()) {
+                // same block, other state: say which properties
+                change = describe(before) + " §7(" + String.join(", ", WrongBlockGuide.differingProperties(before, after, " -> ")) + ")";
+            }
             int room = this.width - 200;
             if (this.font.width(change) > room) change = this.font.plainSubstrByWidth(change, room - 8) + "...";
             this.drawString(ctx, change, 180, y, 0xFFFFFFFF);
