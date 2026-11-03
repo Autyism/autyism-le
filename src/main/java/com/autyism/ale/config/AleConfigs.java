@@ -75,6 +75,13 @@ public class AleConfigs implements IConfigHandler {
         public static final ConfigBoolean BROWSER_PREVIEWS = new ConfigBoolean("schematicBrowserPreviews", true).apply(PREFIX);
         // 材料列表每一行的“替换”（装了 Schematic Preview 时由它负责）
         public static final ConfigBoolean MATERIAL_REPLACE = new ConfigBoolean("materialListReplace", true).apply(PREFIX);
+        // Chosen containers count for the material list (their items are available too); the hotkey adds / removes the looked-at container
+        public static final ConfigBoolean MATERIAL_SOURCE_CONTAINERS = new ConfigBoolean("materialSourceContainers", true).apply(PREFIX);
+        public static final ConfigHotkey MATERIAL_SOURCE_CONTAINER_KEY = new ConfigHotkey("materialSourceContainer", "").apply(PREFIX);
+        public static final ConfigBoolean MATERIAL_SOURCE_MARKER_ALWAYS = new ConfigBoolean("materialSourceMarkerAlways", false).apply(PREFIX);
+        public static final ConfigColor MATERIAL_SOURCE_MARKER_COLOR = new ConfigColor("materialSourceMarkerColor", "#FF40C8FF").apply(PREFIX);
+        // Placements and shared schematics called "Unnamed" or after a hash show a real name
+        public static final ConfigBoolean SCHEMATIC_NAME_FIX = new ConfigBoolean("schematicNameFix", true).apply(PREFIX);
         // 打开 ALE 设置的热键（默认不绑定，避免和别的模组冲突）
         public static final ConfigHotkey OPEN_CONFIG = new ConfigHotkey("openConfigGui", "").apply(PREFIX);
 
@@ -105,10 +112,15 @@ public class AleConfigs implements IConfigHandler {
                 RENDER_THROUGH_GLASS
                 , BROWSER_PREVIEWS,
                 MATERIAL_REPLACE,
+                MATERIAL_SOURCE_CONTAINERS,
+                MATERIAL_SOURCE_CONTAINER_KEY,
+                MATERIAL_SOURCE_MARKER_ALWAYS,
+                MATERIAL_SOURCE_MARKER_COLOR,
+                SCHEMATIC_NAME_FIX,
                 OPEN_CONFIG
         );
 
-        public static final ImmutableList<ConfigHotkey> HOTKEYS = ImmutableList.of(OPEN_CONFIG);
+        public static final ImmutableList<ConfigHotkey> HOTKEYS = ImmutableList.of(OPEN_CONFIG, MATERIAL_SOURCE_CONTAINER_KEY);
     }
 
     /** 投影浏览器：显示方式、间距、行高、缩略图体积上限 */
@@ -163,6 +175,7 @@ public class AleConfigs implements IConfigHandler {
         Generic.FILL_MARKER_COLOR.setValueChangeCallback(c -> refreshSchematicRender());
         Generic.FILL_MARKER_SKIP.setValueChangeCallback(c -> refreshSchematicRender());
         Generic.FILL_MARKER_SKIP_ITEMS.setValueChangeCallback(c -> refreshSchematicRender());
+        Generic.SCHEMATIC_NAME_FIX.setValueChangeCallback(c -> com.autyism.ale.schematic.SchematicNames.clearCache());
         // 装了 Sodium 时这个设置决定玻璃画在哪一层（见 SodiumGlassPassMixin）：改了以后世界的区块重建
         Generic.RENDER_THROUGH_GLASS.setValueChangeCallback(c -> {
             var mc = net.minecraft.client.Minecraft.getInstance();

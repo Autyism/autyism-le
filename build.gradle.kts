@@ -12,6 +12,10 @@ val schematicPreview = prop("deps.schematicpreview")
 // Sodium release on Modrinth's maven for each version (glass compat mixin; test runs with -PwithSodium)
 val sodiumBuild = mapOf("1.21.5" to "mc1.21.5-0.6.13-fabric", "1.21.8" to "mc1.21.8-0.7.3-fabric", "1.21.10" to "mc1.21.10-0.7.3-fabric",
     "1.21.11" to "mc1.21.11-0.8.7-fabric", "26.1.2" to "mc26.1.2-0.9.2-fabric", "26.2" to "mc26.2-0.9.2-fabric", "26.3" to "mc26.3-0.9.2-fabric")
+// Syncmatica on Modrinth's maven, by version id (its version numbers repeat across Minecraft versions); only compiled
+// against for the shared-schematic names (compat mixins applied when it is installed), loaded in tests with -PwithSyncmatica
+val syncmaticaBuild = mapOf("1.21.5" to "7Ma32dRR", "1.21.8" to "x2GEse4M", "1.21.10" to "buY4n8tz", "1.21.11" to "jMRygmU0",
+    "26.1.2" to "wsFbuMkX", "26.2" to "POv0nHxV", "26.3" to "uT7TJ2Wp")
 
 version = "${prop("mod.version")}+$mc"
 group = prop("mod.group")
@@ -45,6 +49,7 @@ dependencies {
     if (schematicPreview.isNotEmpty()) modCompileOnly("maven.modrinth:schematicpreview:$schematicPreview")
     // 可选联动：Sodium（玻璃兼容 mixin 编译用，不打包，运行时装了才应用）。每个版本用 Modrinth 上那个版本的正式版
     sodiumBuild[mc]?.let { modCompileOnly("maven.modrinth:sodium:$it") }
+    syncmaticaBuild[mc]?.let { modCompileOnly("maven.modrinth:syncmatica:$it") }
 
     // gametest 运行时：加载 Schematic Preview 与本作者的打印机，测试联动
     // -PnoSchematicPreview：不加载 Schematic Preview，测试 ALE 自己的预览、图标和替换
@@ -54,6 +59,7 @@ dependencies {
         }
         // 渲染环境测试：Sodium（-PwithSodium），1.21.11 可再加 Iris（-PwithIris），都从 Modrinth 取，只在测试时加载
         if (providers.gradleProperty("withSodium").isPresent) sodiumBuild[mc]?.let { modLocalRuntime("maven.modrinth:sodium:$it") }
+        if (providers.gradleProperty("withSyncmatica").isPresent) syncmaticaBuild[mc]?.let { modLocalRuntime("maven.modrinth:syncmatica:$it") }
         if (providers.gradleProperty("withIris").isPresent && mc == "1.21.11") modLocalRuntime("maven.modrinth:iris:1.10.7+1.21.11-fabric")
         // 打印机：1.21.11 用 libs 里的发布版，其他版本用打印机仓库各版本的构建
         val printer = if (mc == "1.21.11") rootProject.file("libs/litematica-printer-autyism-1.0.0.jar")
