@@ -109,6 +109,9 @@ public final class MaterialSourcesServuxGameTest implements FabricClientGameTest
     }
 
     private static void press(ClientGameTestContext context, BlockPos target) {
+        context.runOnClient(c -> c.player.lookAt(net.minecraft.commands.arguments.EntityAnchorArgument.Anchor.EYES,
+                new net.minecraft.world.phys.Vec3(target.getX() + 0.5, target.getY() + 0.4, target.getZ() + 0.5)));
+        context.waitTicks(3);
         BlockPos hit = context.computeOnClient(c -> c.hitResult instanceof BlockHitResult b ? b.getBlockPos() : null);
         if (!target.equals(hit)) throw new AssertionError("[matsourcesservux] looking at " + hit + " instead of " + target);
         // (MaLiLib 26.3 reads the real keyboard state: GT.setHotkeyHeld feeds it the simulated key too)

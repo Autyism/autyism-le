@@ -128,6 +128,9 @@ public final class SchematicNamesGameTest implements FabricClientGameTest {
 
             // d) Syncmatica's entries
             if (FabricLoader.getInstance().isModLoaded("syncmatica")) {
+                // (the first time the local copies are still being read; the names settle once they are)
+                context.computeOnClient(c -> SyncmaticaCheck.run(hash, lonelyHash));
+                context.waitTicks(40);
                 String[] sm = context.computeOnClient(c -> SyncmaticaCheck.run(hash, lonelyHash));
                 GT.log("[schnames] Syncmatica: hash entry='" + sm[0] + "' unnamed entry='" + sm[1] + "' lonely='" + sm[2] + "' search=" + sm[3]);
                 if (!NAME.equals(sm[0])) failures.add("syncmatica-hash:" + sm[0]);

@@ -114,6 +114,29 @@ public final class LocalSchematicIndex {
         return null;
     }
 
+    /**
+     * The real name (not a hash) of a local file with this content, right away from the index (no file is read): null
+     * while the index is being built (it is started here) or when there is no such file
+     */
+    @Nullable
+    public static String fileName(UUID hash) {
+        Map<UUID, List<Path>> index = byHash;
+        if (index == null) {
+            scan();
+            return null;
+        }
+        List<Path> paths = index.get(hash);
+        if (paths == null) {
+            if (System.currentTimeMillis() - lastScanEnd > RESCAN_AFTER_MS) scan();
+            return null;
+        }
+        for (Path p : paths) {
+            String base = SchematicNames.baseName(p.getFileName().toString());
+            if (!SchematicNames.isPlaceholder(base)) return base;
+        }
+        return null;
+    }
+
     /** Starts a scan in the background (nothing happens if one is running) */
     public static void scan() {
         if (!SCANNING.compareAndSet(false, true)) return;

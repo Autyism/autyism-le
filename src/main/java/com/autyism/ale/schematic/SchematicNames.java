@@ -99,8 +99,8 @@ public final class SchematicNames {
         if (!isPlaceholder(fileName)) return fileName;
         UUID hash = hashName(fileName);
         if (hash != null) {
-            LocalSchematicIndex.Info info = LocalSchematicIndex.lookup(hash);
-            if (info != null && !isPlaceholder(info.fileName())) return info.fileName();
+            String local = LocalSchematicIndex.fileName(hash);
+            if (local != null) return local;
         }
         String regions = regionNames(schematic.getAreas().keySet());
         if (regions != null) return regions;
@@ -113,7 +113,9 @@ public final class SchematicNames {
     @Nullable
     public static String fromLocalCopies(UUID hash) {
         LocalSchematicIndex.Info info = LocalSchematicIndex.lookup(hash);
-        if (info == null || info == LocalSchematicIndex.Info.NONE) return null;
+        // still being read: the local file's name for now (worked out again once it is read)
+        if (info == null) return LocalSchematicIndex.fileName(hash);
+        if (info == LocalSchematicIndex.Info.NONE) return null;
         if (!isPlaceholder(info.metaName())) return info.metaName();
         if (!isPlaceholder(info.fileName())) return info.fileName();
         String regions = regionNames(info.regions());

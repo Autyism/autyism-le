@@ -82,8 +82,9 @@ public final class MaterialSourcesGameTest implements FabricClientGameTest {
                 for (int x = ROW_MIN.getX(); x <= ROW_MAX.getX(); x++) level.setBlockAndUpdate(new BlockPos(x, 64, -3), Blocks.STONE.defaultBlockState());
             });
             context.waitTicks(10);
-            boolean otherHalf = context.computeOnClient(c -> RIGHT.equals(SourceContainers.otherHalf(c.level, LEFT)));
-            if (!otherHalf) failures.add("not-a-double-chest");
+            // (the client gets the blocks a little later)
+            boolean otherHalf = waitFor(context, () -> context.computeOnClient(c -> RIGHT.equals(SourceContainers.otherHalf(c.level, LEFT))), 200);
+            if (!otherHalf) failures.add("not-a-double-chest:" + context.computeOnClient(c -> c.level.getBlockState(LEFT) + " " + c.level.getBlockState(RIGHT)));
 
             Map<Item, Integer> before = available(context);
             GT.log("[matsources] available before choosing: " + before);
@@ -220,8 +221,13 @@ public final class MaterialSourcesGameTest implements FabricClientGameTest {
 
     /** Stands south of the containers and looks at the given block */
     private static void look(ClientGameTestContext context, TestSingleplayerContext sp, BlockPos target) {
-        sp.getServer().runCommand("tp @a " + (target.getX() + 0.5) + " 64 " + (target.getZ() + 3.5) + " 180 30");
-        context.waitFor(c -> c.player != null && Math.abs(c.player.getX() - (target.getX() + 0.5)) < 0.01, 200);
+        sp.getServer().runCommand("tp @a " + (target.getX() + 0.5) + " 64 " + (target.getZ() + 2.5) + " 180 30");
+        context.waitFor(c -> c.player != null && Math.abs(c.player.getX() - (target.getX() + 0.5)) < 0.01
+                && Math.abs(c.player.getZ() - (target.getZ() + 2.5)) < 0.01, 200);
+        context.waitTicks(3);
+        // aim at the middle of the block (a chest is lower than a full block)
+        context.runOnClient(c -> c.player.lookAt(net.minecraft.commands.arguments.EntityAnchorArgument.Anchor.EYES,
+                new net.minecraft.world.phys.Vec3(target.getX() + 0.5, target.getY() + 0.4, target.getZ() + 0.5)));
         context.waitTicks(3);
         BlockPos hit = context.computeOnClient(c -> c.hitResult instanceof net.minecraft.world.phys.BlockHitResult b ? b.getBlockPos() : null);
         if (!target.equals(hit)) throw new AssertionError("[matsources] looking at " + hit + " instead of " + target);

@@ -59,7 +59,12 @@ dependencies {
         }
         // 渲染环境测试：Sodium（-PwithSodium），1.21.11 可再加 Iris（-PwithIris），都从 Modrinth 取，只在测试时加载
         if (providers.gradleProperty("withSodium").isPresent) sodiumBuild[mc]?.let { modLocalRuntime("maven.modrinth:sodium:$it") }
-        if (providers.gradleProperty("withSyncmatica").isPresent) syncmaticaBuild[mc]?.let { modLocalRuntime("maven.modrinth:syncmatica:$it") }
+        if (providers.gradleProperty("withSyncmatica").isPresent) {
+            syncmaticaBuild[mc]?.let { modLocalRuntime("maven.modrinth:syncmatica:$it") }
+            // Syncmatica needs Lucko's permissions API at run time (its command checks)
+            val permissions = mapOf("1.21.5" to "nu0wDgUF", "1.21.8" to "LK7O0kKh", "1.21.10" to "6lShH56u", "1.21.11" to "BeLOh0XN")
+            modLocalRuntime("maven.modrinth:fabric-permissions-api:${permissions[mc] ?: "b1EqjxFs"}")
+        }
         if (providers.gradleProperty("withIris").isPresent && mc == "1.21.11") modLocalRuntime("maven.modrinth:iris:1.10.7+1.21.11-fabric")
         // 打印机：1.21.11 用 libs 里的发布版，其他版本用打印机仓库各版本的构建
         val printer = if (mc == "1.21.11") rootProject.file("libs/litematica-printer-autyism-1.0.0.jar")
