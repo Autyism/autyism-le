@@ -283,28 +283,47 @@ public final class DiffSession {
                               @Nullable int[] sortedOut) {
         int n = r.size();
         int keep = Math.min(max, n);
-        long[] world = new long[n];
-        double[] dist = new double[n];
+        // (only the worker thread gets here: the arrays are kept for the next pick, a big diff would otherwise
+        // allocate tens of MB every few steps the player takes)
+        if (scratchDist.length < n) scratchDist = new double[n];
+        double[] dist = scratchDist;
+        BlockPos.MutableBlockPos m = new BlockPos.MutableBlockPos();
         for (int i = 0; i < n; i++) {
-            BlockPos w = worldPos(BlockPos.of(r.positions()[i]), origin, mirror, rotation);
-            world[i] = w.asLong();
+            BlockPos w = worldPos(m.set(r.positions()[i]), origin, mirror, rotation);
             double dx = w.getX() + 0.5 - eye.x, dy = w.getY() + 0.5 - eye.y, dz = w.getZ() + 0.5 - eye.z;
             dist[i] = dx * dx + dy * dy + dz * dz;
         }
-        int[] order = new int[n];
-        for (int i = 0; i < n; i++) order[i] = i;
-        it.unimi.dsi.fastutil.ints.IntArrays.quickSort(order, (x, y) -> Double.compare(dist[x], dist[y]));
-        if (sortedOut != null) System.arraycopy(order, 0, sortedOut, 0, n);
+        int[] chosen;
+        if (sortedOut != null) {
+            for (int i = 0; i < n; i++) sortedOut[i] = i;
+            it.unimi.dsi.fastutil.ints.IntArrays.quickSort(sortedOut, 0, n, (x, y) -> Double.compare(dist[x], dist[y]));
+            chosen = sortedOut;
+        } else {
+            // the nearest `keep`: a heap holding the farthest of those kept on top
+            it.unimi.dsi.fastutil.ints.IntHeapPriorityQueue heap = new it.unimi.dsi.fastutil.ints.IntHeapPriorityQueue(keep + 1,
+                    (x, y) -> Double.compare(dist[y], dist[x]));
+            for (int i = 0; i < n && keep > 0; i++) {
+                if (heap.size() < keep) heap.enqueue(i);
+                else if (dist[i] < dist[heap.firstInt()]) {
+                    heap.dequeueInt();
+                    heap.enqueue(i);
+                }
+            }
+            chosen = new int[heap.size()];
+            for (int i = chosen.length - 1; i >= 0; i--) chosen[i] = heap.dequeueInt();
+        }
         long[] pos = new long[keep];
         int[] kinds = new int[keep];
         for (int i = 0; i < keep; i++) {
-            int e = order[i];
-            pos[i] = world[e];
+            int e = chosen[i];
+            pos[i] = worldPos(BlockPos.of(r.positions()[e]), origin, mirror, rotation).asLong();
             int k = r.kinds()[e];
             kinds[i] = k == SchematicDiff.CHANGED ? CHANGED : ((k == SchematicDiff.ONLY_A) != swapped ? REMOVED : ADDED);
         }
         return new RenderList(pos, kinds, keep);
     }
+
+    private static double[] scratchDist = new double[0];
 
     /** All entry indices sorted by distance from the player (for the list screen; runs on the worker thread) */
     Future<int[]> sortedByDistance() {
