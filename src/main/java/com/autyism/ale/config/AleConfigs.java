@@ -204,6 +204,7 @@ public class AleConfigs implements IConfigHandler {
             ConfigUtils.readConfigBase(root, "Generic", Generic.OPTIONS);
             ConfigUtils.readConfigBase(root, "Browser", Browser.OPTIONS);
             ConfigUtils.readConfigBase(root, "Preview", Preview.OPTIONS);
+            ConfigUtils.readConfigBase(root, "Tools", AleToolsConfigs.OPTIONS);
             com.autyism.ale.browser.FolderIcons.read(root.get("FolderIcons"));
         }
     }
@@ -214,6 +215,7 @@ public class AleConfigs implements IConfigHandler {
         ConfigUtils.writeConfigBase(root, "Generic", Generic.OPTIONS);
         ConfigUtils.writeConfigBase(root, "Browser", Browser.OPTIONS);
         ConfigUtils.writeConfigBase(root, "Preview", Preview.OPTIONS);
+        ConfigUtils.writeConfigBase(root, "Tools", AleToolsConfigs.OPTIONS);
         root.add("FolderIcons", com.autyism.ale.browser.FolderIcons.write());
         try {
             Files.createDirectories(FILE.getParent());

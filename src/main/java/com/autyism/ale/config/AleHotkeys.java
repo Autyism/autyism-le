@@ -23,15 +23,18 @@ public final class AleHotkeys implements IKeybindProvider {
             GuiBase.openGui(new AleConfigGui());
             return true;
         });
+        AleToolsConfigs.registerCallbacks();
     }
 
     @Override
     public void addKeysToMap(IKeybindManager manager) {
         for (ConfigHotkey hotkey : AleConfigs.Generic.HOTKEYS) manager.addKeybindToMap(hotkey.getKeybind());
+        for (ConfigHotkey hotkey : AleToolsConfigs.HOTKEYS) manager.addKeybindToMap(hotkey.getKeybind());
     }
 
     @Override
     public void addHotkeys(IKeybindManager manager) {
         manager.addHotkeysForCategory(AleMod.MOD_NAME, "autyism-le.hotkeys.category.generic", AleConfigs.Generic.HOTKEYS);
+        manager.addHotkeysForCategory(AleMod.MOD_NAME, "autyism-le.hotkeys.category.tools", AleToolsConfigs.HOTKEYS);
     }
 }
