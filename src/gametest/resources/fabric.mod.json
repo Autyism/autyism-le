@@ -40,7 +40,10 @@
       "com.autyism.ale.gametest.TranslucentEntityGameTest",
       "com.autyism.ale.gametest.InfoOverlayGameTest",
       "com.autyism.ale.gametest.LocateGameTest",
-      "com.autyism.ale.gametest.SchematicDiffGameTest"
+      "com.autyism.ale.gametest.SchematicDiffGameTest",
+      "com.autyism.ale.gametest.MaterialSourcesGameTest",
+      "com.autyism.ale.gametest.MaterialSourcesServuxGameTest",
+      "com.autyism.ale.gametest.SchematicNamesGameTest"
     ]
   },
   "depends": {

@@ -7,7 +7,7 @@ import fi.dy.masa.malilib.gui.GuiBase;
 import fi.dy.masa.malilib.hotkeys.IKeybindManager;
 import fi.dy.masa.malilib.hotkeys.IKeybindProvider;
 
-/** ALE 的热键：目前只有“打开 ALE 设置” */
+/** ALE 的热键：打开 ALE 设置、选作材料来源的容器 */
 public final class AleHotkeys implements IKeybindProvider {
     private static final AleHotkeys INSTANCE = new AleHotkeys();
     private static boolean registered;
@@ -24,6 +24,8 @@ public final class AleHotkeys implements IKeybindProvider {
             return true;
         });
         AleToolsConfigs.registerCallbacks();
+        AleConfigs.Generic.MATERIAL_SOURCE_CONTAINER_KEY.getKeybind().setCallback((action, key) ->
+                com.autyism.ale.materials.SourceContainers.toggleLookedAt());
     }
 
     @Override

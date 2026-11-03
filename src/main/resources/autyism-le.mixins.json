@@ -55,7 +55,13 @@
     "litematica.OverlayToolBoxesMixin",
     "litematica.WorldSchematicLocateMixin",
     "litematica.GuiPlacementConfigurationDiffMixin",
-    "client.LevelBlockChangeMixin"
+    "client.LevelBlockChangeMixin",
+    "litematica.MaterialListUtilsSourceMixin",
+    "litematica.GuiMaterialListSourceMixin",
+    "litematica.OverlayRendererSourceMixin",
+    "litematica.SchematicPlacementNameMixin",
+    "compat.syncmatica.ServerPlacementEntryNameMixin",
+    "compat.syncmatica.ServerPlacementListNameMixin"
   ],
   "injectors": {
     "defaultRequire": 1

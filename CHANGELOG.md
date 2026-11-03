@@ -1,12 +1,16 @@
 # Changelog
 
-## 1.4.0
+## 1.4.0 — 2026-11-03
 
 For Minecraft 1.21.5–26.3.
 
 - **Wrong block guide**: a hotkey takes you to the nearest wrong or missing block of your schematics. An arrow under the crosshair points the way, with the distance and what should be there vs what is there, and the block gets a box you can see through walls. Press again for the next one, or go back to the previous one. It goes away once the block is right. Follows Litematica's layer range; looks for missing blocks, wrong ones, or both. Big schematics are checked a little every tick, so it never stutters. Hotkeys are not bound by default.
 - **Schematic diff**: "Compare with..." in a placement's settings compares it with another version of the schematic. Added, removed and changed blocks get their own colour right on the placement, through walls, with the counts at the top of the screen and a list (nearest first; click one and the guide takes you there). Line them up by origin or by region, or move the other version by hand. Hide and show with a hotkey.
 - New settings tab **Guide & diff**.
+- **Chosen containers count for the material list** (on by default): look at a chest, barrel, shulker box, hopper or any other container and press the new hotkey (not bound by default) to count its items as available, in the material list screen and the info HUD. Press it again to remove it. A double chest counts as one, and shulker boxes inside count with what they hold. The list is kept per world / server until you remove the containers.
+- Their contents are known without opening them in single player and on servers with Servux (Litematica's Entity Data Sync on); otherwise open them once. Containers never seen show as unknown and are not counted. The material list gets a **Containers** button with the details (left-click checks again, right-click forgets them all), and chosen containers get a thin outline while a material list is shown (or always).
+- **Real names instead of "Unnamed" and hashes** (on by default): placements and Syncmatica entries show the schematic's own name, its file name, a file in your schematics folders with the same content, its region names, or its author and size. Only the display changes; saved names stay.
+- New settings: **Material List: Chosen Containers**, **Choose Material Container** (hotkey), **Chosen Containers: Always Outline**, **Chosen Containers: Outline Color**, **Names Instead of "Unnamed" and Hashes**.
 
 ### 中文
 
@@ -15,6 +19,10 @@ For Minecraft 1.21.5–26.3.
 - **错误方块引导**：按一个热键就带你去投影里离你最近的放错或缺失的方块。准星下面的箭头指路，写着距离和“应该是什么 / 实际是什么”，方块本身框出来，隔着墙也看得到。再按一次去下一个，也能回到上一个。方块改对了就自动消失。跟着投影的渲染层范围；可以只找缺失、只找放错，或者都找。大投影每 tick 只查一点，不会卡。热键默认没有绑定。
 - **投影对比**：投影放置设置里的“对比…”把它和另一个版本的投影比较。新增、删除、改动的方块各用一种颜色直接标在放置上，隔着墙也看得到；屏幕上方显示数量，还有差异列表（近的在前，点一条就用引导带你过去）。可以按原点或按区域对齐，也可以手动挪另一个版本。用热键显示 / 隐藏。
 - 设置里新增 **引导与对比** 分页。
+- **选中的容器算进材料列表**（默认开）：看着箱子、木桶、潜影盒、漏斗或别的容器，按新的热键（默认没绑定），里面的物品就算作“可用”，材料列表界面和信息 HUD 都算。再按一次取消。大箱子算一个，里面的潜影盒按装着的东西算。列表每个世界 / 服务器分开记，一直留到你自己取消。
+- 单人游戏不用打开就知道里面有什么，服务器装了 Servux（投影的“实体数据同步”开着）也一样；否则打开一次就行。从没看到过内容的容器显示“未知”，不算进去。材料列表多一个 **容器** 按钮显示详情（左键重新查，右键全部取消），材料列表显示时选中的容器有一圈细框（也可以设成一直显示）。
+- **用真名代替“Unnamed”和编号**（默认开）：投影放置和 Syncmatica 里的共享投影显示投影自己的名字、文件名、你投影文件夹里内容相同的文件名、子区域名，或者作者和尺寸。只改显示，保存的名字不变。
+- 新设置：**材料列表：选中的容器**、**选中材料容器**（热键）、**选中的容器：一直显示框**、**选中的容器：框的颜色**、**用名字代替“Unnamed”和编号**。
 
 ## 1.3.0 — 2026-10-27
 
