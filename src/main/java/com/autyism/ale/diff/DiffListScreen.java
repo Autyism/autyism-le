@@ -57,6 +57,7 @@ public class DiffListScreen extends GuiBase {
         x = button(x, y, this.session.alignment() == SchematicDiff.Alignment.ORIGIN ? "autyism-le.gui.button.diff.align_origin"
                 : "autyism-le.gui.button.diff.align_region", () -> this.session.setAlignment(
                 this.session.alignment() == SchematicDiff.Alignment.ORIGIN ? SchematicDiff.Alignment.REGION : SchematicDiff.Alignment.ORIGIN));
+        x = button(x, y, "autyism-le.gui.button.diff.preview", () -> DiffPreview.open(this));
         x = button(x, y, "autyism-le.gui.button.diff.clear", () -> {
             DiffSession.stop();
             this.closeGui(true);

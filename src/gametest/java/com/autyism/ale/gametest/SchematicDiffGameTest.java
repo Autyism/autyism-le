@@ -179,6 +179,22 @@ public final class SchematicDiffGameTest implements FabricClientGameTest {
             GT.log("[diff] list: " + (rows == null ? "none" : rows.length + " rows"));
             if (rows == null || rows.length != 9) failures.add("list rows");
             GT.shot(context, "ale-diff-list");
+            // the difference in the 3D preview, then back to the list
+            context.runOnClient(c -> com.autyism.ale.diff.DiffPreview.open(c.screen));
+            boolean preview = false;
+            for (int i = 0; i < 200 && !preview; i++) {
+                context.waitTick();
+                preview = context.computeOnClient(c -> c.screen instanceof com.autyism.ale.preview.FullscreenPreviewScreen);
+            }
+            GT.log("[diff] 3D preview " + (preview ? "opened" : "NOT OPENED"));
+            if (!preview) failures.add("3D preview");
+            context.waitTicks(40);
+            GT.shot(context, "ale-diff-3d-preview");
+            if (preview) {
+                context.runOnClient(c -> c.screen.onClose());
+                context.waitTicks(5);
+                if (!context.computeOnClient(c -> c.screen instanceof DiffListScreen)) failures.add("back from the 3D preview");
+            }
             // nearest first: the first row is the entry nearest to the player
             BlockPos first = rows == null ? null : context.computeOnClient(c -> {
                 DiffSession cur = DiffSession.current();

@@ -355,5 +355,8 @@
   "autyism-le.name.author_size": "%s 的未命名投影 %s×%s×%s",
   "autyism-le.name.author": "%s 的未命名投影",
   "autyism-le.name.size": "未命名投影 %s×%s×%s",
-  "autyism-le.name.shared_by": "%s（%s 分享）"
+  "autyism-le.name.shared_by": "%s（%s 分享）",
+  "autyism-le.gui.button.diff.preview": "3D 预览",
+  "autyism-le.gui.button.diff.preview.hint": "只显示不同的方块：新增和改动的照新版本显示，删掉的显示成红色玻璃",
+  "autyism-le.hud.material.unknown_containers": "（%s 个未读）"
 }

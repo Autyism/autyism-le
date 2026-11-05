@@ -60,6 +60,8 @@
     "litematica.GuiMaterialListSourceMixin",
     "litematica.OverlayRendererSourceMixin",
     "litematica.SchematicPlacementNameMixin",
+    "litematica.LoadedSchematicNameMixin",
+    "litematica.MaterialHudUnknownMixin",
     "compat.syncmatica.ServerPlacementEntryNameMixin",
     "compat.syncmatica.ServerPlacementListNameMixin"
   ],

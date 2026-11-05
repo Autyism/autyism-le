@@ -124,6 +124,13 @@ public final class SchematicNamesGameTest implements FabricClientGameTest {
             context.runOnClient(c -> c.setScreen(new fi.dy.masa.litematica.gui.GuiSchematicPlacementsList()));
             context.waitTicks(5);
             GT.shot(context, "ale-schnames-placements");
+            // the Loaded Schematics list shows the file name too (the placement above loaded the schematic)
+            context.runOnClient(c -> {
+                fi.dy.masa.litematica.data.SchematicHolder.getInstance().getOrLoad(dir.resolve(NAME + ".litematic"));
+                c.setScreen(new fi.dy.masa.litematica.gui.GuiSchematicLoadedList());
+            });
+            context.waitTicks(5);
+            GT.shot(context, "ale-schnames-loaded-list");
             context.runOnClient(c -> c.setScreen(null));
 
             // d) Syncmatica's entries

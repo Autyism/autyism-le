@@ -135,7 +135,22 @@ public final class MaterialSourcesGameTest implements FabricClientGameTest {
             if (!label.contains("2") || !label.contains("1")) failures.add("button:" + label);
             if (outlined.isEmpty() || !outlined.get(0).contains(LEFT) || !outlined.get(0).contains(RIGHT)) failures.add("outline-open:" + outlined);
             GT.shot(context, "ale-matsources-list");
+            // the material list on the HUD says how many picked containers were never seen
             context.runOnClient(c -> {
+                c.setScreen(null);
+                MaterialListSchematic list = (MaterialListSchematic) DataManager.getMaterialList();
+                if (list != null && !list.getHudRenderer().getShouldRenderCustom()) list.getHudRenderer().toggleShouldRender();
+                // more than the chests hold, so the HUD has missing materials to list
+                if (list != null) list.setMultiplier(100);
+                fi.dy.masa.litematica.render.infohud.InfoHud.getInstance().setEnabled(true);
+                fi.dy.masa.litematica.render.infohud.InfoHud.getInstance().addInfoHudRenderer(list.getHudRenderer(), true);
+                c.gui.getChat().clearMessages(false);
+            });
+            context.waitTicks(10);
+            GT.shot(context, "ale-matsources-hud-unknown");
+            context.runOnClient(c -> {
+                MaterialListSchematic list = (MaterialListSchematic) DataManager.getMaterialList();
+                if (list != null) fi.dy.masa.litematica.render.infohud.InfoHud.getInstance().removeInfoHudRenderer(list.getHudRenderer(), false);
                 c.setScreen(null);
                 DataManager.setMaterialList(null);
             });

@@ -1,5 +1,21 @@
 # Changelog
 
+## 1.4.1 — 2026-11-05
+
+For Minecraft 1.21.5–26.3.
+
+- Schematic diff: a **3D preview** button shows only the blocks that differ (added and changed ones as the new version has them, removed ones as red glass).
+- The material list on the HUD says how many picked material containers were never seen yet ("(2 unread)"): their contents are not counted until you see them.
+- Names: the **Loaded Schematics** list also shows the file name instead of "Unnamed" (like the placement list and Syncmatica's list already did).
+
+### 中文
+
+适用于 Minecraft 1.21.5–26.3。
+
+- 投影对比：新增 **3D 预览** 按钮，只显示不同的方块（新增和改动的照新版本显示，删掉的显示成红色玻璃）。
+- HUD 上的材料列表会写出还有几个选定的材料容器没读到（“（2 个未读）”）：没读到之前它们里面的东西不算。
+- 名字：**已加载的投影** 列表也显示文件名而不是 “Unnamed”（和放置列表、Syncmatica 列表一样）。
+
 ## 1.4.0 — 2026-11-03
 
 For Minecraft 1.21.5–26.3.

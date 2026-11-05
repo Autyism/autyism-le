@@ -354,5 +354,8 @@
   "autyism-le.name.author_size": "Unnamed by %s, %s×%s×%s",
   "autyism-le.name.author": "Unnamed by %s",
   "autyism-le.name.size": "Unnamed %s×%s×%s",
-  "autyism-le.name.shared_by": "%s (shared by %s)"
+  "autyism-le.name.shared_by": "%s (shared by %s)",
+  "autyism-le.gui.button.diff.preview": "3D preview",
+  "autyism-le.gui.button.diff.preview.hint": "Only the blocks that differ: added and changed ones as the new version has them, removed ones as red glass",
+  "autyism-le.hud.material.unknown_containers": "(%s unread)"
 }
