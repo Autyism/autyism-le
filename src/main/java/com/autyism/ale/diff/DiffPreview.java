@@ -39,7 +39,7 @@ public final class DiffPreview {
             if (file == null) return;
             mc.execute(() -> {
                 PreviewSession.closeCurrent();
-                mc.setScreen(new FullscreenPreviewScreen(parent, PreviewSession.forFile(file)));
+                fi.dy.masa.malilib.gui.GuiBase.openGui(new FullscreenPreviewScreen(parent, PreviewSession.forFile(file)));
             });
         }, "ALE diff preview");
         worker.setDaemon(true);
