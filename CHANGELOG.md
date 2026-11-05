@@ -1,5 +1,13 @@
 # Changelog
 
+## 1.4.2 — 2026-11-05
+
+- New: a **Manual** button in the settings opens a detailed manual in the game (English / 简体中文, follows the game language): every feature, where it works and where to set it, with a search box.
+
+### 中文
+
+- 新增：设置界面里的 **说明书** 按钮，在游戏里打开一份详细说明（中英文跟着游戏语言）：每个功能做什么、在哪里生效、在哪里设置，带搜索框。
+
 ## 1.4.1 — 2026-11-05
 
 For Minecraft 1.21.5–26.3.

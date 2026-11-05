@@ -54,6 +54,9 @@ public class AleConfigGui extends GuiConfigsBase {
             });
             x += button.getWidth() + 2;
         }
+        // the manual, after the tabs (gold so it does not read as one of them)
+        ButtonGeneric manual = new ButtonGeneric(x + 6, 26, -1, 20, "§6" + StringUtils.translate("autyism-le.manual.button"));
+        this.addButton(manual, (b, mouseButton) -> fi.dy.masa.malilib.gui.GuiBase.openGui(new ManualScreen(this)));
     }
 
     @Override

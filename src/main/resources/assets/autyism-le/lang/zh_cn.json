@@ -358,5 +358,8 @@
   "autyism-le.name.shared_by": "%s（%s 分享）",
   "autyism-le.gui.button.diff.preview": "3D 预览",
   "autyism-le.gui.button.diff.preview.hint": "只显示不同的方块：新增和改动的照新版本显示，删掉的显示成红色玻璃",
-  "autyism-le.hud.material.unknown_containers": "（%s 个未读）"
+  "autyism-le.hud.material.unknown_containers": "（%s 个未读）",
+  "autyism-le.manual.title": "投影增强说明书",
+  "autyism-le.manual.search": "搜索说明书……",
+  "autyism-le.manual.button": "说明书"
 }

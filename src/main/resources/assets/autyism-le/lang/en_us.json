@@ -357,5 +357,8 @@
   "autyism-le.name.shared_by": "%s (shared by %s)",
   "autyism-le.gui.button.diff.preview": "3D preview",
   "autyism-le.gui.button.diff.preview.hint": "Only the blocks that differ: added and changed ones as the new version has them, removed ones as red glass",
-  "autyism-le.hud.material.unknown_containers": "(%s unread)"
+  "autyism-le.hud.material.unknown_containers": "(%s unread)",
+  "autyism-le.manual.title": "Litematica Enhancement manual",
+  "autyism-le.manual.search": "Search the manual...",
+  "autyism-le.manual.button": "Manual"
 }
